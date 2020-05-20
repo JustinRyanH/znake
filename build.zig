@@ -1,4 +1,6 @@
-const Builder = @import("std").build.Builder;
+const std = @import("std");
+const Builder = std.build.Builder;
+const BuildExe = *std.build.LibExeObjStep;
 
 pub fn build(b: *Builder) void {
     // Standard target options allows the person running `zig build` to choose
@@ -11,11 +13,20 @@ pub fn build(b: *Builder) void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardReleaseOptions();
 
-    const exe = b.addExecutable("zpong", "src/main.zig");
-    exe.setTarget(target);
-    exe.setBuildMode(mode);
-    exe.install();
+    var exe: BuildExe = undefined;
+    if (target.isWindows() and target.getAbi() == .msvc) {
+        exe = b.addExecutable("zpong", "src/win32_platform.zig");
+        exe.setTarget(target);
+        exe.setBuildMode(mode);
 
+        exe.linkSystemLibrary("c");
+        exe.linkSystemLibrary("gdi32");
+        exe.linkSystemLibrary("user32");
+    } else {
+        @panic("Unimplemented Platform");
+    }
+
+    exe.install();
     const run_cmd = exe.run();
     run_cmd.step.dependOn(b.getInstallStep());
 
