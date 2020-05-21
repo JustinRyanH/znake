@@ -200,3 +200,7 @@ pub const Window = struct {
         _ = DispatchMessageA(message);
     }
 };
+
+pub fn debug(output: [*:0]const u8) void {
+    OutputDebugStringA(output);
+}

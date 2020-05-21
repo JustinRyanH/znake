@@ -1,10 +1,6 @@
 const std = @import("std");
 const win32 = @import("win32.zig");
 
-// TYPE DEFS
-///
-/// ACTUAL CODE
-///
 var RUNNING = false;
 
 pub fn ProcessWidnowsEvents(window: win32.HWND, message: win32.UINT, w_param: win32.WPARAM, l_param: win32.LPARAM) callconv(.Stdcall) win32.LRESULT {
