@@ -7,17 +7,28 @@ pub const DWORD = win32.DWORD;
 pub const HBRUSH = win32.HBRUSH;
 pub const HCURSOR = win32.HCURSOR;
 pub const HICON = win32.HICON;
+pub const HDC = win32.HDC;
 pub const HINSTANCE = win32.HINSTANCE;
 pub const HMENU = win32.HMENU;
 pub const HWND = win32.HWND;
 pub const INT = win32.INT;
+pub const LONG = win32.LONG;
 pub const LPARAM = win32.LPARAM;
 pub const LPCSTR = win32.LPCSTR;
 pub const LPVOID = win32.LPVOID;
 pub const LRESULT = win32.LRESULT;
 pub const PWSTR = win32.PWSTR;
 pub const UINT = win32.UINT;
+pub const WORD = win32.WORD;
 pub const WPARAM = win32.WPARAM;
+pub const SIZE_T = win32.SIZE_T;
+
+pub const BI_RGB = 0;
+pub const BI_RLE8 = 1;
+pub const BI_RLE4 = 2;
+pub const BI_BITFIELDS = 3;
+pub const BI_JPEG = 4;
+pub const BI_PNG = 5;
 
 pub const POINT = extern struct {
     x: u32,
@@ -47,6 +58,32 @@ const WNDCLASSEXA = extern struct {
     lpszMenuName: ?LPCSTR = null,
     lpszClassName: ?LPCSTR = null,
     hIconSm: ?HICON = null,
+};
+
+pub const RGBQUAD = extern struct {
+    rgbBlue: u8 = 0,
+    rgbGreen: u8 = 0,
+    rgbRed: u8 = 0,
+    rgbReserved: u8 = 0,
+};
+
+pub const BITMAPINFOHEADER = extern struct {
+    biSize: DWORD = @sizeOf(BITMAPINFOHEADER),
+    biWidth: LONG,
+    biHeight: LONG,
+    biPlanes: WORD = 1,
+    biBitCount: WORD = 32,
+    biCompression: DWORD = BI_RGB,
+    biSizeImage: DWORD = 0,
+    biXPelsPerMeter: LONG = 0,
+    biYPelsPerMeter: LONG = 0,
+    biClrUsed: DWORD = 0,
+    biClrImportant: DWORD = 0,
+};
+
+pub const BITMAPINFO = extern struct {
+    bmiHeader: BITMAPINFOHEADER,
+    bmiColors: [1]RGBQUAD,
 };
 
 // Enum Definitions
@@ -121,6 +158,71 @@ pub const CS_HREDRAW = 0x0002;
 pub const CS_VREDRAW = 0x0001;
 pub const CS_OWNDC = 0x0020;
 
+pub const MEM_COMMIT = 0x00001000;
+pub const MEM_RESERVE = 0x00002000;
+pub const MEM_REPLACE_PLACEHOLDER = 0x00004000;
+pub const MEM_RESERVE_PLACEHOLDER = 0x00040000;
+pub const MEM_RESET = 0x00080000;
+pub const MEM_TOP_DOWN = 0x00100000;
+pub const MEM_WRITE_WATCH = 0x00200000;
+pub const MEM_PHYSICAL = 0x00400000;
+pub const MEM_ROTATE = 0x00800000;
+pub const MEM_DIFFERENT_IMAGE_BASE_OK = 0x00800000;
+pub const MEM_RESET_UNDO = 0x01000000;
+pub const MEM_LARGE_PAGES = 0x20000000;
+pub const MEM_4MB_PAGES = 0x80000000;
+pub const MEM_64K_PAGES = (MEM_LARGE_PAGES | MEM_PHYSICAL);
+pub const MEM_UNMAP_WITH_TRANSIENT_BOOST = 0x00000001;
+pub const MEM_COALESCE_PLACEHOLDERS = 0x00000001;
+pub const MEM_PRESERVE_PLACEHOLDER = 0x00000002;
+pub const MEM_DECOMMIT = 0x00004000;
+pub const MEM_RELEASE = 0x00008000;
+pub const MEM_FREE = 0x00010000;
+
+pub const PAGE_NOACCESS = 0x01;
+pub const PAGE_READONLY = 0x02;
+pub const PAGE_READWRITE = 0x04;
+pub const PAGE_WRITECOPY = 0x08;
+pub const PAGE_EXECUTE = 0x10;
+pub const PAGE_EXECUTE_READ = 0x20;
+pub const PAGE_EXECUTE_READWRITE = 0x40;
+pub const PAGE_EXECUTE_WRITECOPY = 0x80;
+pub const PAGE_GUARD = 0x100;
+pub const PAGE_NOCACHE = 0x200;
+pub const PAGE_WRITECOMBINE = 0x400;
+pub const PAGE_GRAPHICS_NOACCESS = 0x0800;
+pub const PAGE_GRAPHICS_READONLY = 0x1000;
+pub const PAGE_GRAPHICS_READWRITE = 0x2000;
+pub const PAGE_GRAPHICS_EXECUTE = 0x4000;
+pub const PAGE_GRAPHICS_EXECUTE_READ = 0x8000;
+pub const PAGE_GRAPHICS_EXECUTE_READWRITE = 0x10000;
+pub const PAGE_GRAPHICS_COHERENT = 0x20000;
+pub const PAGE_ENCLAVE_THREAD_CONTROL = 0x80000000;
+pub const PAGE_REVERT_TO_FILE_MAP = 0x80000000;
+pub const PAGE_TARGETS_NO_UPDATE = 0x40000000;
+pub const PAGE_TARGETS_INVALID = 0x40000000;
+pub const PAGE_ENCLAVE_UNVALIDATED = 0x20000000;
+pub const PAGE_ENCLAVE_DECOMMIT = 0x10000000;
+
+pub const DIB_RGB_COLORS = 0;
+pub const DIB_PAL_COLORS = 1;
+
+pub const SRCCOPY: DWORD = 0x00CC0020;
+pub const SRCPAINT: DWORD = 0x00EE0086;
+pub const SRCAND: DWORD = 0x008800C6;
+pub const SRCINVERT: DWORD = 0x00660046;
+pub const SRCERASE: DWORD = 0x00440328;
+pub const NOTSRCCOPY: DWORD = 0x00330008;
+pub const NOTSRCERASE: DWORD = 0x001100A6;
+pub const MERGECOPY: DWORD = 0x00C000CA;
+pub const MERGEPAINT: DWORD = 0x00BB0226;
+pub const PATCOPY: DWORD = 0x00F00021;
+pub const PATPAINT: DWORD = 0x00FB0A09;
+pub const PATINVERT: DWORD = 0x005A0049;
+pub const DSTINVERT: DWORD = 0x00550009;
+pub const BLACKNESS: DWORD = 0x00000042;
+pub const WHITENESS: DWORD = 0x00FF0062;
+
 // Function Definitions
 pub const WNDPROC = fn (HWND, UINT, WPARAM, LPARAM) callconv(.Stdcall) LRESULT;
 pub extern "user32" fn RegisterClassExA(*const WNDCLASSEXA) callconv(.Stdcall) c_ushort;
@@ -129,13 +231,23 @@ pub extern "user32" fn PeekMessageA(*MSG, HWND, u32, u32, u32) callconv(.Stdcall
 pub extern "user32" fn DefWindowProcA(HWND, UINT, WPARAM, LPARAM) callconv(.Stdcall) LRESULT;
 pub extern "user32" fn TranslateMessage(*MSG) callconv(.Stdcall) bool;
 pub extern "user32" fn DispatchMessageA(*MSG) callconv(.Stdcall) LRESULT;
-pub extern "kernel32" fn OutputDebugStringA([*:0]const u8) void;
-// Extern Function Definitions
+pub extern "user32" fn GetDC(hWnd: HWND) HDC;
 
+pub extern "kernel32" fn VirtualAlloc(lpAddress: ?LPVOID, dwSize: usize, flAllocationType: DWORD, flProtect: DWORD) ?LPVOID;
+pub extern "kernel32" fn VirtualFree(lpAddress: LPVOID, dwSize: usize, dwFreeType: DWORD) BOOL;
+pub extern "kernel32" fn OutputDebugStringA([*:0]const u8) void;
+
+pub extern "gdi32" fn StretchDIBits(hdc: HDC, xDest: i32, yDest: i32, DestWidth: i32, DestHeight: i32, xSrc: i32, ySrc: i32, SrcWidth: i32, SrcHeight: i32, lpBits: *c_void, lpbmi: *BITMAPINFO, iUsage: UINT, rop: DWORD) i32;
+
+/// Extern Function Definitions
 ///
 /// ACTUAL CODE
 ///
-pub const WindowError = error{FailedTOCreateWindow};
+pub const WindowError = error{
+    FailedToCreateWindow,
+    FailedToAllocateMemory,
+    FailedToUnallocateMemory,
+};
 pub const Win32Message = MSG;
 
 pub const Win32Config = struct {
@@ -183,7 +295,7 @@ pub const Window = struct {
                 .window = window,
             };
         } else {
-            return WindowError.FailedTOCreateWindow;
+            return WindowError.FailedToCreateWindow;
         }
     }
 
