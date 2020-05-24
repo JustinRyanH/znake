@@ -21,8 +21,8 @@ pub fn ProcessWidnowsEvents(window: win32.HWND, message: win32.UINT, w_param: wi
 }
 
 pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE, lpCmdLine: win32.PWSTR, nCmdShow: win32.INT) win32.INT {
-    const width = 320;
-    const height = 240;
+    const width = 640;
+    const height = 480;
     var win32_draw_buffer = Win32OffscreenBuffer.init(width, height) catch |err| @panic("Could not create Allocat Memory for Win32 Draw Buffer");
 
     var game_draw_buffer = win32_draw_buffer.gamebuffer();

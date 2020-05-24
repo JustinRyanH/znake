@@ -25,31 +25,6 @@ pub const GameDrawBuffer = struct {
     memory: []u8,
 };
 
-// pub export fn GameUpdateDrawBuffer(arg_buffer: [*c]struct_GameDrawBuffer) void {
-//     var buffer = arg_buffer;
-//     var row: [*c]u8_5 = @ptrCast([*c]u8_5, @alignCast(@alignOf(u8_5), buffer.*.memory));
-//     {
-//         var green_shift: c_int = 0;
-//         while (green_shift < buffer.*.height) : (green_shift += 1) {
-//             var pixel: [*c]u32_7 = @ptrCast([*c]u32_7, @alignCast(@alignOf(u32_7), row));
-//             {
-//                 var blue_shift: c_int = 0;
-//                 while (blue_shift < buffer.*.width) : (blue_shift += 1) {
-//                     var blue: u8_5 = @bitCast(u8_5, @truncate(i8, (blue_shift)));
-//                     var green: u8_5 = @bitCast(u8_5, @truncate(i8, (green_shift)));
-//                     (blk: {
-//                         const ref = &pixel;
-//                         const tmp = ref.*;
-//                         ref.* += 1;
-//                         break :blk tmp;
-//                     }).?.* = @bitCast(u32_7, ((@bitCast(c_int, @as(c_uint, green)) << @intCast(@import("std").math.Log2Int(c_int), 8)) | @bitCast(c_int, @as(c_uint, blue))));
-//                 }
-//             }
-//             row += buffer.*.pitch;
-//         }
-//     }
-// }
-
 pub const Pixel = packed struct {
     blue: u8,
     green: u8,
@@ -66,9 +41,9 @@ pub fn DebugFillBuffer(draw_buffer: *GameDrawBuffer) void {
     while (y_index < draw_buffer.height) {
         const start = y_index * draw_buffer.width;
         const end = start + draw_buffer.width;
-        for (pixels[start..end]) |*pixel| {
-            pixel.*.blue = 0xFF;
-            pixel.*.green = 0xFF;
+        for (pixels[start..end]) |*pixel, x_index| {
+            pixel.*.blue = @truncate(u8, x_index);
+            pixel.*.green = @truncate(u8, y_index);
         }
         y_index += 1;
     }
