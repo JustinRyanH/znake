@@ -49,6 +49,7 @@ pub const NumberKeys = packed struct {
     seven: KeyState = .Up,
     eight: KeyState = .Up,
     nine: KeyState = .Up,
+    numpad_zero: KeyState = .Up,
     numpad_one: KeyState = .Up,
     numpad_two: KeyState = .Up,
     numpad_three: KeyState = .Up,
@@ -58,7 +59,6 @@ pub const NumberKeys = packed struct {
     numpad_seven: KeyState = .Up,
     numpad_eight: KeyState = .Up,
     numpad_nine: KeyState = .Up,
-    numpad_zero: KeyState = .Up,
     add: KeyState = .Up,
     seperator: KeyState = .Up,
     subtract: KeyState = .Up,
@@ -141,10 +141,10 @@ pub fn DebugFillBuffer(draw_buffer: *GameDrawBuffer) void {
 }
 
 pub fn UpdateGame(keyboard: *Keyboard) void {
-    if (keyboard.numbers.one == .Down) {
+    if (keyboard.numbers.one == .Down or keyboard.numbers.numpad_one == .Down) {
         win32.debug("One\n");
     }
-    if (keyboard.numbers.two == .Down) {
+    if (keyboard.numbers.two == .Down or keyboard.numbers.numpad_two == .Down) {
         win32.debug("Two\n");
     }
 }

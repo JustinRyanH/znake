@@ -6,20 +6,25 @@ const win32_draw = @import("win32_draw.zig");
 const GameDrawBuffer = pong.GameDrawBuffer;
 const Win32OffscreenBuffer = win32_draw.Win32OffscreenBuffer;
 
+fn BitCaseKeys(T: var, target: *T, vk_code: u32, min: u32, max: u32, offset: u4, is_down: bool) void {
+    if (vk_code >= min and vk_code <= max) {
+        const down_shift: i32 = @intCast(i32, (vk_code - min)) + @intCast(i32, offset);
+        std.debug.assert(down_shift > 0);
+        const splat: u32 = @shlExact(@as(u32, 1), @intCast(u5, down_shift));
+
+        const u32_keyboard = @bitCast(u32, target.*);
+        const new_keyboard = if (is_down) u32_keyboard | splat else u32_keyboard ^ splat;
+        target.* = @bitCast(T, new_keyboard);
+    }
+}
+
 fn Win32ProcessKeyboard(keyboard: *pong.Keyboard, message: *win32.MSG) void {
     const vk_code = @intCast(u32, message.wParam);
     const was_down: bool = message.lParam & (1 << 30) != 0;
     const is_down: bool = message.lParam & (1 << 31) == 0;
 
-    if (vk_code >= '0' and vk_code <= '9') {
-        const down_shift: i32 = @intCast(i32, (vk_code - '0'));
-        std.debug.assert(down_shift > 0);
-        const splat: u32 = @shlExact(@as(u32, 1), @intCast(u5, down_shift));
-
-        const u32_keyboard = @bitCast(u32, keyboard.numbers);
-        const new_keyboard = if (is_down) u32_keyboard | splat else u32_keyboard ^ splat;
-        keyboard.numbers = @bitCast(pong.NumberKeys, new_keyboard);
-    }
+    BitCaseKeys(pong.NumberKeys, &keyboard.numbers, vk_code, '0', '9', 0, is_down);
+    BitCaseKeys(pong.NumberKeys, &keyboard.numbers, vk_code, win32.VK_NUMPAD0, win32.VK_NUMPAD9, 10, is_down);
 }
 
 var RUNNING = false;
