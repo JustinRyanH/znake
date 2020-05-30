@@ -100,8 +100,8 @@ pub const Keyboard = struct {
 };
 
 pub const DebugData = struct {
-    x_offset: i32,
-    y_offset: i32,
+    x_offset: u32,
+    y_offset: u32,
     tone_hz: u32,
     sine_time: f32,
 };
@@ -127,7 +127,7 @@ pub const Pixel = packed struct {
     padding: u8,
 };
 
-pub fn DebugFillBuffer(draw_buffer: *GameDrawBuffer) void {
+pub fn DebugFillBuffer(draw_buffer: *GameDrawBuffer, x_offset: u32, y_offset: u32) void {
     assert(draw_buffer.memory.len == draw_buffer.height * draw_buffer.pitch);
     var y_index: usize = 0;
     var pixels = std.mem.bytesAsSlice(Pixel, draw_buffer.memory);
@@ -137,26 +137,31 @@ pub fn DebugFillBuffer(draw_buffer: *GameDrawBuffer) void {
         const start = y_index * draw_buffer.width;
         const end = start + draw_buffer.width;
         for (pixels[start..end]) |*pixel, x_index| {
-            pixel.*.blue = @truncate(u8, x_index);
-            pixel.*.green = @truncate(u8, y_index);
+            pixel.*.blue = @truncate(u8, x_index + x_offset);
+            pixel.*.green = @truncate(u8, y_index + y_offset);
         }
         y_index += 1;
     }
 }
 
 pub fn UpdateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuffer) void {
-    const debug_data = @ptrCast(*DebugData, @alignCast(4, data.permanent_storage[0..@sizeOf(DebugData)]));
+    const debug_data = @ptrCast(*DebugData, @alignCast(@alignOf(DebugData), data.permanent_storage[0..@sizeOf(DebugData)]));
 
     if (!data.initialized) {
         data.initialized = true;
         debug_data.tone_hz = 440;
     }
     const keyboard = input.keyboard;
-    if (keyboard.number.one == .Down or keyboard.number.numpad_one == .Down) {
-        win32.debug("One\n");
+    if (keyboard.letter.w == .Down or keyboard.special.up_arrow == .Down) {
+        debug_data.*.y_offset = debug_data.y_offset +% 1;
+    } else if (keyboard.letter.s == .Down or keyboard.special.down_arrow == .Down) {
+        debug_data.*.y_offset = debug_data.y_offset -% 1;
     }
-    if (keyboard.number.two == .Down or keyboard.number.numpad_two == .Down) {
-        win32.debug("Two\n");
+
+    if (keyboard.letter.a == .Down or keyboard.special.up_arrow == .Down) {
+        debug_data.*.x_offset = debug_data.x_offset +% 1;
+    } else if (keyboard.letter.d == .Down or keyboard.special.down_arrow == .Down) {
+        debug_data.*.x_offset = debug_data.x_offset -% 1;
     }
-    DebugFillBuffer(draw_buffer);
+    DebugFillBuffer(draw_buffer, debug_data.x_offset, debug_data.y_offset);
 }
