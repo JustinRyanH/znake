@@ -36,6 +36,7 @@ pub const LetterKeys = packed struct {
     tab: KeyState = .Up,
     enter: KeyState = .Up,
     del: KeyState = .Up,
+    clear: KeyState = .Up,
 };
 
 pub const NumberKeys = packed struct {
@@ -85,13 +86,13 @@ pub const SpecialKeys = packed struct {
     end: KeyState = .Up,
     home: KeyState = .Up,
     insert: KeyState = .Up,
-    rest: u13 = 0,
+    rest: u14 = 0,
 };
 
 pub const Keyboard = struct {
-    letter_keys: LetterKeys,
-    numbers: NumberKeys,
-    special_keys: SpecialKeys,
+    letter: LetterKeys,
+    number: NumberKeys,
+    special: SpecialKeys,
 };
 
 pub const DebugData = struct {
@@ -141,10 +142,10 @@ pub fn DebugFillBuffer(draw_buffer: *GameDrawBuffer) void {
 }
 
 pub fn UpdateGame(keyboard: *Keyboard) void {
-    if (keyboard.numbers.one == .Down or keyboard.numbers.numpad_one == .Down) {
+    if (keyboard.number.one == .Down or keyboard.number.numpad_one == .Down) {
         win32.debug("One\n");
     }
-    if (keyboard.numbers.two == .Down or keyboard.numbers.numpad_two == .Down) {
+    if (keyboard.number.two == .Down or keyboard.number.numpad_two == .Down) {
         win32.debug("Two\n");
     }
 }
