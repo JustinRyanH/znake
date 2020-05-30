@@ -1,6 +1,7 @@
 const std = @import("std");
 const win32 = @import("win32.zig");
 const pong = @import("pong.zig");
+const utils = @import("utils.zig");
 const win32_draw = @import("win32_draw.zig");
 
 const GameDrawBuffer = pong.GameDrawBuffer;
@@ -67,16 +68,43 @@ pub fn ProcessWidnowsEvents(window: win32.HWND, message: win32.UINT, w_param: wi
     return result;
 }
 
+fn Win32CreateGameData() !pong.GameData {
+    const permament_storage_size = utils.megabytes(64);
+    const transient_storage_size = utils.megabytes(512);
+    if (win32.VirtualAlloc(
+        null,
+        permament_storage_size + transient_storage_size,
+        win32.MEM_COMMIT | win32.MEM_RESERVE,
+        win32.PAGE_READWRITE,
+    )) |memory| {
+        const casted_memory = @ptrCast([*]u8, memory);
+        const result = pong.GameData{
+            .permanent_storage = casted_memory[0..permament_storage_size],
+            .transient_storage = casted_memory[permament_storage_size..(transient_storage_size + permament_storage_size)],
+        };
+
+        std.debug.assert(result.permanent_storage.len == permament_storage_size);
+        std.debug.assert(result.transient_storage.len == transient_storage_size);
+
+        return result;
+    }
+    return win32.WindowError.FailedToAllocateMemory;
+}
+
 pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE, lpCmdLine: win32.PWSTR, nCmdShow: win32.INT) win32.INT {
     const width = 640;
     const height = 480;
     var win32_draw_buffer = Win32OffscreenBuffer.init(width, height) catch |err| @panic("Could not create Allocat Memory for Win32 Draw Buffer");
+    var game_data = Win32CreateGameData() catch |err| @panic("Failed to Allocate Memory for the Game");
 
-    var keyboard = pong.Keyboard{
-        .letter = pong.LetterKeys{},
-        .number = pong.NumberKeys{},
-        .special = pong.SpecialKeys{},
+    var input = pong.GameInput{
+        .keyboard = pong.Keyboard{
+            .letter = pong.LetterKeys{},
+            .number = pong.NumberKeys{},
+            .special = pong.SpecialKeys{},
+        },
     };
+
     var game_draw_buffer = win32_draw_buffer.gamebuffer();
     var window = win32.Window.init(.{
         .wnd_proc = ProcessWidnowsEvents,
@@ -93,16 +121,16 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         while (window.peek_message()) |message| {
             switch (message.message) {
                 win32.WM_KEYUP, win32.WM_KEYDOWN, win32.WM_SYSKEYUP, win32.WM_SYSKEYDOWN => {
-                    Win32ProcessKeyboard(&keyboard, message);
+                    Win32ProcessKeyboard(&input.keyboard, message);
                 },
                 else => {},
             }
             window.dispatch_message(message);
         }
-        pong.UpdateGame(&keyboard);
 
         win32_draw_buffer.sync(&game_draw_buffer);
-        pong.DebugFillBuffer(&game_draw_buffer);
+
+        pong.UpdateGame(&input, &game_data, &game_draw_buffer);
 
         _ = win32_draw_buffer.blit(HDC);
     }

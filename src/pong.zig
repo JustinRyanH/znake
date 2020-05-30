@@ -89,6 +89,10 @@ pub const SpecialKeys = packed struct {
     rest: u14 = 0,
 };
 
+pub const GameInput = struct {
+    keyboard: Keyboard,
+};
+
 pub const Keyboard = struct {
     letter: LetterKeys,
     number: NumberKeys,
@@ -106,7 +110,6 @@ pub const GameData = struct {
     initialized: bool = false,
 
     permanent_storage: []u8,
-
     transient_storage: []u8,
 };
 
@@ -141,11 +144,13 @@ pub fn DebugFillBuffer(draw_buffer: *GameDrawBuffer) void {
     }
 }
 
-pub fn UpdateGame(keyboard: *Keyboard) void {
+pub fn UpdateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuffer) void {
+    const keyboard = input.keyboard;
     if (keyboard.number.one == .Down or keyboard.number.numpad_one == .Down) {
         win32.debug("One\n");
     }
     if (keyboard.number.two == .Down or keyboard.number.numpad_two == .Down) {
         win32.debug("Two\n");
     }
+    DebugFillBuffer(draw_buffer);
 }
