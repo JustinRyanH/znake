@@ -145,6 +145,12 @@ pub fn DebugFillBuffer(draw_buffer: *GameDrawBuffer) void {
 }
 
 pub fn UpdateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuffer) void {
+    const debug_data = @ptrCast(*DebugData, @alignCast(4, data.permanent_storage[0..@sizeOf(DebugData)]));
+
+    if (!data.initialized) {
+        data.initialized = true;
+        debug_data.tone_hz = 440;
+    }
     const keyboard = input.keyboard;
     if (keyboard.number.one == .Down or keyboard.number.numpad_one == .Down) {
         win32.debug("One\n");
