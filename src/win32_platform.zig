@@ -22,7 +22,7 @@ fn BitCastKey(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down: b
 fn BitCastKeys(T: var, target: *T, vk_code: u32, min: u32, max: u32, offset: u5, is_down: bool) void {
     if (vk_code >= min and vk_code <= max) {
         const down_shift: i32 = @intCast(i32, (vk_code - min)) + @intCast(i32, offset);
-        std.debug.assert(down_shift > 0);
+        std.debug.assert(down_shift >= 0);
         const splat: u32 = @shlExact(@as(u32, 1), @intCast(u5, down_shift));
 
         const u32_keyboard = @bitCast(u32, target.*);
@@ -43,6 +43,7 @@ fn Win32ProcessKeyboard(keyboard: *pong.Keyboard, message: *win32.MSG) void {
 
     BitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_SHIFT, win32.VK_MENU, 0, is_down);
     BitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_LSHIFT, win32.VK_RMENU, 3, is_down);
+    BitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_LEFT, win32.VK_DOWN, 9, is_down);
     BitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_PRIOR, win32.VK_HOME, 13, is_down);
     BitCastKey(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_INSERT, 17, is_down);
 
