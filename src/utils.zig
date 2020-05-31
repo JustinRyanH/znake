@@ -1,3 +1,5 @@
+const builtin = @import("std").builtin;
+
 pub fn kilobytes(bytes: comptime usize) usize {
     return bytes * 1024;
 }
@@ -12,4 +14,11 @@ pub fn gigabytes(bytes: comptime usize) usize {
 
 pub fn terabytes(bytes: comptime usize) usize {
     return gigabytes(bytes) * 1024;
+}
+
+pub fn assert(ok: bool) void {
+    switch (builtin.mode) {
+        .Debug, .ReleaseSafe => if (!ok) @panic("Failed Assertion"),
+        .ReleaseFast, .ReleaseSmall => {},
+    }
 }

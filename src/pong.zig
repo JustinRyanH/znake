@@ -1,6 +1,6 @@
 const std = @import("std");
 const win32 = @import("win32.zig");
-const assert = std.debug.assert;
+const assert = @import("utils.zig").assert;
 
 pub const KeyState = enum(u1) { Up = 0, Down = 1 };
 

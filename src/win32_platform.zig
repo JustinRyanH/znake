@@ -1,8 +1,17 @@
 const std = @import("std");
+const StackTrace = @import("builtin").StackTrace;
 const win32 = @import("win32.zig");
 const pong = @import("pong.zig");
 const utils = @import("utils.zig");
 const win32_draw = @import("win32_draw.zig");
+const assert = @import("utils.zig").assert;
+
+pub fn win32_panic(message: []const u8, stack_trace: ?*StackTrace) noreturn {
+    win32.debug("Panic: {}\n{}", .{ message, stack_trace });
+    std.os.abort();
+}
+
+pub const panic = win32_panic;
 
 const GameDrawBuffer = pong.GameDrawBuffer;
 const Win32OffscreenBuffer = win32_draw.Win32OffscreenBuffer;
@@ -10,7 +19,7 @@ const Win32OffscreenBuffer = win32_draw.Win32OffscreenBuffer;
 fn bit_cast_key(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down: bool) void {
     if (vk_code == key) {
         const down_shift: i32 = @intCast(i32, (vk_code - key)) + @intCast(i32, offset);
-        std.debug.assert(down_shift >= 0);
+        assert(down_shift >= 0);
         const splat: u32 = @shlExact(@as(u32, 1), @intCast(u5, down_shift));
 
         const u32_keyboard = @bitCast(u32, target.*);
@@ -22,7 +31,7 @@ fn bit_cast_key(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down:
 fn bit_cast_keys(T: var, target: *T, vk_code: u32, min: u32, max: u32, offset: u5, is_down: bool) void {
     if (vk_code >= min and vk_code <= max) {
         const down_shift: i32 = @intCast(i32, (vk_code - min)) + @intCast(i32, offset);
-        std.debug.assert(down_shift >= 0);
+        assert(down_shift >= 0);
         const splat: u32 = @shlExact(@as(u32, 1), @intCast(u5, down_shift));
 
         const u32_keyboard = @bitCast(u32, target.*);
@@ -84,8 +93,8 @@ fn win32_create_game_data() !pong.GameData {
             .transient_storage = casted_memory[permament_storage_size..(transient_storage_size + permament_storage_size)],
         };
 
-        std.debug.assert(result.permanent_storage.len == permament_storage_size);
-        std.debug.assert(result.transient_storage.len == transient_storage_size);
+        assert(result.permanent_storage.len == permament_storage_size);
+        assert(result.transient_storage.len == transient_storage_size);
 
         return result;
     }
