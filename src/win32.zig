@@ -13,6 +13,7 @@ pub const HMENU = win32.HMENU;
 pub const HWND = win32.HWND;
 pub const INT = win32.INT;
 pub const LONG = win32.LONG;
+pub const LARGE_INTEGER = i64;
 pub const LPARAM = i64;
 pub const LPCSTR = win32.LPCSTR;
 pub const LPVOID = win32.LPVOID;
@@ -405,6 +406,7 @@ pub extern "user32" fn GetDC(hWnd: HWND) HDC;
 pub extern "kernel32" fn VirtualAlloc(lpAddress: ?LPVOID, dwSize: usize, flAllocationType: DWORD, flProtect: DWORD) ?LPVOID;
 pub extern "kernel32" fn VirtualFree(lpAddress: LPVOID, dwSize: usize, dwFreeType: DWORD) BOOL;
 pub extern "kernel32" fn OutputDebugStringA([*:0]const u8) void;
+pub extern "kernel32" fn QueryPerformanceCounter(*LARGE_INTEGER) bool;
 
 pub extern "gdi32" fn StretchDIBits(hdc: HDC, xDest: i32, yDest: i32, DestWidth: i32, DestHeight: i32, xSrc: i32, ySrc: i32, SrcWidth: i32, SrcHeight: i32, lpBits: *c_void, lpbmi: *BITMAPINFO, iUsage: UINT, rop: DWORD) i32;
 
@@ -484,4 +486,10 @@ pub const Window = struct {
 
 pub fn debug(output: [*:0]const u8) void {
     OutputDebugStringA(output);
+}
+
+pub fn GetWallClode() i64 {
+    var result: i64 = 0;
+    _ = QueryPerformanceCounter(&result);
+    return result;
 }

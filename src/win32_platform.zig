@@ -95,8 +95,14 @@ fn Win32CreateGameData() !pong.GameData {
 pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE, lpCmdLine: win32.PWSTR, nCmdShow: win32.INT) win32.INT {
     const width = 640;
     const height = 480;
-    var win32_draw_buffer = Win32OffscreenBuffer.init(width, height) catch |err| @panic("Could not create Allocat Memory for Win32 Draw Buffer");
-    var game_data = Win32CreateGameData() catch |err| @panic("Failed to Allocate Memory for the Game");
+    var win32_draw_buffer = Win32OffscreenBuffer.init(width, height) catch |err| {
+        win32.debug("Could not create Allocat Memory for Win32 Draw Buffer");
+        @panic("Could not create Allocat Memory for Win32 Draw Buffer");
+    };
+    var game_data = Win32CreateGameData() catch |err| {
+        win32.debug("Failed to Allocate Memory for the Game");
+        @panic("Failed to Allocate Memory for the Game");
+    };
 
     var input = pong.GameInput{
         .keyboard = pong.Keyboard{
@@ -114,10 +120,15 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         .h_instance = hInstance,
         .width = width,
         .height = height,
-    }) catch |err| @panic("Could not Load Window");
+    }) catch |err| {
+        win32.debug("Could not Load Window");
+        @panic("Could not Load Window");
+    };
+
     RUNNING = true;
     const HDC = win32.GetDC(window.window);
 
+    var last_count = win32.GetWallClode();
     while (RUNNING) {
         while (window.peek_message()) |message| {
             switch (message.message) {
