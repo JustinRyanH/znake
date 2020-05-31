@@ -96,11 +96,11 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
     const width = 640;
     const height = 480;
     var win32_draw_buffer = Win32OffscreenBuffer.init(width, height) catch |err| {
-        win32.debug("Could not create Allocat Memory for Win32 Draw Buffer");
+        win32.debug("Could not create Allocat Memory for Win32 Draw Buffer", .{});
         @panic("Could not create Allocat Memory for Win32 Draw Buffer");
     };
     var game_data = Win32CreateGameData() catch |err| {
-        win32.debug("Failed to Allocate Memory for the Game");
+        win32.debug("Failed to Allocate Memory for the Game", .{});
         @panic("Failed to Allocate Memory for the Game");
     };
 
@@ -121,7 +121,7 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         .width = width,
         .height = height,
     }) catch |err| {
-        win32.debug("Could not Load Window");
+        win32.debug("Could not Load Window", .{});
         @panic("Could not Load Window");
     };
 

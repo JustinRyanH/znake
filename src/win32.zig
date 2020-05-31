@@ -1,4 +1,5 @@
 const std = @import("std");
+const c_allocator = std.heap.c_allocator;
 const win32 = std.os.windows;
 
 // TYPE DEFS
@@ -484,11 +485,13 @@ pub const Window = struct {
     }
 };
 
-pub fn debug(output: [*:0]const u8) void {
-    OutputDebugStringA(output);
+pub fn debug(comptime fmt: []const u8, args: var) void {
+    const output = std.fmt.allocPrint(c_allocator, fmt, args) catch unreachable;
+    OutputDebugStringA(@ptrCast([*:0]const u8, output.ptr));
+    c_allocator.free(output);
 }
 
-pub fn GetWallClode() i64 {
+pub inline fn GetWallClode() i64 {
     var result: i64 = 0;
     _ = QueryPerformanceCounter(&result);
     return result;
