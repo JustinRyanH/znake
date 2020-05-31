@@ -1,4 +1,5 @@
 const std = @import("std");
+const StackTrace = @import("builtin").StackTrace;
 const c_allocator = std.heap.c_allocator;
 const win32 = std.os.windows;
 
@@ -495,4 +496,9 @@ pub inline fn GetWallClode() i64 {
     var result: i64 = 0;
     _ = QueryPerformanceCounter(&result);
     return result;
+}
+
+pub fn win32_panic(message: []const u8, stack_trace: ?*StackTrace) noreturn {
+    debug("Panic: {}\n{}", .{ message, stack_trace });
+    std.os.abort();
 }

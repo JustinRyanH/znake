@@ -1,17 +1,11 @@
 const std = @import("std");
-const StackTrace = @import("builtin").StackTrace;
 const win32 = @import("win32.zig");
 const pong = @import("pong.zig");
 const utils = @import("utils.zig");
 const win32_draw = @import("win32_draw.zig");
 const assert = @import("utils.zig").assert;
 
-pub fn win32_panic(message: []const u8, stack_trace: ?*StackTrace) noreturn {
-    win32.debug("Panic: {}\n{}", .{ message, stack_trace });
-    std.os.abort();
-}
-
-pub const panic = win32_panic;
+pub const panic = win32.win32_panic;
 
 const GameDrawBuffer = pong.GameDrawBuffer;
 const Win32OffscreenBuffer = win32_draw.Win32OffscreenBuffer;
@@ -152,6 +146,8 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         win32_draw_buffer.sync(&game_draw_buffer);
 
         pong.UpdateGame(&input, &game_data, &game_draw_buffer);
+
+        const end_counter = win32.GetWallClode();
 
         _ = win32_draw_buffer.blit(HDC);
     }
