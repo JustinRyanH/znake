@@ -413,6 +413,11 @@ pub extern "kernel32" fn QueryPerformanceFrequency(*LARGE_INTEGER) bool;
 
 pub extern "gdi32" fn StretchDIBits(hdc: HDC, xDest: i32, yDest: i32, DestWidth: i32, DestHeight: i32, xSrc: i32, ySrc: i32, SrcWidth: i32, SrcHeight: i32, lpBits: *c_void, lpbmi: *BITMAPINFO, iUsage: UINT, rop: DWORD) i32;
 
+// Minimum timer resolution, in milliseconds, for the application or device driver. A lower value specifies a higher (more accurate) resolution.
+pub extern "Winmm" fn timeBeginPeriod(u32) u32;
+// Minimum timer resolution specified in the previous call to the timeBeginPeriod function.
+pub extern "Winmm" fn timeEndPeriod(u32) u32;
+
 /// Extern Function Definitions
 ///
 /// ACTUAL CODE
@@ -421,6 +426,7 @@ pub const WindowError = error{
     FailedToCreateWindow,
     FailedToAllocateMemory,
     FailedToUnallocateMemory,
+    TimerNoCanDo,
 };
 pub const Win32Message = MSG;
 
@@ -508,4 +514,16 @@ pub inline fn GetFreq() i64 {
 pub fn win32_panic(message: []const u8, stack_trace: ?*StackTrace) noreturn {
     debug("Panic: {}\n{}", .{ message, stack_trace });
     std.os.abort();
+}
+
+pub fn time_begin_period(period: u32) !void {
+    if (timeBeginPeriod(period) != 0) {
+        return WindowError.TimerNoCanDo;
+    }
+}
+
+pub fn time_end_period(period: u32) !void {
+    if (timeEndPeriod(period) != 0) {
+        return WindowError.TimerNoCanDo;
+    }
 }

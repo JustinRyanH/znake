@@ -127,7 +127,7 @@ pub const Pixel = packed struct {
     padding: u8,
 };
 
-pub fn DebugFillBuffer(draw_buffer: *GameDrawBuffer, x_offset: u32, y_offset: u32) void {
+pub fn debugFillBuffer(draw_buffer: *GameDrawBuffer, x_offset: u32, y_offset: u32) void {
     assert(draw_buffer.memory.len == draw_buffer.height * draw_buffer.pitch);
     var y_index: usize = 0;
     var pixels = std.mem.bytesAsSlice(Pixel, draw_buffer.memory);
@@ -144,7 +144,7 @@ pub fn DebugFillBuffer(draw_buffer: *GameDrawBuffer, x_offset: u32, y_offset: u3
     }
 }
 
-pub fn UpdateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuffer) void {
+pub fn updateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuffer) void {
     const debug_data = @ptrCast(*DebugData, @alignCast(@alignOf(DebugData), data.permanent_storage[0..@sizeOf(DebugData)]));
 
     if (!data.initialized) {
@@ -164,5 +164,5 @@ pub fn UpdateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuff
     } else if (keyboard.letter.d == .Down or keyboard.special.down_arrow == .Down) {
         debug_data.*.x_offset = debug_data.x_offset -% 1;
     }
-    DebugFillBuffer(draw_buffer, debug_data.x_offset, debug_data.y_offset);
+    debugFillBuffer(draw_buffer, debug_data.x_offset, debug_data.y_offset);
 }
