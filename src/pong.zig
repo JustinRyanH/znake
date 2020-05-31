@@ -113,6 +113,12 @@ pub const GameData = struct {
     transient_storage: []u8,
 };
 
+pub const Sound = struct {
+    sample_buffer: []f32,
+    samples_to_write: u32 = 0,
+    samples_per_second: u32,
+};
+
 pub const GameDrawBuffer = struct {
     height: u32,
     width: u32,

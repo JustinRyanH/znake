@@ -2,13 +2,14 @@ const std = @import("std");
 const win32 = @import("win32.zig");
 const pong = @import("pong.zig");
 const utils = @import("utils.zig");
-const win32_draw = @import("win32_draw.zig");
+const platform_draw = @import("win32_draw.zig");
+const platform_sound = @import("win32_sound.zig");
 const assert = @import("utils.zig").assert;
 
 pub const panic = win32.win32_panic;
 
 const GameDrawBuffer = pong.GameDrawBuffer;
-const Win32OffscreenBuffer = win32_draw.Win32OffscreenBuffer;
+const Win32OffscreenBuffer = platform_draw.Win32OffscreenBuffer;
 
 var clock_frequency: f32 = undefined;
 
@@ -101,10 +102,40 @@ fn win32GetSecondsElasped(recent: i64, later: i64) f32 {
     return @intToFloat(f32, later - recent) / clock_frequency;
 }
 
+fn win32InitGameSound(channels: u32, samples_per_second: u32) !pong.Sound {
+    const max_latency_in_seconds = 2;
+    const memory_size = samples_per_second * channels * max_latency_in_seconds;
+    if (win32.VirtualAlloc(
+        null,
+        memory_size,
+        win32.MEM_COMMIT | win32.MEM_RESERVE,
+        win32.PAGE_READWRITE,
+    )) |memory| {
+        const casted_memory = @ptrCast([*]f32, @alignCast(@alignOf(f32), memory));
+        // sample_buffer: []f32,
+        // samples_to_write: i32 = 0,
+        // samples_per_second: i32 = 48000,
+        return pong.Sound{
+            .sample_buffer = casted_memory[0..memory_size],
+            .samples_to_write = 0,
+            .samples_per_second = samples_per_second,
+        };
+    }
+    return win32.WindowError.FailedToAllocateMemory;
+}
+
+fn win32CalculateFramesToWrite(game_sound: *pong.Sound, win32_sound: *platform_sound.SoundOutput) void {}
+
 pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE, lpCmdLine: win32.PWSTR, nCmdShow: win32.INT) win32.INT {
     clock_frequency = @intToFloat(f32, win32.GetFreq());
     win32.time_begin_period(1) catch |err| @panic("Time Period Begin Failure");
     defer win32.time_end_period(1) catch |err| @panic("Time Period End Failure");
+
+    var win32_sound = platform_sound.load();
+    var game_sound = win32InitGameSound(2, 48000) catch |err| @panic("Failed to Initialize Sound");
+
+    platform_sound.init(&win32_sound);
+    defer platform_sound.deinit(&win32_sound);
 
     const width = 640;
     const height = 480;
@@ -152,10 +183,11 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
             }
             window.dispatch_message(message);
         }
-
+        win32CalculateFramesToWrite(&game_sound, &win32_sound);
         win32_draw_buffer.sync(&game_draw_buffer);
 
         pong.updateGame(&input, &game_data, &game_draw_buffer);
+        platform_sound.fillBuffer(&win32_sound, game_sound.sample_buffer[0..game_sound.samples_to_write]);
 
         const end_counter = win32.GetWallClock();
         const ms_per_frame = 1000.0 * win32GetSecondsElasped(last_counter, end_counter);
