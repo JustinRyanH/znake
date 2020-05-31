@@ -7,10 +7,10 @@ const win32_draw = @import("win32_draw.zig");
 const GameDrawBuffer = pong.GameDrawBuffer;
 const Win32OffscreenBuffer = win32_draw.Win32OffscreenBuffer;
 
-fn BitCastKey(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down: bool) void {
+fn bit_cast_key(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down: bool) void {
     if (vk_code == key) {
         const down_shift: i32 = @intCast(i32, (vk_code - key)) + @intCast(i32, offset);
-        std.debug.assert(down_shift > 0);
+        std.debug.assert(down_shift >= 0);
         const splat: u32 = @shlExact(@as(u32, 1), @intCast(u5, down_shift));
 
         const u32_keyboard = @bitCast(u32, target.*);
@@ -19,7 +19,7 @@ fn BitCastKey(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down: b
     }
 }
 
-fn BitCastKeys(T: var, target: *T, vk_code: u32, min: u32, max: u32, offset: u5, is_down: bool) void {
+fn bit_cast_keys(T: var, target: *T, vk_code: u32, min: u32, max: u32, offset: u5, is_down: bool) void {
     if (vk_code >= min and vk_code <= max) {
         const down_shift: i32 = @intCast(i32, (vk_code - min)) + @intCast(i32, offset);
         std.debug.assert(down_shift >= 0);
@@ -31,32 +31,32 @@ fn BitCastKeys(T: var, target: *T, vk_code: u32, min: u32, max: u32, offset: u5,
     }
 }
 
-fn Win32ProcessKeyboard(keyboard: *pong.Keyboard, message: *win32.MSG) void {
+fn win32_process_keyboard(keyboard: *pong.Keyboard, message: *win32.MSG) void {
     const vk_code = @intCast(u32, message.wParam);
     const was_down: bool = message.lParam & (1 << 30) != 0;
     const is_down: bool = message.lParam & (1 << 31) == 0;
 
-    BitCastKeys(pong.NumberKeys, &keyboard.number, vk_code, '0', '9', 0, is_down);
-    BitCastKeys(pong.NumberKeys, &keyboard.number, vk_code, win32.VK_NUMPAD0, win32.VK_NUMPAD9, 10, is_down);
-    BitCastKeys(pong.NumberKeys, &keyboard.number, vk_code, win32.VK_MULTIPLY, win32.VK_DIVIDE, 20, is_down);
-    BitCastKeys(pong.NumberKeys, &keyboard.number, vk_code, win32.VK_MULTIPLY, win32.VK_DIVIDE, 20, is_down);
+    bit_cast_keys(pong.NumberKeys, &keyboard.number, vk_code, '0', '9', 0, is_down);
+    bit_cast_keys(pong.NumberKeys, &keyboard.number, vk_code, win32.VK_NUMPAD0, win32.VK_NUMPAD9, 10, is_down);
+    bit_cast_keys(pong.NumberKeys, &keyboard.number, vk_code, win32.VK_MULTIPLY, win32.VK_DIVIDE, 20, is_down);
+    bit_cast_keys(pong.NumberKeys, &keyboard.number, vk_code, win32.VK_MULTIPLY, win32.VK_DIVIDE, 20, is_down);
 
-    BitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_SHIFT, win32.VK_MENU, 0, is_down);
-    BitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_LSHIFT, win32.VK_RMENU, 3, is_down);
-    BitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_LEFT, win32.VK_DOWN, 9, is_down);
-    BitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_PRIOR, win32.VK_HOME, 13, is_down);
-    BitCastKey(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_INSERT, 17, is_down);
+    bit_cast_keys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_SHIFT, win32.VK_MENU, 0, is_down);
+    bit_cast_keys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_LSHIFT, win32.VK_RMENU, 3, is_down);
+    bit_cast_keys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_LEFT, win32.VK_DOWN, 9, is_down);
+    bit_cast_keys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_PRIOR, win32.VK_HOME, 13, is_down);
+    bit_cast_key(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_INSERT, 17, is_down);
 
-    BitCastKey(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_SPACE, 0, is_down);
-    BitCastKeys(pong.LetterKeys, &keyboard.letter, vk_code, 'A', 'Z', 1, is_down);
-    BitCastKeys(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_BACK, win32.VK_TAB, 1, is_down);
-    BitCastKey(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_RETURN, 29, is_down);
-    BitCastKey(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_DELETE, 30, is_down);
-    BitCastKey(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_CLEAR, 31, is_down);
+    bit_cast_key(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_SPACE, 0, is_down);
+    bit_cast_keys(pong.LetterKeys, &keyboard.letter, vk_code, 'A', 'Z', 1, is_down);
+    bit_cast_keys(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_BACK, win32.VK_TAB, 1, is_down);
+    bit_cast_key(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_RETURN, 29, is_down);
+    bit_cast_key(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_DELETE, 30, is_down);
+    bit_cast_key(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_CLEAR, 31, is_down);
 }
 
 var RUNNING = false;
-pub fn ProcessWidnowsEvents(window: win32.HWND, message: win32.UINT, w_param: win32.WPARAM, l_param: win32.LPARAM) callconv(.Stdcall) win32.LRESULT {
+pub fn process_windows_events(window: win32.HWND, message: win32.UINT, w_param: win32.WPARAM, l_param: win32.LPARAM) callconv(.Stdcall) win32.LRESULT {
     var result: win32.LRESULT = std.mem.zeroes(win32.LRESULT);
     switch (message) {
         win32.WM_QUIT, win32.WM_CLOSE, win32.WM_DESTROY => {
@@ -69,7 +69,7 @@ pub fn ProcessWidnowsEvents(window: win32.HWND, message: win32.UINT, w_param: wi
     return result;
 }
 
-fn Win32CreateGameData() !pong.GameData {
+fn win32_create_game_data() !pong.GameData {
     const permament_storage_size = utils.megabytes(64);
     const transient_storage_size = utils.megabytes(512);
     if (win32.VirtualAlloc(
@@ -99,7 +99,7 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         win32.debug("Could not create Allocat Memory for Win32 Draw Buffer", .{});
         @panic("Could not create Allocat Memory for Win32 Draw Buffer");
     };
-    var game_data = Win32CreateGameData() catch |err| {
+    var game_data = win32_create_game_data() catch |err| {
         win32.debug("Failed to Allocate Memory for the Game", .{});
         @panic("Failed to Allocate Memory for the Game");
     };
@@ -114,7 +114,7 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
 
     var game_draw_buffer = win32_draw_buffer.gamebuffer();
     var window = win32.Window.init(.{
-        .wnd_proc = ProcessWidnowsEvents,
+        .wnd_proc = process_windows_events,
         .window_name = "Zig Pong Example",
         .window_class_name = "PongWindowClass",
         .h_instance = hInstance,
@@ -133,7 +133,7 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         while (window.peek_message()) |message| {
             switch (message.message) {
                 win32.WM_KEYUP, win32.WM_KEYDOWN, win32.WM_SYSKEYUP, win32.WM_SYSKEYDOWN => {
-                    Win32ProcessKeyboard(&input.keyboard, message);
+                    win32_process_keyboard(&input.keyboard, message);
                 },
                 else => {},
             }

@@ -151,6 +151,8 @@ pub fn UpdateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuff
         data.initialized = true;
         debug_data.tone_hz = 440;
     }
+
+    win32.debug("Input: {}\n", .{input.keyboard.letter});
     const keyboard = input.keyboard;
     if (keyboard.letter.w == .Down or keyboard.special.up_arrow == .Down) {
         debug_data.*.y_offset = debug_data.y_offset +% 1;
