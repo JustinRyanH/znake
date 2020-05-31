@@ -409,6 +409,7 @@ pub extern "kernel32" fn VirtualAlloc(lpAddress: ?LPVOID, dwSize: usize, flAlloc
 pub extern "kernel32" fn VirtualFree(lpAddress: LPVOID, dwSize: usize, dwFreeType: DWORD) BOOL;
 pub extern "kernel32" fn OutputDebugStringA([*:0]const u8) void;
 pub extern "kernel32" fn QueryPerformanceCounter(*LARGE_INTEGER) bool;
+pub extern "kernel32" fn QueryPerformanceFrequency(*LARGE_INTEGER) bool;
 
 pub extern "gdi32" fn StretchDIBits(hdc: HDC, xDest: i32, yDest: i32, DestWidth: i32, DestHeight: i32, xSrc: i32, ySrc: i32, SrcWidth: i32, SrcHeight: i32, lpBits: *c_void, lpbmi: *BITMAPINFO, iUsage: UINT, rop: DWORD) i32;
 
@@ -492,9 +493,15 @@ pub fn debug(comptime fmt: []const u8, args: var) void {
     c_allocator.free(output);
 }
 
-pub inline fn GetWallClode() i64 {
+pub inline fn GetWallClock() i64 {
     var result: i64 = 0;
     _ = QueryPerformanceCounter(&result);
+    return result;
+}
+
+pub inline fn GetFreq() i64 {
+    var result: i64 = 0;
+    _ = QueryPerformanceFrequency(&result);
     return result;
 }
 

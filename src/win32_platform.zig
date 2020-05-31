@@ -10,6 +10,8 @@ pub const panic = win32.win32_panic;
 const GameDrawBuffer = pong.GameDrawBuffer;
 const Win32OffscreenBuffer = win32_draw.Win32OffscreenBuffer;
 
+var clock_frequency: f32 = undefined;
+
 fn bit_cast_key(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down: bool) void {
     if (vk_code == key) {
         const down_shift: i32 = @intCast(i32, (vk_code - key)) + @intCast(i32, offset);
@@ -95,7 +97,13 @@ fn win32_create_game_data() !pong.GameData {
     return win32.WindowError.FailedToAllocateMemory;
 }
 
+fn win32_get_seconds_elapsed(recent: i64, later: i64) f32 {
+    return @intToFloat(f32, later - recent) / clock_frequency;
+}
+
 pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE, lpCmdLine: win32.PWSTR, nCmdShow: win32.INT) win32.INT {
+    clock_frequency = @intToFloat(f32, win32.GetFreq());
+
     const width = 640;
     const height = 480;
     var win32_draw_buffer = Win32OffscreenBuffer.init(width, height) catch |err| {
@@ -131,7 +139,7 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
     RUNNING = true;
     const HDC = win32.GetDC(window.window);
 
-    var last_count = win32.GetWallClode();
+    var last_counter = win32.GetWallClock();
     while (RUNNING) {
         while (window.peek_message()) |message| {
             switch (message.message) {
@@ -147,7 +155,10 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
 
         pong.UpdateGame(&input, &game_data, &game_draw_buffer);
 
-        const end_counter = win32.GetWallClode();
+        const end_counter = win32.GetWallClock();
+        const ms_per_frame = 1000.0 * win32_get_seconds_elapsed(last_counter, end_counter);
+        // win32.debug("MS PER FRAME: {d:1}\n", .{ms_per_frame});
+        last_counter = end_counter;
 
         _ = win32_draw_buffer.blit(HDC);
     }
