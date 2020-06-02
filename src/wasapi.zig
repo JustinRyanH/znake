@@ -1,6 +1,7 @@
 const std = @import("std");
 usingnamespace std.os.windows;
 
+/// Basic Window Components
 const IID = GUID;
 const VARTYPE = c_ushort;
 const VARIANT_BOOL = c_short;
@@ -19,7 +20,6 @@ pub const MEMBERID_NIL = -1;
 
 pub const ReferenceTime = i64;
 
-pub const EDataFlow_enum_count = @enumToInt(enum___MIDL___MIDL_itf_mmdeviceapi_0000_0000_0001.EDataFlow_enum_count);
 pub const enum___MIDL___MIDL_itf_mmdeviceapi_0000_0000_0001 = extern enum(c_int) {
     eRender = 0,
     eCapture = 1,
@@ -27,6 +27,7 @@ pub const enum___MIDL___MIDL_itf_mmdeviceapi_0000_0000_0001 = extern enum(c_int)
     EDataFlow_enum_count = 3,
     _,
 };
+pub const EDataFlow = enum___MIDL___MIDL_itf_mmdeviceapi_0000_0000_0001;
 
 pub const BLOB = extern struct {
     cbSize: ULONG,
@@ -610,7 +611,6 @@ pub const struct_tagCACLSID = extern struct {
 };
 pub const CACLSID = struct_tagCACLSID;
 
-pub const EDataFlow = enum___MIDL___MIDL_itf_mmdeviceapi_0000_0000_0001;
 pub const PROPVAR_PAD1 = WORD;
 pub const PROPVAR_PAD2 = WORD;
 pub const PROPVAR_PAD3 = WORD;
