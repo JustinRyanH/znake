@@ -10,6 +10,7 @@ pub const HBRUSH = win32.HBRUSH;
 pub const HCURSOR = win32.HCURSOR;
 pub const HICON = win32.HICON;
 pub const HDC = win32.HDC;
+pub const HMODULE = win32.HMODULE;
 pub const HINSTANCE = win32.HINSTANCE;
 pub const HMENU = win32.HMENU;
 pub const HWND = win32.HWND;
@@ -24,7 +25,7 @@ pub const PWSTR = win32.PWSTR;
 pub const UINT = win32.UINT;
 pub const WORD = win32.WORD;
 pub const WPARAM = win32.WPARAM;
-pub const SIZE_T = win32.SIZE_T;
+pub const SIZE_T = win32.SIZE_Tk;
 
 pub const BI_RGB = 0;
 pub const BI_RLE8 = 1;
@@ -410,6 +411,7 @@ pub extern "kernel32" fn VirtualFree(lpAddress: LPVOID, dwSize: usize, dwFreeTyp
 pub extern "kernel32" fn OutputDebugStringA([*:0]const u8) void;
 pub extern "kernel32" fn QueryPerformanceCounter(*LARGE_INTEGER) bool;
 pub extern "kernel32" fn QueryPerformanceFrequency(*LARGE_INTEGER) bool;
+pub extern "kernel32" fn LoadLibraryA([*:0]const u8) ?HMODULE;
 
 pub extern "gdi32" fn StretchDIBits(hdc: HDC, xDest: i32, yDest: i32, DestWidth: i32, DestHeight: i32, xSrc: i32, ySrc: i32, SrcWidth: i32, SrcHeight: i32, lpBits: *c_void, lpbmi: *BITMAPINFO, iUsage: UINT, rop: DWORD) i32;
 
@@ -426,6 +428,7 @@ pub const WindowError = error{
     FailedToCreateWindow,
     FailedToAllocateMemory,
     FailedToUnallocateMemory,
+    LibraryLoadError,
     TimerNoCanDo,
 };
 pub const Win32Message = MSG;
