@@ -1,14 +1,36 @@
 const std = @import("std");
 usingnamespace std.os.windows;
 
+// pub const IID_IAudioClient = GUID{ 0x1CB9AD4C, 0xDBFA, 0x4c32, 0xB1, 0x78, 0xC2, 0xF5, 0x68, 0xA7, 0x03, 0xB2 };
+// pub const IID_IAudioRenderClient = GUID{ 0xF294ACFC, 0x3146, 0x4483, 0xA7, 0xBF, 0xAD, 0xDC, 0xA7, 0xC2, 0x60, 0xE2 };
+
+// Data1: c_ulong,
+// Data2: c_ushort,
+// Data3: c_ushort,
+// Data4: [8]u8,
+pub const CLSID_MMDeviceEnumerator = GUID{
+    .Data1 = 0xBCDE0395,
+    .Data2 = 0xE52F,
+    .Data3 = 0x467C,
+    .Data4 = [_]u8{ 0x8E, 0x3D, 0xC4, 0x57, 0x92, 0x91, 0x69, 0x2E },
+};
+
+pub const IID_IMMDeviceEnumerator = GUID{
+    .Data1 = 0xA95664D2,
+    .Data2 = 0x9614,
+    .Data3 = 0x4F35,
+    .Data4 = [_]u8{ 0xA7, 0x46, 0xDE, 0x8D, 0xB6, 0x36, 0x17, 0xE6 },
+};
+// pub const IID_IMMDeviceEnumerator = GUID{ 0xA95664D2, 0x9614, 0x4F35, 0xA7, 0x46, 0xDE, 0x8D, 0xB6, 0x36, 0x17, 0xE6 };
+
 /// Basic Window Components
-const IID = GUID;
-const VARTYPE = c_ushort;
-const VARIANT_BOOL = c_short;
-const SCODE = LONG;
-const CLSID = GUID;
-const LCID = DWORD;
-const DATE = f64;
+pub const IID = GUID;
+pub const VARTYPE = c_ushort;
+pub const VARIANT_BOOL = c_short;
+pub const SCODE = LONG;
+pub const CLSID = GUID;
+pub const LCID = DWORD;
+pub const DATE = f64;
 pub const OLECHAR = WCHAR;
 pub const LPOLESTR = [*c]OLECHAR;
 pub const LPCOLESTR = [*c]const OLECHAR;
@@ -347,17 +369,64 @@ pub const SYS_WIN32 = @enumToInt(SYSKIND.SYS_WIN32);
 pub const SYS_MAC = @enumToInt(SYSKIND.SYS_MAC);
 pub const SYS_WIN64 = @enumToInt(SYSKIND.SYS_WIN64);
 
-pub const IDispatch = extern struct {
-    lpVtbl: [*c]extern struct {
-        QueryInterface: ?fn ([*c]IDispatch, [*c]const IID, [*c]?*c_void) callconv(.C) HRESULT,
-        AddRef: ?fn ([*c]IDispatch) callconv(.C) ULONG,
-        Release: ?fn ([*c]IDispatch) callconv(.C) ULONG,
-        GetTypeInfoCount: ?fn ([*c]IDispatch, [*c]UINT) callconv(.C) HRESULT,
-        GetTypeInfo: ?fn ([*c]IDispatch, UINT, LCID, [*c][*c]ITypeInfo) callconv(.C) HRESULT,
-        GetIDsOfNames: ?fn ([*c]IDispatch, [*c]const IID, [*c]LPOLESTR, UINT, LCID, [*c]DISPID) callconv(.C) HRESULT,
-        Invoke: ?fn ([*c]IDispatch, DISPID, [*c]const IID, LCID, WORD, [*c]DISPPARAMS, [*c]VARIANT, [*c]EXCEPINFO, [*c]UINT) callconv(.C) HRESULT,
-    }
+pub const CLSCTX = extern enum(c_int) {
+    CLSCTX_INPROC_SERVER = 1,
+    CLSCTX_INPROC_HANDLER = 2,
+    CLSCTX_LOCAL_SERVER = 4,
+    CLSCTX_INPROC_SERVER16 = 8,
+    CLSCTX_REMOTE_SERVER = 16,
+    CLSCTX_INPROC_HANDLER16 = 32,
+    CLSCTX_RESERVED1 = 64,
+    CLSCTX_RESERVED2 = 128,
+    CLSCTX_RESERVED3 = 256,
+    CLSCTX_RESERVED4 = 512,
+    CLSCTX_NO_CODE_DOWNLOAD = 1024,
+    CLSCTX_RESERVED5 = 2048,
+    CLSCTX_NO_CUSTOM_MARSHAL = 4096,
+    CLSCTX_ENABLE_CODE_DOWNLOAD = 8192,
+    CLSCTX_NO_FAILURE_LOG = 16384,
+    CLSCTX_DISABLE_AAA = 32768,
+    CLSCTX_ENABLE_AAA = 65536,
+    CLSCTX_FROM_DEFAULT_CONTEXT = 131072,
+    CLSCTX_ACTIVATE_X86_SERVER = 262144,
+    CLSCTX_ACTIVATE_32_BIT_SERVER = 262144,
+    CLSCTX_ACTIVATE_64_BIT_SERVER = 524288,
+    CLSCTX_ENABLE_CLOAKING = 1048576,
+    CLSCTX_APPCONTAINER = 4194304,
+    CLSCTX_ACTIVATE_AAA_AS_IU = 8388608,
+    CLSCTX_RESERVED6 = 16777216,
+    CLSCTX_ACTIVATE_ARM32_SERVER = 33554432,
+    CLSCTX_PS_DLL = -2147483648,
+    _,
 };
+pub const CLSCTX_INPROC_SERVER = @enumToInt(CLSCTX.CLSCTX_INPROC_SERVER);
+pub const CLSCTX_INPROC_HANDLER = @enumToInt(CLSCTX.CLSCTX_INPROC_HANDLER);
+pub const CLSCTX_LOCAL_SERVER = @enumToInt(CLSCTX.CLSCTX_LOCAL_SERVER);
+pub const CLSCTX_INPROC_SERVER16 = @enumToInt(CLSCTX.CLSCTX_INPROC_SERVER16);
+pub const CLSCTX_REMOTE_SERVER = @enumToInt(CLSCTX.CLSCTX_REMOTE_SERVER);
+pub const CLSCTX_INPROC_HANDLER16 = @enumToInt(CLSCTX.CLSCTX_INPROC_HANDLER16);
+pub const CLSCTX_RESERVED1 = @enumToInt(CLSCTX.CLSCTX_RESERVED1);
+pub const CLSCTX_RESERVED2 = @enumToInt(CLSCTX.CLSCTX_RESERVED2);
+pub const CLSCTX_RESERVED3 = @enumToInt(CLSCTX.CLSCTX_RESERVED3);
+pub const CLSCTX_RESERVED4 = @enumToInt(CLSCTX.CLSCTX_RESERVED4);
+pub const CLSCTX_NO_CODE_DOWNLOAD = @enumToInt(CLSCTX.CLSCTX_NO_CODE_DOWNLOAD);
+pub const CLSCTX_RESERVED5 = @enumToInt(CLSCTX.CLSCTX_RESERVED5);
+pub const CLSCTX_NO_CUSTOM_MARSHAL = @enumToInt(CLSCTX.CLSCTX_NO_CUSTOM_MARSHAL);
+pub const CLSCTX_ENABLE_CODE_DOWNLOAD = @enumToInt(CLSCTX.CLSCTX_ENABLE_CODE_DOWNLOAD);
+pub const CLSCTX_NO_FAILURE_LOG = @enumToInt(CLSCTX.CLSCTX_NO_FAILURE_LOG);
+pub const CLSCTX_DISABLE_AAA = @enumToInt(CLSCTX.CLSCTX_DISABLE_AAA);
+pub const CLSCTX_ENABLE_AAA = @enumToInt(CLSCTX.CLSCTX_ENABLE_AAA);
+pub const CLSCTX_FROM_DEFAULT_CONTEXT = @enumToInt(CLSCTX.CLSCTX_FROM_DEFAULT_CONTEXT);
+pub const CLSCTX_ACTIVATE_X86_SERVER = @enumToInt(CLSCTX.CLSCTX_ACTIVATE_X86_SERVER);
+pub const CLSCTX_ACTIVATE_32_BIT_SERVER = @enumToInt(CLSCTX.CLSCTX_ACTIVATE_32_BIT_SERVER);
+pub const CLSCTX_ACTIVATE_64_BIT_SERVER = @enumToInt(CLSCTX.CLSCTX_ACTIVATE_64_BIT_SERVER);
+pub const CLSCTX_ENABLE_CLOAKING = @enumToInt(CLSCTX.CLSCTX_ENABLE_CLOAKING);
+pub const CLSCTX_APPCONTAINER = @enumToInt(CLSCTX.CLSCTX_APPCONTAINER);
+pub const CLSCTX_ACTIVATE_AAA_AS_IU = @enumToInt(CLSCTX.CLSCTX_ACTIVATE_AAA_AS_IU);
+pub const CLSCTX_RESERVED6 = @enumToInt(CLSCTX.CLSCTX_RESERVED6);
+pub const CLSCTX_ACTIVATE_ARM32_SERVER = @enumToInt(CLSCTX.CLSCTX_ACTIVATE_ARM32_SERVER);
+pub const CLSCTX_PS_DLL = @enumToInt(CLSCTX.CLSCTX_PS_DLL);
+pub const CLSCTX_ALL = CLSCTX_INPROC_SERVER | (CLSCTX_INPROC_HANDLER | (CLSCTX_LOCAL_SERVER | CLSCTX_REMOTE_SERVER));
 
 pub const LPTYPELIB = [*c]ITypeLib;
 pub const TLIBATTR = extern struct {
@@ -504,6 +573,8 @@ pub const PROPERTYKEY = extern struct {
     fmtid: GUID,
     pid: DWORD,
 };
+pub const REFCLSID = *const GUID;
+pub const REFIID = *const GUID;
 
 pub const PROPVAR_PAD1 = WORD;
 pub const PROPVAR_PAD2 = WORD;
@@ -820,5 +891,17 @@ pub const IMMNotificationClient = extern struct {
         OnDeviceRemoved: ?fn ([*c]IMMNotificationClient, LPCWSTR) callconv(.C) HRESULT,
         OnDefaultDeviceChanged: ?fn ([*c]IMMNotificationClient, EDataFlow, ERole, LPCWSTR) callconv(.C) HRESULT,
         OnPropertyValueChanged: ?fn ([*c]IMMNotificationClient, LPCWSTR, PROPERTYKEY) callconv(.C) HRESULT,
+    }
+};
+
+pub const IDispatch = extern struct {
+    lpVtbl: [*c]extern struct {
+        QueryInterface: ?fn ([*c]IDispatch, [*c]const IID, [*c]?*c_void) callconv(.C) HRESULT,
+        AddRef: ?fn ([*c]IDispatch) callconv(.C) ULONG,
+        Release: ?fn ([*c]IDispatch) callconv(.C) ULONG,
+        GetTypeInfoCount: ?fn ([*c]IDispatch, [*c]UINT) callconv(.C) HRESULT,
+        GetTypeInfo: ?fn ([*c]IDispatch, UINT, LCID, [*c][*c]ITypeInfo) callconv(.C) HRESULT,
+        GetIDsOfNames: ?fn ([*c]IDispatch, [*c]const IID, [*c]LPOLESTR, UINT, LCID, [*c]DISPID) callconv(.C) HRESULT,
+        Invoke: ?fn ([*c]IDispatch, DISPID, [*c]const IID, LCID, WORD, [*c]DISPPARAMS, [*c]VARIANT, [*c]EXCEPINFO, [*c]UINT) callconv(.C) HRESULT,
     }
 };
