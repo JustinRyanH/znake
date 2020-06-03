@@ -20,14 +20,13 @@ pub const MEMBERID_NIL = -1;
 
 pub const ReferenceTime = i64;
 
-pub const enum___MIDL___MIDL_itf_mmdeviceapi_0000_0000_0001 = extern enum(c_int) {
+pub const EDataFlow = extern enum(c_int) {
     eRender = 0,
     eCapture = 1,
     eAll = 2,
     EDataFlow_enum_count = 3,
     _,
 };
-pub const EDataFlow = enum___MIDL___MIDL_itf_mmdeviceapi_0000_0000_0001;
 
 pub const BLOB = extern struct {
     cbSize: ULONG,
@@ -35,11 +34,10 @@ pub const BLOB = extern struct {
 };
 
 pub const CURRENCY = CY;
-pub const struct_tagSAFEARRAYBOUND = extern struct {
+pub const SAFEARRAYBOUND = extern struct {
     cElements: ULONG,
     lLbound: LONG,
 };
-pub const SAFEARRAYBOUND = struct_tagSAFEARRAYBOUND;
 
 pub const BSTRBLOB = extern struct {
     cbSize: ULONG,
@@ -51,7 +49,7 @@ pub const CLIPDATA = extern struct {
     pClipData: [*c]BYTE,
 };
 
-pub const struct_tagSAFEARRAY = extern struct {
+pub const SAFEARRAY = extern struct {
     cDims: USHORT,
     fFeatures: USHORT,
     cbElements: ULONG,
@@ -59,18 +57,8 @@ pub const struct_tagSAFEARRAY = extern struct {
     pvData: PVOID,
     rgsabound: [1]SAFEARRAYBOUND,
 };
-pub const SAFEARRAY = struct_tagSAFEARRAY;
 
-pub const TKIND_ENUM = @enumToInt(enum_tagTYPEKIND.TKIND_ENUM);
-pub const TKIND_RECORD = @enumToInt(enum_tagTYPEKIND.TKIND_RECORD);
-pub const TKIND_MODULE = @enumToInt(enum_tagTYPEKIND.TKIND_MODULE);
-pub const TKIND_INTERFACE = @enumToInt(enum_tagTYPEKIND.TKIND_INTERFACE);
-pub const TKIND_DISPATCH = @enumToInt(enum_tagTYPEKIND.TKIND_DISPATCH);
-pub const TKIND_COCLASS = @enumToInt(enum_tagTYPEKIND.TKIND_COCLASS);
-pub const TKIND_ALIAS = @enumToInt(enum_tagTYPEKIND.TKIND_ALIAS);
-pub const TKIND_UNION = @enumToInt(enum_tagTYPEKIND.TKIND_UNION);
-pub const TKIND_MAX = @enumToInt(enum_tagTYPEKIND.TKIND_MAX);
-pub const enum_tagTYPEKIND = extern enum(c_int) {
+pub const TYPEKIND = extern enum(c_int) {
     TKIND_ENUM = 0,
     TKIND_RECORD = 1,
     TKIND_MODULE = 2,
@@ -83,82 +71,62 @@ pub const enum_tagTYPEKIND = extern enum(c_int) {
     _,
 };
 
-const struct_unnamed_352 = extern struct {
-    scale: BYTE,
-    sign: BYTE,
-};
+pub const TKIND_ENUM = @enumToInt(TYPEKIND.TKIND_ENUM);
+pub const TKIND_RECORD = @enumToInt(TYPEKIND.TKIND_RECORD);
+pub const TKIND_MODULE = @enumToInt(TYPEKIND.TKIND_MODULE);
+pub const TKIND_INTERFACE = @enumToInt(TYPEKIND.TKIND_INTERFACE);
+pub const TKIND_DISPATCH = @enumToInt(TYPEKIND.TKIND_DISPATCH);
+pub const TKIND_COCLASS = @enumToInt(TYPEKIND.TKIND_COCLASS);
+pub const TKIND_ALIAS = @enumToInt(TYPEKIND.TKIND_ALIAS);
+pub const TKIND_UNION = @enumToInt(TYPEKIND.TKIND_UNION);
+pub const TKIND_MAX = @enumToInt(TYPEKIND.TKIND_MAX);
 
-const union_unnamed_351 = extern union {
-    unnamed_0: struct_unnamed_352,
-    signscale: USHORT,
-};
-const struct_unnamed_354 = extern struct {
-    Lo32: ULONG,
-    Mid32: ULONG,
-};
-const union_unnamed_353 = extern union {
-    unnamed_0: struct_unnamed_354,
-    Lo64: ULONGLONG,
-};
-pub const struct_tagDEC = extern struct {
+pub const DECIMAL = extern struct {
     wReserved: USHORT,
-    unnamed_0: union_unnamed_351,
+    unnamed_0: extern union {
+        unnamed_0: extern struct {
+            scale: BYTE,
+            sign: BYTE,
+        },
+        signscale: USHORT,
+    },
     Hi32: ULONG,
-    unnamed_1: union_unnamed_353,
+    unnamed_1: extern union {
+        unnamed_0: extern struct {
+            Lo32: ULONG,
+            Mid32: ULONG,
+        },
+        Lo64: ULONGLONG,
+    },
 };
-pub const DECIMAL = struct_tagDEC;
 
-pub const TYPEKIND = enum_tagTYPEKIND;
-const struct_unnamed_350 = extern struct {
-    Lo: ULONG,
-    Hi: LONG,
-};
-pub const union_tagCY = extern union {
-    unnamed_0: struct_unnamed_350,
+pub const CY = extern union {
+    unnamed_0: extern struct {
+        Lo: ULONG,
+        Hi: LONG,
+    },
     int64: LONGLONG,
 };
-pub const CY = union_tagCY;
 
-pub const struct_tagARRAYDESC = extern struct {
-    tdescElem: TYPEDESC,
-    cDims: USHORT,
-    rgbounds: [1]SAFEARRAYBOUND,
-};
-const union_unnamed_540 = extern union {
-    lptdesc: [*c]struct_tagTYPEDESC,
-    lpadesc: [*c]struct_tagARRAYDESC,
-    hreftype: HREFTYPE,
-};
-
-pub const struct_tagTYPEDESC = extern struct {
-    unnamed_0: union_unnamed_540,
+pub const TYPEDESC = extern struct {
+    unnamed_0: extern union {
+        lptdesc: [*c]TYPEDESC,
+        lpadesc: [*c]extern struct {
+            tdescElem: TYPEDESC,
+            cDims: USHORT,
+            rgbounds: [1]SAFEARRAYBOUND,
+        },
+        hreftype: HREFTYPE,
+    },
     vt: VARTYPE,
 };
-pub const TYPEDESC = struct_tagTYPEDESC;
 
-pub const struct_tagIDLDESC = extern struct {
+pub const IDLDESC = extern struct {
     dwReserved: ULONG_PTR,
     wIDLFlags: USHORT,
 };
 
-const struct_unnamed_359 = extern struct {
-    Cylinders: LARGE_INTEGER,
-    MediaType: STORAGE_MEDIA_TYPE,
-    TracksPerCylinder: DWORD,
-    SectorsPerTrack: DWORD,
-    BytesPerSector: DWORD,
-    NumberMediaSides: DWORD,
-    MediaCharacteristics: DWORD,
-};
-
-pub const IDLDESC = struct_tagIDLDESC;
-pub const DESCKIND_NONE = @enumToInt(enum_tagDESCKIND.DESCKIND_NONE);
-pub const DESCKIND_FUNCDESC = @enumToInt(enum_tagDESCKIND.DESCKIND_FUNCDESC);
-pub const DESCKIND_VARDESC = @enumToInt(enum_tagDESCKIND.DESCKIND_VARDESC);
-pub const DESCKIND_TYPECOMP = @enumToInt(enum_tagDESCKIND.DESCKIND_TYPECOMP);
-pub const DESCKIND_IMPLICITAPPOBJ = @enumToInt(enum_tagDESCKIND.DESCKIND_IMPLICITAPPOBJ);
-pub const DESCKIND_MAX = @enumToInt(enum_tagDESCKIND.DESCKIND_MAX);
-pub const enum_tagDESCKIND = extern enum(c_int) {
+pub const DESCKIND = extern enum(c_int) {
     DESCKIND_NONE = 0,
     DESCKIND_FUNCDESC = 1,
     DESCKIND_VARDESC = 2,
@@ -167,7 +135,12 @@ pub const enum_tagDESCKIND = extern enum(c_int) {
     DESCKIND_MAX = 5,
     _,
 };
-pub const DESCKIND = enum_tagDESCKIND;
+pub const DESCKIND_NONE = @enumToInt(DESCKIND.DESCKIND_NONE);
+pub const DESCKIND_FUNCDESC = @enumToInt(DESCKIND.DESCKIND_FUNCDESC);
+pub const DESCKIND_VARDESC = @enumToInt(DESCKIND.DESCKIND_VARDESC);
+pub const DESCKIND_TYPECOMP = @enumToInt(DESCKIND.DESCKIND_TYPECOMP);
+pub const DESCKIND_IMPLICITAPPOBJ = @enumToInt(DESCKIND.DESCKIND_IMPLICITAPPOBJ);
+pub const DESCKIND_MAX = @enumToInt(DESCKIND.DESCKIND_MAX);
 
 pub const TYPEATTR = extern struct {
     guid: GUID,
@@ -287,12 +260,8 @@ pub const CALLCONV = extern enum(c_int) {
     CC_MAX = 9,
     _,
 };
-pub const FUNC_VIRTUAL = @enumToInt(enum_tagFUNCKIND.FUNC_VIRTUAL);
-pub const FUNC_PUREVIRTUAL = @enumToInt(enum_tagFUNCKIND.FUNC_PUREVIRTUAL);
-pub const FUNC_NONVIRTUAL = @enumToInt(enum_tagFUNCKIND.FUNC_NONVIRTUAL);
-pub const FUNC_STATIC = @enumToInt(enum_tagFUNCKIND.FUNC_STATIC);
-pub const FUNC_DISPATCH = @enumToInt(enum_tagFUNCKIND.FUNC_DISPATCH);
-pub const enum_tagFUNCKIND = extern enum(c_int) {
+
+pub const FUNCKIND = extern enum(c_int) {
     FUNC_VIRTUAL = 0,
     FUNC_PUREVIRTUAL = 1,
     FUNC_NONVIRTUAL = 2,
@@ -300,7 +269,11 @@ pub const enum_tagFUNCKIND = extern enum(c_int) {
     FUNC_DISPATCH = 4,
     _,
 };
-pub const FUNCKIND = enum_tagFUNCKIND;
+pub const FUNC_VIRTUAL = @enumToInt(FUNCKIND.FUNC_VIRTUAL);
+pub const FUNC_PUREVIRTUAL = @enumToInt(FUNCKIND.FUNC_PUREVIRTUAL);
+pub const FUNC_NONVIRTUAL = @enumToInt(FUNCKIND.FUNC_NONVIRTUAL);
+pub const FUNC_STATIC = @enumToInt(FUNCKIND.FUNC_STATIC);
+pub const FUNC_DISPATCH = @enumToInt(FUNCKIND.FUNC_DISPATCH);
 
 pub const INVOKEKIND = extern enum(c_int) {
     INVOKE_FUNC = 1,
