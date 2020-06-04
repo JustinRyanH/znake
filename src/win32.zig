@@ -26,6 +26,7 @@ pub const UINT = win32.UINT;
 pub const WORD = win32.WORD;
 pub const WPARAM = win32.WPARAM;
 pub const SIZE_T = win32.SIZE_Tk;
+pub const FARPROC = c_longlong;
 
 pub const BI_RGB = 0;
 pub const BI_RLE8 = 1;
@@ -515,7 +516,7 @@ pub inline fn GetFreq() i64 {
 }
 
 pub fn win32_panic(message: []const u8, stack_trace: ?*StackTrace) noreturn {
-    debug("Panic: {}\n{}", .{ message, stack_trace });
+    debug("Panic: {}\n{}\n", .{ message, stack_trace });
     std.os.abort();
 }
 

@@ -22,6 +22,7 @@ pub fn build(b: *Builder) void {
         exe.linkSystemLibrary("c");
         exe.linkSystemLibrary("gdi32");
         exe.linkSystemLibrary("user32");
+        exe.linkSystemLibrary("ole32");
     } else {
         @panic("Unimplemented Platform");
     }

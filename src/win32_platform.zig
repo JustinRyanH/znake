@@ -131,10 +131,9 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
     win32.time_begin_period(1) catch |err| @panic("Time Period Begin Failure");
     defer win32.time_end_period(1) catch |err| @panic("Time Period End Failure");
 
-    var win32_sound = platform_sound.load();
     var game_sound = win32InitGameSound(2, 48000) catch |err| @panic("Failed to Initialize Sound");
 
-    platform_sound.init(&win32_sound);
+    var win32_sound = platform_sound.init() catch |err| @panic("Failed to Initialize Sound");
     defer platform_sound.deinit(&win32_sound);
 
     const width = 640;
