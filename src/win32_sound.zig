@@ -30,9 +30,33 @@ pub fn init() SoundError!SoundOutput {
     var device: *wasapi.IMMDevice = undefined;
 
     _ = CoInitializeEx(null, windows.COINIT.COINIT_SPEED_OVER_MEMORY);
-    var result = CoCreateInstance(&wasapi.CLSID_MMDeviceEnumerator, null, wasapi.CLSCTX_ALL, &wasapi.IID_IMMDeviceEnumerator, @ptrCast(*windows.LPVOID, &device_enum));
+    var result: windows.HRESULT = undefined;
+    result = CoCreateInstance(&wasapi.CLSID_MMDeviceEnumerator, null, wasapi.CLSCTX_ALL, &wasapi.IID_IMMDeviceEnumerator, @ptrCast(*windows.LPVOID, &device_enum));
     if (result != 0) {
         return SoundError.GenericError;
+    }
+    errdefer {
+        if (device_enum.lpVtbl.*.Release) |release| {
+            _ = release(device_enum);
+        }
+    }
+
+    if (device_enum.lpVtbl.*.GetDefaultAudioEndpoint) |default_audio_endpoint| {
+        var tmp: ?*wasapi.IMMDevice = undefined;
+        result = default_audio_endpoint(
+            device_enum,
+            wasapi.EDataFlow.eRender,
+            wasapi.ERole.eConsole,
+            &tmp,
+        );
+        if (result != 0) {
+            return SoundError.GenericError;
+        }
+        if (tmp) |d| {
+            device = d;
+        } else {
+            return SoundError.GenericError;
+        }
     }
 
     return SoundOutput{};

@@ -133,7 +133,7 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
 
     var game_sound = win32InitGameSound(2, 48000) catch |err| @panic("Failed to Initialize Sound");
 
-    var win32_sound = platform_sound.init() catch |err| @panic("Failed to Initialize Sound");
+    var win32_sound = platform_sound.init()  catch |err| @panic("Failed to Initialize Sound");
     defer platform_sound.deinit(&win32_sound);
 
     const width = 640;
