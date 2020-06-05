@@ -1,22 +1,19 @@
 const std = @import("std");
 usingnamespace std.os.windows;
 
-// Data1: c_ulong,
-// Data2: c_ushort,
-// Data3: c_ushort,
-// Data4: [8]u8,
 pub const IID_IAudioClient = GUID{
     .Data1 = 0x1CB9AD4C,
     .Data2 = 0xDBFA,
     .Data3 = 0x4c32,
     .Data4 = [_]u8{ 0xB1, 0x78, 0xC2, 0xF5, 0x68, 0xA7, 0x03, 0xB2 },
 };
-// pub const IID_IAudioRenderClient = GUID{ 0xF294ACFC, 0x3146, 0x4483, 0xA7, 0xBF, 0xAD, 0xDC, 0xA7, 0xC2, 0x60, 0xE2 };
+pub const IID_IAudioRenderClient = GUID{
+    .Data1 = 0xF294ACFC,
+    .Data2 = 0x3146,
+    .Data3 = 0x4483,
+    .Date4 = [_]u8{ 0xA7, 0xBF, 0xAD, 0xDC, 0xA7, 0xC2, 0x60, 0xE2 },
+};
 
-// Data1: c_ulong,
-// Data2: c_ushort,
-// Data3: c_ushort,
-// Data4: [8]u8,
 pub const CLSID_MMDeviceEnumerator = GUID{
     .Data1 = 0xBCDE0395,
     .Data2 = 0xE52F,
@@ -30,7 +27,6 @@ pub const IID_IMMDeviceEnumerator = GUID{
     .Data3 = 0x4F35,
     .Data4 = [_]u8{ 0xA7, 0x46, 0xDE, 0x8D, 0xB6, 0x36, 0x17, 0xE6 },
 };
-// pub const IID_IMMDeviceEnumerator = GUID{ 0xA95664D2, 0x9614, 0x4F35, 0xA7, 0x46, 0xDE, 0x8D, 0xB6, 0x36, 0x17, 0xE6 };
 
 /// Basic Window Components
 pub const IID = GUID;
@@ -585,7 +581,7 @@ pub const PROPERTYKEY = extern struct {
 };
 
 pub const WAVEFORMAT = extern struct {
-    wFormatTag: WaveFormat,
+    wFormatTag: WORD,
     nChannels: WORD,
     nSamplesPerSec: DWORD,
     nAvgBytesPerSec: DWORD,
@@ -593,7 +589,7 @@ pub const WAVEFORMAT = extern struct {
 };
 
 pub const WAVEFORMATEX = extern struct {
-    wFormatTag: WaveFormat,
+    wFormatTag: WORD,
     nChannels: WORD,
     nSamplesPerSec: DWORD,
     nAvgBytesPerSec: DWORD,
@@ -707,6 +703,7 @@ pub const ERole = extern enum(c_int) {
 
 pub const WaveFormat = extern enum(c_int) {
     UNKNOWN = 0x0000, // Microsoft Corporation
+    PCM = 0x0001, // Microsoft Corporation
     ADPCM = 0x0002, // Microsoft Corporation
     IEEE_FLOAT = 0x0003, // Microsoft Corporation
     VSELP = 0x0004, // Compaq Computer Corp.
@@ -972,13 +969,22 @@ pub const WaveFormat = extern enum(c_int) {
     FLAC = 0xF1AC, // flac.sourceforge.net
 };
 
-pub const AUDCLNT_SHAREMODE_SHARED = @enumToInt(AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_SHARED);
-pub const AUDCLNT_SHAREMODE_EXCLUSIVE = @enumToInt(enum__AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_EXCLUSIVE);
 pub const AUDCLNT_SHAREMODE = extern enum(c_int) {
     AUDCLNT_SHAREMODE_SHARED,
     AUDCLNT_SHAREMODE_EXCLUSIVE,
     _,
 };
+
+pub const AUDCLNT_STREAMFLAGS_CROSSPROCESS = 0x00010000;
+pub const AUDCLNT_STREAMFLAGS_LOOPBACK = 0x00020000;
+pub const AUDCLNT_STREAMFLAGS_EVENTCALLBACK = 0x00040000;
+pub const AUDCLNT_STREAMFLAGS_NOPERSIST = 0x00080000;
+pub const AUDCLNT_STREAMFLAGS_RATEADJUST = 0x00100000;
+pub const AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY = 0x08000000;
+pub const AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM = 0x80000000;
+pub const AUDCLNT_SESSIONFLAGS_EXPIREWHENUNOWNED = 0x10000000;
+pub const AUDCLNT_SESSIONFLAGS_DISPLAY_HIDE = 0x20000000;
+pub const AUDCLNT_SESSIONFLAGS_DISPLAY_HIDEWHENEXPIRED = 0x40000000;
 
 /// WASAPI Interfaces
 pub const IRecordInfo = extern struct {
