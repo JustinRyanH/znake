@@ -28,6 +28,8 @@ pub fn getPadding(sound: *SoundOutput) i32 {
 pub fn init() SoundError!SoundOutput {
     var device_enum: *wasapi.IMMDeviceEnumerator = undefined;
     var device: *wasapi.IMMDevice = undefined;
+    var audio_client: *wasapi.IAudioClient = undefined;
+    var audio_render_client: *wasapi.IAudioRenderClient = undefined;
 
     _ = CoInitializeEx(null, windows.COINIT.COINIT_SPEED_OVER_MEMORY);
     var result: windows.HRESULT = undefined;
@@ -56,6 +58,27 @@ pub fn init() SoundError!SoundOutput {
             device = d;
         } else {
             return SoundError.GenericError;
+        }
+    }
+    errdefer {
+        if (device.lpVtbl.*.Release) |release| {
+            _ = release(device);
+        }
+    }
+
+    if (device.lpVtbl.*.Activate) |activate| {
+        var tmp_client: ?*wasapi.IAudioClient = undefined;
+        result = activate(device, &wasapi.IID_IAudioClient, wasapi.CLSCTX_ALL, 0, @ptrCast([*c]?*c_void, &tmp_client));
+        if (result != 0) {
+            return SoundError.GenericError;
+        }
+        if (tmp_client) |client| {
+            audio_client = client;
+        }
+    }
+    errdefer {
+        if (audio_client.lpVtbl.*.Release) |release| {
+            _ = release(audio_client);
         }
     }
 
