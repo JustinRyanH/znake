@@ -10,6 +10,9 @@ pub const panic = win32.win32_panic;
 
 const DrawBuffer = pong.DrawBuffer;
 const Win32OffscreenBuffer = platform_draw.Win32OffscreenBuffer;
+const NanosecondsInSeconds = 1000000000;
+const NanosecondsInMilliseconds = 1000000;
+const MillisecondsInSeconds = 1000;
 const GameUpdateHz = 30.0;
 const target_seconds: f32 = 1.0 / GameUpdateHz;
 
@@ -200,13 +203,25 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         platform_sound.fillBuffer(&win32_sound, game_sound.sample_slice);
 
         var end_counter = win32.GetWallClock();
-        while (win32GetSecondsElasped(last_counter, end_counter) < target_seconds) {
+
+        var elapsed = win32GetSecondsElasped(last_counter, end_counter);
+        if (target_seconds > elapsed) {
+            const nanoSecondsToWait = @floatToInt(u64, target_seconds * MillisecondsInSeconds - elapsed * MillisecondsInSeconds) * NanosecondsInMilliseconds;
+            std.time.sleep(nanoSecondsToWait - 1000);
+        } else {
+            win32.debug("Missed Target Frame Rate\n", .{});
+        }
+        elapsed = win32GetSecondsElasped(last_counter, end_counter);
+        if (elapsed > target_seconds) {
+            win32.debug("Missed Alarm Clock: {}, {}\n", .{ elapsed, target_seconds });
+        }
+        while (elapsed < target_seconds) {
+            elapsed = win32GetSecondsElasped(last_counter, end_counter);
             end_counter = win32.GetWallClock();
         }
-        const ms_per_frame = 1000.0 * win32GetSecondsElasped(last_counter, end_counter);
 
-        // win32.debug("MS PER FRAME: {d:1}\n", .{ms_per_frame});
-        // win32.debug("Target MS PER FRAME: {d:1}\n", .{1000.0 * target_seconds});
+        const ms_per_frame = MillisecondsInSeconds * elapsed;
+        win32.debug("MS PER FRAME: {d:1}\n", .{ms_per_frame});
         last_counter = end_counter;
 
         _ = win32_draw_buffer.blit(HDC);
