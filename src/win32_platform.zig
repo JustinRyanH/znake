@@ -10,6 +10,7 @@ pub const panic = win32.win32_panic;
 
 const GameDrawBuffer = pong.GameDrawBuffer;
 const Win32OffscreenBuffer = platform_draw.Win32OffscreenBuffer;
+const GameUpdateHz = 30.0;
 
 var clock_frequency: f32 = undefined;
 
@@ -124,7 +125,16 @@ fn win32InitGameSound(channels: u32, samples_per_second: u32) !pong.Sound {
     return win32.WindowError.FailedToAllocateMemory;
 }
 
-fn win32CalculateFramesToWrite(game_sound: *pong.Sound, win32_sound: *platform_sound.SoundOutput) void {}
+fn win32CalculateFramesToWrite(game_sound: *pong.Sound, win32_sound: *platform_sound.SoundOutput) void {
+    var padding = platform_sound.getPadding(win32_sound) catch |_| return;
+    var samples_to_write = @intCast(i32, win32_sound.samples_per_second) - @intCast(i32, padding);
+    if (samples_to_write > win32_sound.latency_frame_count) {
+        game_sound.samples_to_write = win32_sound.latency_frame_count;
+    }
+    if (samples_to_write < 0) {
+        game_sound.samples_to_write = win32_sound.latency_frame_count;
+    }
+}
 
 pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE, lpCmdLine: win32.PWSTR, nCmdShow: win32.INT) win32.INT {
     clock_frequency = @intToFloat(f32, win32.GetFreq());
@@ -133,7 +143,8 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
 
     var game_sound = win32InitGameSound(2, 48000) catch |err| @panic("Failed to Initialize Sound");
 
-    var win32_sound = platform_sound.init()  catch |err| @panic("Failed to Initialize Sound");
+    var win32_sound = platform_sound.init() catch |err| @panic("Failed to Initialize Sound");
+    win32_sound.latency_frame_count = win32_sound.samples_per_second / @floatToInt(u32, GameUpdateHz);
     defer platform_sound.deinit(&win32_sound);
 
     const width = 640;

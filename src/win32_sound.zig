@@ -12,19 +12,16 @@ pub const SoundError = error{GenericError};
 
 pub const SoundOutput = struct {
     initialized: bool = false,
-    // device: *wasapi.IMMDevice,
-    // audio_client: *wasapi.IAudioClient,
-    // audio_render_client: *wasapi.IAudioRenderClient,
-    // sound_buffer_duration: wasapi.ReferenceTime,
-    // buffer_frame_count: u32,
-    // channels: u32,
-    // samples_per_second: u32,
-    // latency_frame_count: u32,
+    device: *wasapi.IMMDevice,
+    device_enum: *wasapi.IMMDeviceEnumerator,
+    audio_client: *wasapi.IAudioClient,
+    audio_render_client: *wasapi.IAudioRenderClient,
+    sound_buffer_duration: wasapi.ReferenceTime,
+    latency_frame_count: u32 = 0,
+    buffer_frame_count: u32,
+    channels: u32,
+    samples_per_second: u32,
 };
-
-pub fn getPadding(sound: *SoundOutput) i32 {
-    return 0;
-}
 
 pub fn init() SoundError!SoundOutput {
     var device_enum: *wasapi.IMMDeviceEnumerator = undefined;
@@ -116,7 +113,86 @@ pub fn init() SoundError!SoundOutput {
         }
     }
 
-    return SoundOutput{};
+    if (audio_client.lpVtbl.*.GetService) |get_service| {
+        var tmp_audio_render_client: ?*wasapi.IAudioRenderClient = undefined;
+        result = get_service(audio_client, &wasapi.IID_IAudioRenderClient, @ptrCast([*c]?*c_void, &tmp_audio_render_client));
+        if (result != 0) {
+            return SoundError.GenericError;
+        }
+        if (tmp_audio_render_client) |render_client| {
+            audio_render_client = render_client;
+        } else {
+            return SoundError.GenericError;
+        }
+    }
+    errdefer {
+        if (audio_render_client.lpVtbl.*.Release) |release| {
+            _ = release(audio_render_client);
+        }
+    }
+
+    var buffer_frame_count: u32 = undefined;
+    if (audio_client.lpVtbl.*.GetBufferSize) |get_buffer_size| {
+        _ = get_buffer_size(audio_client, &buffer_frame_count);
+    }
+
+    const f32_sound_buffer_duration = @intToFloat(f64, REFTIMES_PER_SEC) * @intToFloat(f64, buffer_frame_count) / samples_per_second;
+
+    return SoundOutput{
+        .initialized = true,
+        .device_enum = device_enum,
+        .device = device,
+        .audio_client = audio_client,
+        .audio_render_client = audio_render_client,
+        .buffer_frame_count = buffer_frame_count,
+        .samples_per_second = @floatToInt(u32, samples_per_second),
+        .sound_buffer_duration = @floatToInt(wasapi.REFERENCE_TIME, f32_sound_buffer_duration),
+        .channels = 2,
+    };
 }
-pub fn deinit(sound: *SoundOutput) void {}
-pub fn fillBuffer(sound: *SoundOutput, samples: []f32) void {}
+pub fn deinit(sound: *SoundOutput) void {
+    if (sound.audio_render_client.lpVtbl.*.Release) |release| {
+        _ = release(sound.audio_render_client);
+    }
+    if (sound.audio_client.lpVtbl.*.Release) |release| {
+        _ = release(sound.audio_client);
+    }
+    if (sound.device.lpVtbl.*.Release) |release| {
+        _ = release(sound.device);
+    }
+    if (sound.device_enum.lpVtbl.*.Release) |release| {
+        _ = release(sound.device_enum);
+    }
+}
+
+pub fn getPadding(sound: *SoundOutput) SoundError!u32 {
+    if (sound.audio_client.lpVtbl.*.GetCurrentPadding) |get_current_padding| {
+        var result: u32 = undefined;
+        var err = get_current_padding(sound.audio_client, &result);
+        if (err != 0) {
+            return SoundError.GenericError;
+        }
+        return result;
+    } else {
+        return SoundError.GenericError;
+    }
+}
+
+pub fn fillBuffer(sound: *SoundOutput, samples: []f32) void {
+    if (!sound.initialized) {
+        return;
+    }
+
+    var data: [*c]windows.BYTE = null;
+    var flags: u32 = 0;
+
+    _ = sound.audio_render_client.lpVtbl.*.GetBuffer.?(sound.audio_render_client, @intCast(c_uint, samples.len), &data);
+    if (data) |d| {
+        var memory = @ptrCast([*]i16, @alignCast(@alignOf(i16), d))[0..samples.len];
+        for (samples) |sample, i| {
+            memory[i] = @floatToInt(i16, sample * 30000);
+        }
+    }
+
+    _ = sound.audio_render_client.lpVtbl.*.ReleaseBuffer.?(sound.audio_render_client, @intCast(c_uint, samples.len), flags);
+}
