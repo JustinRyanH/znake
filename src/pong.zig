@@ -104,6 +104,7 @@ pub const DebugData = struct {
     y_offset: u32,
     tone_hz: u32,
     sine_time: f32,
+    wave_period: u32,
 };
 
 pub const GameData = struct {
@@ -150,8 +151,12 @@ pub fn debugFillBuffer(draw_buffer: *GameDrawBuffer, x_offset: u32, y_offset: u3
     }
 }
 
+pub fn getDebugData(data: *GameData) *DebugData {
+    return @ptrCast(*DebugData, @alignCast(@alignOf(DebugData), data.permanent_storage[0..@sizeOf(DebugData)]));
+}
+
 pub fn updateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuffer) void {
-    const debug_data = @ptrCast(*DebugData, @alignCast(@alignOf(DebugData), data.permanent_storage[0..@sizeOf(DebugData)]));
+    var debug_data = getDebugData(data);
 
     if (!data.initialized) {
         data.initialized = true;
@@ -171,4 +176,22 @@ pub fn updateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuff
         debug_data.*.x_offset = debug_data.x_offset -% 1;
     }
     debugFillBuffer(draw_buffer, debug_data.x_offset, debug_data.y_offset);
+}
+
+pub fn updateSound(game_data: *GameData, sound: *Sound) void {
+    var debug_data = getDebugData(game_data);
+    const tone_hz = debug_data.tone_hz;
+    var local_sine = debug_data.sine_time;
+    debug_data.wave_period = sound.samples_per_second / tone_hz;
+    var sample_out = sound.sample_buffer[0..sound.samples_to_write];
+    var index: u32 = 0;
+    while (index < sound.samples_to_write) : (index += 2) {
+        const sine_value = @sin(local_sine);
+        sample_out[index] = sine_value;
+        sample_out[index + 1] = sine_value;
+
+        local_sine += 2.0 * std.math.pi / @intToFloat(f32, debug_data.wave_period);
+        local_sine = @mod(local_sine, 8.0 * std.math.pi);
+    }
+    debug_data.sine_time = local_sine;
 }

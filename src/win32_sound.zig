@@ -105,9 +105,9 @@ pub fn init() SoundError!SoundOutput {
         return SoundError.GenericError;
     }
 
-    if (audio_client.lpVtbl.*.GetService) |get_service| {
+    {
         var tmp_audio_render_client: ?*wasapi.IAudioRenderClient = undefined;
-        result = get_service(audio_client, &wasapi.IID_IAudioRenderClient, @ptrCast([*c]?*c_void, &tmp_audio_render_client));
+        result = audio_client.lpVtbl.*.GetService.?(audio_client, &wasapi.IID_IAudioRenderClient, @ptrCast([*c]?*c_void, &tmp_audio_render_client));
         if (result != 0) {
             return SoundError.GenericError;
         }
@@ -125,6 +125,7 @@ pub fn init() SoundError!SoundOutput {
     _ = audio_client.lpVtbl.*.GetBufferSize.?(audio_client, &buffer_frame_count);
 
     const f32_sound_buffer_duration = @intToFloat(f64, REFTIMES_PER_SEC) * @intToFloat(f64, buffer_frame_count) / samples_per_second;
+    _ = audio_client.lpVtbl.*.Start.?(audio_client);
 
     return SoundOutput{
         .initialized = true,

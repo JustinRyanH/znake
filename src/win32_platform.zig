@@ -197,6 +197,7 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         win32_draw_buffer.sync(&game_draw_buffer);
 
         pong.updateGame(&input, &game_data, &game_draw_buffer);
+        pong.updateSound(&game_data, &game_sound);
         platform_sound.fillBuffer(&win32_sound, game_sound.sample_buffer[0..game_sound.samples_to_write]);
 
         const end_counter = win32.GetWallClock();
