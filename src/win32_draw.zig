@@ -2,8 +2,6 @@ const std = @import("std");
 const win32 = @import("win32.zig");
 const pong = @import("pong.zig");
 
-const GameDrawBuffer = pong.GameDrawBuffer;
-
 pub const BYTES_PER_PIXEL = 4;
 pub const Win32OffscreenBuffer = struct {
     const BitmapInfoHeader = win32.BITMAPINFOHEADER;
@@ -59,8 +57,8 @@ pub const Win32OffscreenBuffer = struct {
         if (!win32.VirtualFree(self.memory, 0, win32.MEM_RELEASE)) {}
     }
 
-    pub fn gamebuffer(self: Self) GameDrawBuffer {
-        return GameDrawBuffer{
+    pub fn gamebuffer(self: Self) pong.DrawBuffer {
+        return pong.DrawBuffer{
             .height = self.height,
             .width = self.width,
             .pitch = self.pitch,
@@ -68,7 +66,7 @@ pub const Win32OffscreenBuffer = struct {
         };
     }
 
-    pub fn sync(self: Self, draw_buffer: *GameDrawBuffer) void {
+    pub fn sync(self: Self, draw_buffer: *pong.DrawBuffer) void {
         draw_buffer.height = self.height;
         draw_buffer.width = self.width;
         draw_buffer.pitch = self.pitch;

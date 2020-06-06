@@ -89,7 +89,7 @@ pub const SpecialKeys = packed struct {
     rest: u14 = 0,
 };
 
-pub const GameInput = struct {
+pub const Input = struct {
     keyboard: Keyboard,
 };
 
@@ -107,7 +107,7 @@ pub const DebugData = struct {
     wave_period: u32,
 };
 
-pub const GameData = struct {
+pub const Data = struct {
     initialized: bool = false,
 
     permanent_storage: []u8,
@@ -120,7 +120,7 @@ pub const Sound = struct {
     samples_per_second: u32,
 };
 
-pub const GameDrawBuffer = struct {
+pub const DrawBuffer = struct {
     height: u32,
     width: u32,
     pitch: u32,
@@ -134,7 +134,7 @@ pub const Pixel = packed struct {
     padding: u8,
 };
 
-pub fn debugFillBuffer(draw_buffer: *GameDrawBuffer, x_offset: u32, y_offset: u32) void {
+pub fn debugFillBuffer(draw_buffer: *DrawBuffer, x_offset: u32, y_offset: u32) void {
     assert(draw_buffer.memory.len == draw_buffer.height * draw_buffer.pitch);
     var y_index: usize = 0;
     var pixels = std.mem.bytesAsSlice(Pixel, draw_buffer.memory);
@@ -151,11 +151,11 @@ pub fn debugFillBuffer(draw_buffer: *GameDrawBuffer, x_offset: u32, y_offset: u3
     }
 }
 
-pub fn getDebugData(data: *GameData) *DebugData {
+pub fn getDebugData(data: *Data) *DebugData {
     return @ptrCast(*DebugData, @alignCast(@alignOf(DebugData), data.permanent_storage[0..@sizeOf(DebugData)]));
 }
 
-pub fn updateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuffer) void {
+pub fn updateGame(input: *Input, data: *Data, draw_buffer: *DrawBuffer) void {
     var debug_data = getDebugData(data);
 
     if (!data.initialized) {
@@ -178,7 +178,7 @@ pub fn updateGame(input: *GameInput, data: *GameData, draw_buffer: *GameDrawBuff
     debugFillBuffer(draw_buffer, debug_data.x_offset, debug_data.y_offset);
 }
 
-pub fn updateSound(game_data: *GameData, sound: *Sound) void {
+pub fn updateSound(game_data: *Data, sound: *Sound) void {
     if (sound.sample_slice.len == 0) {
         return;
     }

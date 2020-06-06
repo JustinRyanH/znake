@@ -8,7 +8,7 @@ const assert = @import("utils.zig").assert;
 
 pub const panic = win32.win32_panic;
 
-const GameDrawBuffer = pong.GameDrawBuffer;
+const DrawBuffer = pong.DrawBuffer;
 const Win32OffscreenBuffer = platform_draw.Win32OffscreenBuffer;
 const GameUpdateHz = 30.0;
 const target_seconds: f32 = 1.0 / GameUpdateHz;
@@ -77,7 +77,7 @@ pub fn ProcessWindowsEvents(window: win32.HWND, message: win32.UINT, w_param: wi
     return result;
 }
 
-fn win32CreateGameData() !pong.GameData {
+fn win32CreateGameData() !pong.Data {
     const permament_storage_size = utils.megabytes(64);
     const transient_storage_size = utils.megabytes(512);
     if (win32.VirtualAlloc(
@@ -87,7 +87,7 @@ fn win32CreateGameData() !pong.GameData {
         win32.PAGE_READWRITE,
     )) |memory| {
         const casted_memory = @ptrCast([*]u8, memory);
-        const result = pong.GameData{
+        const result = pong.Data{
             .permanent_storage = casted_memory[0..permament_storage_size],
             .transient_storage = casted_memory[permament_storage_size..(transient_storage_size + permament_storage_size)],
         };
@@ -157,7 +157,7 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         @panic("Failed to Allocate Memory for the Game");
     };
 
-    var input = pong.GameInput{
+    var input = pong.Input{
         .keyboard = pong.Keyboard{
             .letter = pong.LetterKeys{},
             .number = pong.NumberKeys{},
