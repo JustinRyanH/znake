@@ -155,7 +155,7 @@ pub fn getPadding(sound: *SoundOutput) SoundError!u32 {
     return result;
 }
 
-pub fn fillBuffer(sound: *SoundOutput, samples: []f32) void {
+pub fn fillBuffer(sound: *SoundOutput, samples: []i16) void {
     if (!sound.initialized) {
         return;
     }
@@ -163,13 +163,12 @@ pub fn fillBuffer(sound: *SoundOutput, samples: []f32) void {
     var data: [*c]windows.BYTE = null;
     var flags: u32 = 0;
 
-    _ = sound.audio_render_client.lpVtbl.*.GetBuffer.?(sound.audio_render_client, @intCast(c_uint, samples.len), &data);
+    _ = sound.audio_render_client.lpVtbl.*.GetBuffer.?(sound.audio_render_client, @intCast(c_uint, samples.len / 2), &data);
+    defer {
+        _ = sound.audio_render_client.lpVtbl.*.ReleaseBuffer.?(sound.audio_render_client, @intCast(c_uint, samples.len / 2), flags);
+    }
     if (data) |d| {
         var memory = @ptrCast([*]i16, @alignCast(@alignOf(i16), d))[0..samples.len];
-        for (samples) |sample, i| {
-            memory[i] = @floatToInt(i16, sample * 30000);
-        }
+        _ = std.mem.copy(i16, memory, samples);
     }
-
-    _ = sound.audio_render_client.lpVtbl.*.ReleaseBuffer.?(sound.audio_render_client, @intCast(c_uint, samples.len), flags);
 }

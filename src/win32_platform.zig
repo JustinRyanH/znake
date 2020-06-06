@@ -113,11 +113,10 @@ fn win32InitGameSound(channels: u32, samples_per_second: u32) !pong.Sound {
         win32.MEM_COMMIT | win32.MEM_RESERVE,
         win32.PAGE_READWRITE,
     )) |memory| {
-        const casted_memory = @ptrCast([*]f32, @alignCast(@alignOf(f32), memory));
+        const casted_memory = @ptrCast([*]i16, @alignCast(@alignOf(i16), memory));
         return pong.Sound{
             .sample_buffer = casted_memory[0..memory_size],
             .sample_slice = casted_memory[0..memory_size],
-            .samples_to_write = 0,
             .samples_per_second = samples_per_second,
         };
     }
@@ -126,13 +125,14 @@ fn win32InitGameSound(channels: u32, samples_per_second: u32) !pong.Sound {
 
 fn win32CalculateFramesToWrite(game_sound: *pong.Sound, win32_sound: *platform_sound.SoundOutput) void {
     var padding = platform_sound.getPadding(win32_sound) catch |_| return;
-    var samples_to_write = @intCast(i32, win32_sound.samples_per_second) - @intCast(i32, padding);
-    if (samples_to_write > win32_sound.latency_frame_count) {
-        game_sound.samples_to_write = win32_sound.latency_frame_count;
+    var frames_to_write = @intCast(i32, win32_sound.samples_per_second) - @intCast(i32, padding);
+    if (frames_to_write > win32_sound.latency_frame_count) {
+        frames_to_write = @intCast(i32, win32_sound.latency_frame_count) * 2;
     }
-    if (samples_to_write < 0) {
-        game_sound.samples_to_write = win32_sound.latency_frame_count;
+    if (frames_to_write < 0) {
+        frames_to_write = @intCast(i32, win32_sound.latency_frame_count) * 2;
     }
+    game_sound.sample_slice = game_sound.sample_buffer[0..(@intCast(usize, frames_to_write) * 2)];
 }
 
 pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE, lpCmdLine: win32.PWSTR, nCmdShow: win32.INT) win32.INT {
