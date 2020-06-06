@@ -36,14 +36,12 @@ pub fn init() SoundError!SoundOutput {
         return SoundError.GenericError;
     }
     errdefer {
-        if (device_enum.lpVtbl.*.Release) |release| {
-            _ = release(device_enum);
-        }
+        _ = device_enum.lpVtbl.*.Release.?(device_enum);
     }
 
-    if (device_enum.lpVtbl.*.GetDefaultAudioEndpoint) |default_audio_endpoint| {
+    {
         var tmp: ?*wasapi.IMMDevice = undefined;
-        result = default_audio_endpoint(
+        result = device_enum.lpVtbl.*.GetDefaultAudioEndpoint.?(
             device_enum,
             wasapi.EDataFlow.eRender,
             wasapi.ERole.eConsole,
@@ -59,14 +57,12 @@ pub fn init() SoundError!SoundOutput {
         }
     }
     errdefer {
-        if (device.lpVtbl.*.Release) |release| {
-            _ = release(device);
-        }
+        _ = device.lpVtbl.*.Release.?(device);
     }
 
-    if (device.lpVtbl.*.Activate) |activate| {
+    {
         var tmp_client: ?*wasapi.IAudioClient = undefined;
-        result = activate(device, &wasapi.IID_IAudioClient, wasapi.CLSCTX_ALL, 0, @ptrCast([*c]?*c_void, &tmp_client));
+        result = device.lpVtbl.*.Activate.?(device, &wasapi.IID_IAudioClient, wasapi.CLSCTX_ALL, 0, @ptrCast([*c]?*c_void, &tmp_client));
         if (result != 0) {
             return SoundError.GenericError;
         }
@@ -75,9 +71,7 @@ pub fn init() SoundError!SoundOutput {
         }
     }
     errdefer {
-        if (audio_client.lpVtbl.*.Release) |release| {
-            _ = release(audio_client);
-        }
+        _ = audio_client.lpVtbl.*.Release.?(audio_client);
     }
 
     const samples_per_second = 48000;
@@ -98,19 +92,17 @@ pub fn init() SoundError!SoundOutput {
         .cbSize = 0,
     };
 
-    if (audio_client.lpVtbl.*.Initialize) |initialize| {
-        result = initialize(
-            audio_client,
-            wasapi.AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_SHARED,
-            wasapi.AUDCLNT_STREAMFLAGS_RATEADJUST | wasapi.AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM | wasapi.AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY,
-            request_sound_duration,
-            0,
-            &wave_format,
-            0,
-        );
-        if (result != 0) {
-            return SoundError.GenericError;
-        }
+    result = audio_client.lpVtbl.*.Initialize.?(
+        audio_client,
+        wasapi.AUDCLNT_SHAREMODE.AUDCLNT_SHAREMODE_SHARED,
+        wasapi.AUDCLNT_STREAMFLAGS_RATEADJUST | wasapi.AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM | wasapi.AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY,
+        request_sound_duration,
+        0,
+        &wave_format,
+        0,
+    );
+    if (result != 0) {
+        return SoundError.GenericError;
     }
 
     if (audio_client.lpVtbl.*.GetService) |get_service| {
@@ -126,15 +118,11 @@ pub fn init() SoundError!SoundOutput {
         }
     }
     errdefer {
-        if (audio_render_client.lpVtbl.*.Release) |release| {
-            _ = release(audio_render_client);
-        }
+        _ = audio_render_client.lpVtbl.*.Release.?(audio_render_client);
     }
 
     var buffer_frame_count: u32 = undefined;
-    if (audio_client.lpVtbl.*.GetBufferSize) |get_buffer_size| {
-        _ = get_buffer_size(audio_client, &buffer_frame_count);
-    }
+    _ = audio_client.lpVtbl.*.GetBufferSize.?(audio_client, &buffer_frame_count);
 
     const f32_sound_buffer_duration = @intToFloat(f64, REFTIMES_PER_SEC) * @intToFloat(f64, buffer_frame_count) / samples_per_second;
 
@@ -151,31 +139,19 @@ pub fn init() SoundError!SoundOutput {
     };
 }
 pub fn deinit(sound: *SoundOutput) void {
-    if (sound.audio_render_client.lpVtbl.*.Release) |release| {
-        _ = release(sound.audio_render_client);
-    }
-    if (sound.audio_client.lpVtbl.*.Release) |release| {
-        _ = release(sound.audio_client);
-    }
-    if (sound.device.lpVtbl.*.Release) |release| {
-        _ = release(sound.device);
-    }
-    if (sound.device_enum.lpVtbl.*.Release) |release| {
-        _ = release(sound.device_enum);
-    }
+    _ = sound.audio_render_client.lpVtbl.*.Release.?(sound.audio_render_client);
+    _ = sound.audio_client.lpVtbl.*.Release.?(sound.audio_client);
+    _ = sound.device.lpVtbl.*.Release.?(sound.device);
+    _ = sound.device_enum.lpVtbl.*.Release.?(sound.device_enum);
 }
 
 pub fn getPadding(sound: *SoundOutput) SoundError!u32 {
-    if (sound.audio_client.lpVtbl.*.GetCurrentPadding) |get_current_padding| {
-        var result: u32 = undefined;
-        var err = get_current_padding(sound.audio_client, &result);
-        if (err != 0) {
-            return SoundError.GenericError;
-        }
-        return result;
-    } else {
+    var result: u32 = undefined;
+    var err = sound.audio_client.lpVtbl.*.GetCurrentPadding.?(sound.audio_client, &result);
+    if (err != 0) {
         return SoundError.GenericError;
     }
+    return result;
 }
 
 pub fn fillBuffer(sound: *SoundOutput, samples: []f32) void {
