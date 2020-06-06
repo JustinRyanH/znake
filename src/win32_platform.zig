@@ -207,7 +207,8 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         var elapsed = win32GetSecondsElasped(last_counter, end_counter);
         if (target_seconds > elapsed) {
             const nanoSecondsToWait = @floatToInt(u64, target_seconds * MillisecondsInSeconds - elapsed * MillisecondsInSeconds) * NanosecondsInMilliseconds;
-            std.time.sleep(nanoSecondsToWait - 1000);
+            // NOTE(jhurstwright): Shaving off a half a millisecond seems to reduce the misses
+            std.time.sleep(nanoSecondsToWait - 500);
         } else {
             win32.debug("Missed Target Frame Rate\n", .{});
         }
