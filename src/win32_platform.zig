@@ -11,6 +11,7 @@ pub const panic = win32.win32_panic;
 const GameDrawBuffer = pong.GameDrawBuffer;
 const Win32OffscreenBuffer = platform_draw.Win32OffscreenBuffer;
 const GameUpdateHz = 30.0;
+const target_seconds: f32 = 1.0 / GameUpdateHz;
 
 var clock_frequency: f32 = undefined;
 
@@ -104,7 +105,7 @@ fn win32GetSecondsElasped(recent: i64, later: i64) f32 {
 }
 
 fn win32InitGameSound(channels: u32, samples_per_second: u32) !pong.Sound {
-    const max_latency_in_seconds = 2;
+    const max_latency_in_seconds = 4;
     const memory_size = samples_per_second * channels * max_latency_in_seconds;
     if (win32.VirtualAlloc(
         null,
@@ -113,11 +114,9 @@ fn win32InitGameSound(channels: u32, samples_per_second: u32) !pong.Sound {
         win32.PAGE_READWRITE,
     )) |memory| {
         const casted_memory = @ptrCast([*]f32, @alignCast(@alignOf(f32), memory));
-        // sample_buffer: []f32,
-        // samples_to_write: i32 = 0,
-        // samples_per_second: i32 = 48000,
         return pong.Sound{
             .sample_buffer = casted_memory[0..memory_size],
+            .sample_slice = casted_memory[0..memory_size],
             .samples_to_write = 0,
             .samples_per_second = samples_per_second,
         };
@@ -198,11 +197,16 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
 
         pong.updateGame(&input, &game_data, &game_draw_buffer);
         pong.updateSound(&game_data, &game_sound);
-        platform_sound.fillBuffer(&win32_sound, game_sound.sample_buffer[0..game_sound.samples_to_write]);
+        platform_sound.fillBuffer(&win32_sound, game_sound.sample_slice);
 
-        const end_counter = win32.GetWallClock();
+        var end_counter = win32.GetWallClock();
+        while (win32GetSecondsElasped(last_counter, end_counter) < target_seconds) {
+            end_counter = win32.GetWallClock();
+        }
         const ms_per_frame = 1000.0 * win32GetSecondsElasped(last_counter, end_counter);
+
         // win32.debug("MS PER FRAME: {d:1}\n", .{ms_per_frame});
+        // win32.debug("Target MS PER FRAME: {d:1}\n", .{1000.0 * target_seconds});
         last_counter = end_counter;
 
         _ = win32_draw_buffer.blit(HDC);
