@@ -129,3 +129,6 @@ pub const Pixel = packed struct {
     red: u8,
     padding: u8,
 };
+
+const UpdateGame = fn (input: *Input, data: *Data, draw_buffer: *DrawBuffer) callconv(.C) void;
+const UpdateSound = fn (game_data: *Data, sound: *Sound) void;

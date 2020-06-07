@@ -18,6 +18,15 @@ const target_seconds: f32 = 1.0 / GameUpdateHz;
 
 var clock_frequency: f32 = undefined;
 
+const win32_game_code = struct {
+    const Self = @This();
+    GameCode: std.DynLib,
+    updateAndRender: ?pong.UpdateGame,
+    updateSound: ?pong.UpdateSound,
+
+    pub fn load(allocator: *std.mem.Allocator, source: []const u8, temp: []const u8) Self {}
+};
+
 fn bitCastKey(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down: bool) void {
     if (vk_code == key) {
         const down_shift: i32 = @intCast(i32, (vk_code - key)) + @intCast(i32, offset);
@@ -214,15 +223,15 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         }
         elapsed = win32GetSecondsElasped(last_counter, end_counter);
         if (elapsed > target_seconds) {
-            win32.debug("Missed Alarm Clock: {}, {}\n", .{ elapsed, target_seconds });
+            win32.debug("Missed Alarm Clock: {d:1}, {d:1}\n", .{ elapsed, target_seconds });
         }
         while (elapsed < target_seconds) {
             elapsed = win32GetSecondsElasped(last_counter, end_counter);
             end_counter = win32.GetWallClock();
         }
 
-        const ms_per_frame = MillisecondsInSeconds * elapsed;
-        win32.debug("MS PER FRAME: {d:1}\n", .{ms_per_frame});
+        // const ms_per_frame = MillisecondsInSeconds * elapsed;
+        // win32.debug("MS PER FRAME: {d:1}\n", .{ms_per_frame});
         last_counter = end_counter;
 
         _ = win32_draw_buffer.blit(HDC);
