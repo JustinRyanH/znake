@@ -5,6 +5,7 @@ const utils = @import("utils.zig");
 const platform_draw = @import("win32_draw.zig");
 const platform_sound = @import("win32_sound.zig");
 const assert = @import("utils.zig").assert;
+const c_allocator = std.heap.c_allocator;
 
 pub const panic = win32.win32_panic;
 
@@ -17,6 +18,7 @@ const GameUpdateHz = 30.0;
 const target_seconds: f32 = 1.0 / GameUpdateHz;
 
 var clock_frequency: f32 = undefined;
+var exe_dir: []const u8 = undefined;
 
 const win32_game_code = struct {
     const Self = @This();
@@ -148,6 +150,16 @@ fn win32CalculateFramesToWrite(game_sound: *pong.Sound, win32_sound: *platform_s
 }
 
 pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE, lpCmdLine: win32.PWSTR, nCmdShow: win32.INT) win32.INT {
+    var pathBuffer = std.fs.selfExePathAlloc(c_allocator) catch |err| @panic("Failed to get Exe Path");
+    // NOTE(jhurstwright): Don't actually free this because the OS will when the EXE close.
+    // but I"m going to put commented out defers because why not
+    // defer c_allocator.free(pathBuffer);
+    if (std.fs.path.dirname(pathBuffer)) |path| {
+        exe_dir = path[0..path.len];
+    } else {
+        @panic("Failed to get EXE directory");
+    }
+
     clock_frequency = @intToFloat(f32, win32.GetFreq());
     win32.time_begin_period(1) catch |err| @panic("Time Period Begin Failure");
     defer win32.time_end_period(1) catch |err| @panic("Time Period End Failure");
