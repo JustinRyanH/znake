@@ -1,6 +1,6 @@
 const std = @import("std");
 const win32 = @import("win32.zig");
-const pong = @import("pong.zig");
+const pong = @import("pong_types.zig");
 const utils = @import("utils.zig");
 const platform_draw = @import("win32_draw.zig");
 const platform_sound = @import("win32_sound.zig");
@@ -198,8 +198,8 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         win32CalculateFramesToWrite(&game_sound, &win32_sound);
         win32_draw_buffer.sync(&game_draw_buffer);
 
-        pong.updateGame(&input, &game_data, &game_draw_buffer);
-        pong.updateSound(&game_data, &game_sound);
+        // pong.updateGame(&input, &game_data, &game_draw_buffer);
+        // pong.updateSound(&game_data, &game_sound);
         platform_sound.fillBuffer(&win32_sound, game_sound.sample_slice);
 
         var end_counter = win32.GetWallClock();
