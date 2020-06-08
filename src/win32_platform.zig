@@ -94,6 +94,7 @@ const Win32GameCode = struct {
     }
 
     fn getLastWrite(source: []const u8) !i64 {
+        // TODO(jhurstwright): std.os.fstat
         const file = try std.fs.openFileAbsolute(source, OpenFlags{ .read = true, .write = false });
         defer file.close();
 
