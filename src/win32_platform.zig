@@ -33,41 +33,64 @@ const Win32GameCode = struct {
     const CopyFileOptions = std.fs.CopyFileOptions;
     const Self = @This();
 
-    code: std.DynLib,
-    game_functions: ?GameFunctions,
-    last_write_time: i64,
+    src: []const u8,
+    tmp: []const u8,
+    code: ?std.DynLib = null,
+    game_functions: ?GameFunctions = null,
+    last_write_time: i64 = -1,
 
-    pub fn load(allocator: *std.mem.Allocator, source: []const u8, temp: []const u8) !Self {
-        const last_write_time = try getLastWrite(source);
-        try std.fs.copyFileAbsolute(source, temp, CopyFileOptions{});
-
-        var dyn_lib = try std.DynLib.open(temp);
-        errdefer dyn_lib.close();
-
-        var loaded = true;
-        var game_functions: GameFunctions = undefined;
-        if (dyn_lib.lookup(pong.UpdateSound, "updateSound")) |updateSound| {
-            game_functions.updateSound = updateSound;
-        } else {
-            loaded = false;
-        }
-
-        if (dyn_lib.lookup(pong.UpdateGame, "updateGame")) |updateGame| {
-            game_functions.updateGame = updateGame;
-        } else {
-            loaded = false;
-        }
-
-        return Self{
-            .game_functions = if (loaded) game_functions else null,
-            .last_write_time = last_write_time,
-            .code = dyn_lib,
+    pub fn load(source: []const u8, temp: []const u8) !Self {
+        var result = Win32GameCode{
+            .src = source,
+            .tmp = temp,
         };
+        try result.reload();
+        return result;
+    }
+
+    pub fn reload(self: *Self) !void {
+        self.unload();
+
+        self.last_write_time = try getLastWrite(self.src);
+        try std.fs.copyFileAbsolute(self.src, self.tmp, CopyFileOptions{});
+        self.code = try std.DynLib.open(self.tmp);
+        errdefer self.code.close();
+
+        {
+            var loaded = true;
+            var game_functions: GameFunctions = undefined;
+            if (self.code) |*dyn_lib| {
+                if (dyn_lib.lookup(pong.UpdateSound, "updateSound")) |updateSound| {
+                    game_functions.updateSound = updateSound;
+                } else {
+                    loaded = false;
+                }
+
+                if (dyn_lib.lookup(pong.UpdateGame, "updateGame")) |updateGame| {
+                    game_functions.updateGame = updateGame;
+                } else {
+                    loaded = false;
+                }
+            }
+            self.game_functions = if (loaded) game_functions else null;
+        }
+
+        return;
     }
 
     pub fn unload(self: *Self) void {
-        self.game_functions = null;
-        self.code.close();
+        if (self.code) |*code| {
+            self.game_functions = null;
+            code.close();
+        }
+    }
+
+    pub fn hasChanged(self: *Self) bool {
+        const new_time = getLastWrite(self.src) catch |err| {
+            win32.debug("Hot Reload Boinked", .{});
+            return false;
+        };
+        return self.last_write_time != new_time;
     }
 
     fn getLastWrite(source: []const u8) !i64 {
@@ -219,8 +242,10 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         @panic("Failed to create source dll");
     };
 
-    var game_code = Win32GameCode.load(page_allocator, source_dll, tmp_dll) catch |err| {
+    var game_code = Win32GameCode.load(source_dll, tmp_dll) catch |err| {
         win32.debug("Err: {}\n", .{err});
+        win32.debug("SourceDLL: {}\n", .{source_dll});
+        win32.debug("TempDLL: {}\n", .{tmp_dll});
         @panic("Failed Loading Game Code");
     };
 
@@ -271,6 +296,10 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
 
     var last_counter = win32.GetWallClock();
     while (RUNNING) {
+        if (game_code.hasChanged()) {
+            win32.debug("Game Code Changed\n", .{});
+            game_code.reload() catch unreachable;
+        }
         while (window.peek_message()) |message| {
             switch (message.message) {
                 win32.WM_KEYUP, win32.WM_KEYDOWN, win32.WM_SYSKEYUP, win32.WM_SYSKEYDOWN => {
