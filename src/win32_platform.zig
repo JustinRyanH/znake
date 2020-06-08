@@ -5,7 +5,7 @@ const utils = @import("utils.zig");
 const platform_draw = @import("win32_draw.zig");
 const platform_sound = @import("win32_sound.zig");
 const assert = @import("utils.zig").assert;
-const c_allocator = std.heap.c_allocator;
+const page_allocator = std.heap.page_allocator;
 
 pub const panic = win32.win32_panic;
 
@@ -17,16 +17,66 @@ const MillisecondsInSeconds = 1000;
 const GameUpdateHz = 30.0;
 const target_seconds: f32 = 1.0 / GameUpdateHz;
 
+const DLLName = "game.dll";
+const DLLTempName = "game_temp.dll";
+
 var clock_frequency: f32 = undefined;
 var exe_dir: []const u8 = undefined;
 
-const win32_game_code = struct {
-    const Self = @This();
-    GameCode: std.DynLib,
-    updateAndRender: ?pong.UpdateGame,
-    updateSound: ?pong.UpdateSound,
+const GameFunctions = struct {
+    updateGame: pong.UpdateGame,
+    updateSound: pong.UpdateSound,
+};
 
-    pub fn load(allocator: *std.mem.Allocator, source: []const u8, temp: []const u8) Self {}
+const Win32GameCode = struct {
+    const OpenFlags = std.fs.File.OpenFlags;
+    const CopyFileOptions = std.fs.CopyFileOptions;
+    const Self = @This();
+
+    code: std.DynLib,
+    game_functions: ?GameFunctions,
+    last_write_time: i64,
+
+    pub fn load(allocator: *std.mem.Allocator, source: []const u8, temp: []const u8) !Self {
+        const last_write_time = try getLastWrite(source);
+        try std.fs.copyFileAbsolute(source, temp, CopyFileOptions{});
+
+        var dyn_lib = try std.DynLib.open(temp);
+        errdefer dyn_lib.close();
+
+        var loaded = true;
+        var game_functions: GameFunctions = undefined;
+        if (dyn_lib.lookup(pong.UpdateSound, "updateSound")) |updateSound| {
+            game_functions.updateSound = updateSound;
+        } else {
+            loaded = false;
+        }
+
+        if (dyn_lib.lookup(pong.UpdateGame, "updateGame")) |updateGame| {
+            game_functions.updateGame = updateGame;
+        } else {
+            loaded = false;
+        }
+
+        return Self{
+            .game_functions = if (loaded) game_functions else null,
+            .last_write_time = last_write_time,
+            .code = dyn_lib,
+        };
+    }
+
+    pub fn unload(self: *Self) void {
+        self.game_functions = null;
+        self.code.close();
+    }
+
+    fn getLastWrite(source: []const u8) !i64 {
+        const file = try std.fs.openFileAbsolute(source, OpenFlags{ .read = true, .write = false });
+        defer file.close();
+
+        const stat = try file.stat();
+        return stat.mtime;
+    }
 };
 
 fn bitCastKey(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down: bool) void {
@@ -150,15 +200,29 @@ fn win32CalculateFramesToWrite(game_sound: *pong.Sound, win32_sound: *platform_s
 }
 
 pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE, lpCmdLine: win32.PWSTR, nCmdShow: win32.INT) win32.INT {
-    var pathBuffer = std.fs.selfExePathAlloc(c_allocator) catch |err| @panic("Failed to get Exe Path");
+    var pathBuffer = std.fs.selfExePathAlloc(page_allocator) catch |err| @panic("Failed to get Exe Path");
     // NOTE(jhurstwright): Don't actually free this because the OS will when the EXE close.
     // but I"m going to put commented out defers because why not
-    // defer c_allocator.free(pathBuffer);
+    // defer page_allocator.free(pathBuffer);
     if (std.fs.path.dirname(pathBuffer)) |path| {
         exe_dir = path[0..path.len];
     } else {
         @panic("Failed to get EXE directory");
     }
+
+    const source_dll = std.fs.path.join(page_allocator, &[_][]const u8{ exe_dir, DLLName }) catch |err| {
+        win32.debug("Err: {}\n", .{err});
+        @panic("Failed to create source dll");
+    };
+    const tmp_dll = std.fs.path.join(page_allocator, &[_][]const u8{ exe_dir, DLLTempName }) catch |err| {
+        win32.debug("Err: {}\n", .{err});
+        @panic("Failed to create source dll");
+    };
+
+    var game_code = Win32GameCode.load(page_allocator, source_dll, tmp_dll) catch |err| {
+        win32.debug("Err: {}\n", .{err});
+        @panic("Failed Loading Game Code");
+    };
 
     clock_frequency = @intToFloat(f32, win32.GetFreq());
     win32.time_begin_period(1) catch |err| @panic("Time Period Begin Failure");
@@ -219,8 +283,10 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         win32CalculateFramesToWrite(&game_sound, &win32_sound);
         win32_draw_buffer.sync(&game_draw_buffer);
 
-        // pong.updateGame(&input, &game_data, &game_draw_buffer);
-        // pong.updateSound(&game_data, &game_sound);
+        if (game_code.game_functions) |game| {
+            game.updateGame(&input, &game_data, &game_draw_buffer);
+            game.updateSound(&game_data, &game_sound);
+        }
         platform_sound.fillBuffer(&win32_sound, game_sound.sample_slice);
 
         var end_counter = win32.GetWallClock();
