@@ -40,9 +40,9 @@ export fn updateGame(input: *Input, data: *Data, draw_buffer: *DrawBuffer) void 
     }
 
     if (keyboard.letter.a == .Down or keyboard.special.up_arrow == .Down) {
-        debug_data.*.x_offset = debug_data.x_offset +% 1;
+        debug_data.*.x_offset = debug_data.x_offset +% 25;
     } else if (keyboard.letter.d == .Down or keyboard.special.down_arrow == .Down) {
-        debug_data.*.x_offset = debug_data.x_offset -% 1;
+        debug_data.*.x_offset = debug_data.x_offset -% 25;
     }
     debugFillBuffer(draw_buffer, debug_data.x_offset, debug_data.y_offset);
 }
