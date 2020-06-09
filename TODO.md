@@ -1,0 +1,11 @@
+- [x] Debug Platform
+    - [x] Sound
+    - [x] Draw Window
+- [x] Hot Reload
+- [ ] Draw Squares
+- [ ] Paddle Left
+- [ ] Replay
+- [ ] Platform IMGUI
+- [ ] Both Paddles
+- [ ] Ball
+- [ ] Ceiling Reflection
