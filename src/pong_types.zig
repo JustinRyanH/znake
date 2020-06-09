@@ -123,12 +123,5 @@ pub const DrawBuffer = struct {
     memory: []u8,
 };
 
-pub const Pixel = packed struct {
-    blue: u8,
-    green: u8,
-    red: u8,
-    padding: u8,
-};
-
 pub const UpdateGame = fn (input: *Input, data: *Data, draw_buffer: *DrawBuffer) void;
 pub const UpdateSound = fn (game_data: *Data, sound: *Sound) void;

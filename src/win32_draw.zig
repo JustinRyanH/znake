@@ -1,6 +1,6 @@
 const std = @import("std");
 const win32 = @import("win32.zig");
-const pong = @import("pong.zig");
+const pong = @import("pong_types.zig");
 
 pub const BYTES_PER_PIXEL = 4;
 pub const Win32OffscreenBuffer = struct {
