@@ -1,3 +1,8 @@
+pub const Window = struct {
+    width: u32,
+    height: u32,
+};
+
 pub const KeyState = enum(u1) { Up = 0, Down = 1 };
 
 pub const LetterKeys = packed struct {
@@ -86,6 +91,7 @@ pub const SpecialKeys = packed struct {
 };
 
 pub const Input = struct {
+    frame: usize = 0,
     keyboard: Keyboard,
 };
 

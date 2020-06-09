@@ -260,9 +260,12 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
     win32_sound.latency_frame_count = win32_sound.samples_per_second / @floatToInt(u32, GameUpdateHz);
     defer platform_sound.deinit(&win32_sound);
 
-    const width = 640;
-    const height = 480;
-    var win32_draw_buffer = Win32OffscreenBuffer.init(width, height) catch |err| {
+    var window_input = pong.Window{
+        .width = 640,
+        .height = 480,
+    };
+
+    var win32_draw_buffer = Win32OffscreenBuffer.init(@intCast(u32, window_input.width), @intCast(u32, window_input.height)) catch |err| {
         win32.debug("Could not create Allocat Memory for Win32 Draw Buffer", .{});
         @panic("Could not create Allocat Memory for Win32 Draw Buffer");
     };
@@ -285,8 +288,8 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         .window_name = "Zig Pong Example",
         .window_class_name = "PongWindowClass",
         .h_instance = hInstance,
-        .width = width,
-        .height = height,
+        .width = @intCast(i32, window_input.width),
+        .height = @intCast(i32, window_input.height),
     }) catch |err| {
         win32.debug("Could not Load Window", .{});
         @panic("Could not Load Window");
@@ -341,6 +344,7 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         // const ms_per_frame = MillisecondsInSeconds * elapsed;
         // win32.debug("MS PER FRAME: {d:1}\n", .{ms_per_frame});
         last_counter = end_counter;
+        input.frame += 1;
 
         _ = win32_draw_buffer.blit(HDC);
     }

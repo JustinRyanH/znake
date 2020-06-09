@@ -27,6 +27,8 @@ fn debugFillBuffer(draw_buffer: *pong.DrawBuffer, x_offset: u32, y_offset: u32) 
     }
 }
 
+fn drawSquare(buffer: *pong.DrawBuffer, coords: var) void {}
+
 export fn updateGame(input: *pong.Input, data: *pong.Data, draw_buffer: *pong.DrawBuffer) void {}
 
 export fn updateSound(game_data: *pong.Data, sound: *pong.Sound) void {}
