@@ -1,4 +1,5 @@
 pub const Window = struct {
+    last_change_frame: usize = 0,
     width: u32,
     height: u32,
 };
@@ -92,7 +93,9 @@ pub const SpecialKeys = packed struct {
 
 pub const Input = struct {
     frame: usize = 0,
+    delta_time: f32,
     keyboard: Keyboard,
+    window: Window,
 };
 
 pub const Keyboard = struct {

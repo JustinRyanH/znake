@@ -260,12 +260,20 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
     win32_sound.latency_frame_count = win32_sound.samples_per_second / @floatToInt(u32, GameUpdateHz);
     defer platform_sound.deinit(&win32_sound);
 
-    var window_input = pong.Window{
-        .width = 640,
-        .height = 480,
+    var input = pong.Input{
+        .delta_time = target_seconds,
+        .keyboard = pong.Keyboard{
+            .letter = pong.LetterKeys{},
+            .number = pong.NumberKeys{},
+            .special = pong.SpecialKeys{},
+        },
+        .window = pong.Window{
+            .width = 640,
+            .height = 480,
+        },
     };
 
-    var win32_draw_buffer = Win32OffscreenBuffer.init(@intCast(u32, window_input.width), @intCast(u32, window_input.height)) catch |err| {
+    var win32_draw_buffer = Win32OffscreenBuffer.init(input.window.width, input.window.height) catch |err| {
         win32.debug("Could not create Allocat Memory for Win32 Draw Buffer", .{});
         @panic("Could not create Allocat Memory for Win32 Draw Buffer");
     };
@@ -274,22 +282,14 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         @panic("Failed to Allocate Memory for the Game");
     };
 
-    var input = pong.Input{
-        .keyboard = pong.Keyboard{
-            .letter = pong.LetterKeys{},
-            .number = pong.NumberKeys{},
-            .special = pong.SpecialKeys{},
-        },
-    };
-
     var game_draw_buffer = win32_draw_buffer.gamebuffer();
     var window = win32.Window.init(.{
         .wnd_proc = ProcessWindowsEvents,
         .window_name = "Zig Pong Example",
         .window_class_name = "PongWindowClass",
         .h_instance = hInstance,
-        .width = @intCast(i32, window_input.width),
-        .height = @intCast(i32, window_input.height),
+        .width = @intCast(i32, input.window.width),
+        .height = @intCast(i32, input.window.height),
     }) catch |err| {
         win32.debug("Could not Load Window", .{});
         @panic("Could not Load Window");
