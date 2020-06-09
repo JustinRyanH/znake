@@ -8,7 +8,7 @@ const assert = @import("utils.zig").assert;
 const page_allocator = std.heap.page_allocator;
 
 pub const panic = win32.win32_panic;
-
+const InDebug = true;
 const DrawBuffer = pong.DrawBuffer;
 const Win32OffscreenBuffer = platform_draw.Win32OffscreenBuffer;
 const NanosecondsInSeconds = 1000000000;
@@ -317,8 +317,16 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         win32_draw_buffer.sync(&game_draw_buffer);
 
         if (game_code.game_functions) |game| {
+            // TODO(jhurstwright): Turn this off in release mode
+            const before = std.mem.toBytes(input);
             game.updateGame(&input, &game_data, &game_draw_buffer);
             game.updateSound(&game_data, &game_sound);
+
+            // NOTE(jhurstwright): I want to assert that the game update doesn't mutate the input.
+            // This will blow up if I accidently do that
+            // TODO(jhurstwright): Turn this off in release mode
+            const after = std.mem.toBytes(input);
+            assert(std.mem.eql(u8, after[0..after.len], before[0..before.len]));
         }
         platform_sound.fillBuffer(&win32_sound, game_sound.sample_slice);
 
