@@ -1,7 +1,7 @@
 const std = @import("std");
 const win32 = @import("win32.zig");
 const assert = @import("utils.zig").assert;
-const pong = @import("pong_types.zig");
+const snake = @import("snake_types.zig");
 
 pub const Pixel = packed struct {
     blue: u8,
@@ -10,7 +10,7 @@ pub const Pixel = packed struct {
     padding: u8,
 };
 
-fn debugFillBuffer(draw_buffer: *pong.DrawBuffer, x_offset: u32, y_offset: u32) void {
+fn debugFillBuffer(draw_buffer: *snake.DrawBuffer, x_offset: u32, y_offset: u32) void {
     assert(draw_buffer.memory.len == draw_buffer.height * draw_buffer.pitch);
     var y_index: usize = 0;
     var pixels = std.mem.bytesAsSlice(Pixel, draw_buffer.memory);
@@ -27,8 +27,8 @@ fn debugFillBuffer(draw_buffer: *pong.DrawBuffer, x_offset: u32, y_offset: u32) 
     }
 }
 
-fn drawSquare(buffer: *pong.DrawBuffer, coords: var) void {}
+fn drawSquare(buffer: *snake.DrawBuffer, coords: var) void {}
 
-export fn updateGame(input: *pong.Input, data: *pong.Data, draw_buffer: *pong.DrawBuffer) void {}
+export fn updateGame(input: *snake.Input, data: *snake.Data, draw_buffer: *snake.DrawBuffer) void {}
 
-export fn updateSound(game_data: *pong.Data, sound: *pong.Sound) void {}
+export fn updateSound(game_data: *snake.Data, sound: *snake.Sound) void {}

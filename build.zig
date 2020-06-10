@@ -11,12 +11,12 @@ pub fn build(b: *Builder) void {
     var exe: BuildExe = undefined;
     var dll: BuildExe = undefined;
     if (target.isWindows() and target.getAbi() == .msvc) {
-        dll = b.addSharedLibrary("game", "src/pong.zig", b.version(0, 0, 1));
+        dll = b.addSharedLibrary("game", "src/snake.zig", b.version(0, 0, 1));
         dll.setTarget(target);
         dll.setBuildMode(mode);
         dll.setOutputDir(build_root);
 
-        exe = b.addExecutable("zpong", "src/win32_platform.zig");
+        exe = b.addExecutable("zsnake", "src/win32_platform.zig");
         exe.setTarget(target);
         exe.setBuildMode(mode);
         exe.setOutputDir(build_root);
@@ -28,9 +28,6 @@ pub fn build(b: *Builder) void {
     } else {
         @panic("Unimplemented Platform");
     }
-
-    // b.default_step.dependOn(&dll.step);
-    // b.default_step.dependOn(&exe.step);
 
     const all_step = b.step("all", "Build the Game DLL and Platform EXE");
     all_step.dependOn(&dll.step);

@@ -1,6 +1,6 @@
 const std = @import("std");
 const win32 = @import("win32.zig");
-const pong = @import("pong_types.zig");
+const snake = @import("snake_types.zig");
 const utils = @import("utils.zig");
 const platform_draw = @import("win32_draw.zig");
 const platform_sound = @import("win32_sound.zig");
@@ -9,7 +9,7 @@ const page_allocator = std.heap.page_allocator;
 
 pub const panic = win32.win32_panic;
 const InDebug = true;
-const DrawBuffer = pong.DrawBuffer;
+const DrawBuffer = snake.DrawBuffer;
 const Win32OffscreenBuffer = platform_draw.Win32OffscreenBuffer;
 const NanosecondsInSeconds = 1000000000;
 const NanosecondsInMilliseconds = 1000000;
@@ -24,8 +24,8 @@ var clock_frequency: f32 = undefined;
 var exe_dir: []const u8 = undefined;
 
 const GameFunctions = struct {
-    updateGame: pong.UpdateGame,
-    updateSound: pong.UpdateSound,
+    updateGame: snake.UpdateGame,
+    updateSound: snake.UpdateSound,
 };
 
 const Win32GameCode = struct {
@@ -60,13 +60,13 @@ const Win32GameCode = struct {
             var loaded = true;
             var game_functions: GameFunctions = undefined;
             if (self.code) |*dyn_lib| {
-                if (dyn_lib.lookup(pong.UpdateSound, "updateSound")) |updateSound| {
+                if (dyn_lib.lookup(snake.UpdateSound, "updateSound")) |updateSound| {
                     game_functions.updateSound = updateSound;
                 } else {
                     loaded = false;
                 }
 
-                if (dyn_lib.lookup(pong.UpdateGame, "updateGame")) |updateGame| {
+                if (dyn_lib.lookup(snake.UpdateGame, "updateGame")) |updateGame| {
                     game_functions.updateGame = updateGame;
                 } else {
                     loaded = false;
@@ -127,28 +127,28 @@ fn bitCastKeys(T: var, target: *T, vk_code: u32, min: u32, max: u32, offset: u5,
     }
 }
 
-fn Win32ProcessKeyboard(keyboard: *pong.Keyboard, message: *win32.MSG) void {
+fn Win32ProcessKeyboard(keyboard: *snake.Keyboard, message: *win32.MSG) void {
     const vk_code = @intCast(u32, message.wParam);
     const was_down: bool = message.lParam & (1 << 30) != 0;
     const is_down: bool = message.lParam & (1 << 31) == 0;
 
-    bitCastKeys(pong.NumberKeys, &keyboard.number, vk_code, '0', '9', 0, is_down);
-    bitCastKeys(pong.NumberKeys, &keyboard.number, vk_code, win32.VK_NUMPAD0, win32.VK_NUMPAD9, 10, is_down);
-    bitCastKeys(pong.NumberKeys, &keyboard.number, vk_code, win32.VK_MULTIPLY, win32.VK_DIVIDE, 20, is_down);
-    bitCastKeys(pong.NumberKeys, &keyboard.number, vk_code, win32.VK_MULTIPLY, win32.VK_DIVIDE, 20, is_down);
+    bitCastKeys(snake.NumberKeys, &keyboard.number, vk_code, '0', '9', 0, is_down);
+    bitCastKeys(snake.NumberKeys, &keyboard.number, vk_code, win32.VK_NUMPAD0, win32.VK_NUMPAD9, 10, is_down);
+    bitCastKeys(snake.NumberKeys, &keyboard.number, vk_code, win32.VK_MULTIPLY, win32.VK_DIVIDE, 20, is_down);
+    bitCastKeys(snake.NumberKeys, &keyboard.number, vk_code, win32.VK_MULTIPLY, win32.VK_DIVIDE, 20, is_down);
 
-    bitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_SHIFT, win32.VK_MENU, 0, is_down);
-    bitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_LSHIFT, win32.VK_RMENU, 3, is_down);
-    bitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_LEFT, win32.VK_DOWN, 9, is_down);
-    bitCastKeys(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_PRIOR, win32.VK_HOME, 13, is_down);
-    bitCastKey(pong.SpecialKeys, &keyboard.special, vk_code, win32.VK_INSERT, 17, is_down);
+    bitCastKeys(snake.SpecialKeys, &keyboard.special, vk_code, win32.VK_SHIFT, win32.VK_MENU, 0, is_down);
+    bitCastKeys(snake.SpecialKeys, &keyboard.special, vk_code, win32.VK_LSHIFT, win32.VK_RMENU, 3, is_down);
+    bitCastKeys(snake.SpecialKeys, &keyboard.special, vk_code, win32.VK_LEFT, win32.VK_DOWN, 9, is_down);
+    bitCastKeys(snake.SpecialKeys, &keyboard.special, vk_code, win32.VK_PRIOR, win32.VK_HOME, 13, is_down);
+    bitCastKey(snake.SpecialKeys, &keyboard.special, vk_code, win32.VK_INSERT, 17, is_down);
 
-    bitCastKey(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_SPACE, 0, is_down);
-    bitCastKeys(pong.LetterKeys, &keyboard.letter, vk_code, 'A', 'Z', 1, is_down);
-    bitCastKeys(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_BACK, win32.VK_TAB, 1, is_down);
-    bitCastKey(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_RETURN, 29, is_down);
-    bitCastKey(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_DELETE, 30, is_down);
-    bitCastKey(pong.LetterKeys, &keyboard.letter, vk_code, win32.VK_CLEAR, 31, is_down);
+    bitCastKey(snake.LetterKeys, &keyboard.letter, vk_code, win32.VK_SPACE, 0, is_down);
+    bitCastKeys(snake.LetterKeys, &keyboard.letter, vk_code, 'A', 'Z', 1, is_down);
+    bitCastKeys(snake.LetterKeys, &keyboard.letter, vk_code, win32.VK_BACK, win32.VK_TAB, 1, is_down);
+    bitCastKey(snake.LetterKeys, &keyboard.letter, vk_code, win32.VK_RETURN, 29, is_down);
+    bitCastKey(snake.LetterKeys, &keyboard.letter, vk_code, win32.VK_DELETE, 30, is_down);
+    bitCastKey(snake.LetterKeys, &keyboard.letter, vk_code, win32.VK_CLEAR, 31, is_down);
 }
 
 var RUNNING = false;
@@ -165,7 +165,7 @@ pub fn ProcessWindowsEvents(window: win32.HWND, message: win32.UINT, w_param: wi
     return result;
 }
 
-fn win32CreateGameData() !pong.Data {
+fn win32CreateGameData() !snake.Data {
     const permament_storage_size = utils.megabytes(64);
     const transient_storage_size = utils.megabytes(512);
     if (win32.VirtualAlloc(
@@ -175,7 +175,7 @@ fn win32CreateGameData() !pong.Data {
         win32.PAGE_READWRITE,
     )) |memory| {
         const casted_memory = @ptrCast([*]u8, memory);
-        const result = pong.Data{
+        const result = snake.Data{
             .permanent_storage = casted_memory[0..permament_storage_size],
             .transient_storage = casted_memory[permament_storage_size..(transient_storage_size + permament_storage_size)],
         };
@@ -192,7 +192,7 @@ fn win32GetSecondsElasped(recent: i64, later: i64) f32 {
     return @intToFloat(f32, later - recent) / clock_frequency;
 }
 
-fn win32InitGameSound(channels: u32, samples_per_second: u32) !pong.Sound {
+fn win32InitGameSound(channels: u32, samples_per_second: u32) !snake.Sound {
     const max_latency_in_seconds = 4;
     const memory_size = samples_per_second * channels * max_latency_in_seconds;
     if (win32.VirtualAlloc(
@@ -202,7 +202,7 @@ fn win32InitGameSound(channels: u32, samples_per_second: u32) !pong.Sound {
         win32.PAGE_READWRITE,
     )) |memory| {
         const casted_memory = @ptrCast([*]i16, @alignCast(@alignOf(i16), memory));
-        return pong.Sound{
+        return snake.Sound{
             .sample_buffer = casted_memory[0..memory_size],
             .sample_slice = casted_memory[0..memory_size],
             .samples_per_second = samples_per_second,
@@ -211,7 +211,7 @@ fn win32InitGameSound(channels: u32, samples_per_second: u32) !pong.Sound {
     return win32.WindowError.FailedToAllocateMemory;
 }
 
-fn win32CalculateFramesToWrite(game_sound: *pong.Sound, win32_sound: *platform_sound.SoundOutput) void {
+fn win32CalculateFramesToWrite(game_sound: *snake.Sound, win32_sound: *platform_sound.SoundOutput) void {
     var padding = platform_sound.getPadding(win32_sound) catch |_| return;
     var frames_to_write = @intCast(i32, win32_sound.samples_per_second) - @intCast(i32, padding);
     if (frames_to_write > win32_sound.latency_frame_count) {
@@ -260,14 +260,14 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
     win32_sound.latency_frame_count = win32_sound.samples_per_second / @floatToInt(u32, GameUpdateHz);
     defer platform_sound.deinit(&win32_sound);
 
-    var input = pong.Input{
+    var input = snake.Input{
         .delta_time = target_seconds,
-        .keyboard = pong.Keyboard{
-            .letter = pong.LetterKeys{},
-            .number = pong.NumberKeys{},
-            .special = pong.SpecialKeys{},
+        .keyboard = snake.Keyboard{
+            .letter = snake.LetterKeys{},
+            .number = snake.NumberKeys{},
+            .special = snake.SpecialKeys{},
         },
-        .window = pong.Window{
+        .window = snake.Window{
             .width = 640,
             .height = 480,
         },
@@ -285,8 +285,8 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
     var game_draw_buffer = win32_draw_buffer.gamebuffer();
     var window = win32.Window.init(.{
         .wnd_proc = ProcessWindowsEvents,
-        .window_name = "Zig Pong Example",
-        .window_class_name = "PongWindowClass",
+        .window_name = "Zig snake Example",
+        .window_class_name = "snakeWindowClass",
         .h_instance = hInstance,
         .width = @intCast(i32, input.window.width),
         .height = @intCast(i32, input.window.height),

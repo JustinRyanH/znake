@@ -3,7 +3,7 @@
     - [x] Draw Window
 - [x] Hot Reload
 - [ ] Draw Squares
-- [ ] Paddle Left
+- [ ] Snake Head
 - [ ] Replay
 - [ ] Platform IMGUI
 - [ ] Both Paddles
