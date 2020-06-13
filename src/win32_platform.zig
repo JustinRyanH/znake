@@ -15,7 +15,6 @@ const NanosecondsInSeconds = 1000000000;
 const NanosecondsInMilliseconds = 1000000;
 const MillisecondsInSeconds = 1000;
 const GameUpdateHz = 30.0;
-const target_seconds: f32 = 1.0 / GameUpdateHz;
 
 const DLLName = "game.dll";
 const DLLTempName = "game_temp.dll";
@@ -234,6 +233,7 @@ fn win32CalculateFramesToWrite(game_sound: *snake.Sound, win32_sound: *platform_
 }
 
 pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE, lpCmdLine: win32.PWSTR, nCmdShow: win32.INT) win32.INT {
+    var target_seconds: f32 = 1.0 / GameUpdateHz;
     var pathBuffer = std.fs.selfExePathAlloc(page_allocator) catch |err| @panic("Failed to get Exe Path");
     // NOTE(jhurstwright): Don't actually free this because the OS will when the EXE close.
     // but I"m going to put commented out defers because why not
@@ -346,7 +346,9 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         if (target_seconds > elapsed) {
             const nanoSecondsToWait = @floatToInt(u64, target_seconds * MillisecondsInSeconds - elapsed * MillisecondsInSeconds) * NanosecondsInMilliseconds;
             // NOTE(jhurstwright): Shaving off a half a millisecond seems to reduce the misses
-            std.time.sleep(nanoSecondsToWait - 500);
+            if (nanoSecondsToWait > 500) {
+                std.time.sleep(nanoSecondsToWait - 500);
+            }
         } else {
             win32.debug("Missed Target Frame Rate\n", .{});
         }
