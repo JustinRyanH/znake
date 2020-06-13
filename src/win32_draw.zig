@@ -94,8 +94,7 @@ pub const Win32OffscreenBuffer = struct {
         _ = win32.PatBlt(hdc, 0, 0, draw_start_x, dimension.height, win32.BLACKNESS) != 0;
         _ = win32.PatBlt(hdc, 0, draw_start_y + buffer_height, dimension.width, dimension.height - (draw_start_y - buffer_height), win32.BLACKNESS) != 0;
         _ = win32.PatBlt(hdc, draw_start_x + buffer_width, 0, dimension.width - (draw_start_x + buffer_width), dimension.height - draw_start_y, win32.BLACKNESS) != 0;
-        // TODO(justin): Take in Window Information and center it,
-        // OR keep the aspect ratio the same and still center it
+
         return win32.StretchDIBits(
             hdc,
             draw_start_x,
