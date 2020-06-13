@@ -188,6 +188,16 @@ fn win32CreateGameData() !snake.Data {
     return win32.WindowError.FailedToAllocateMemory;
 }
 
+pub fn win32GetWindowDimensions(window: *win32.Window) platform_draw.WindowDimension {
+    var rect: win32.RECT = undefined;
+    _ = win32.GetClientRect(window.window, &rect);
+
+    return platform_draw.WindowDimension{
+        .width = rect.right - rect.left,
+        .height = rect.bottom - rect.top,
+    };
+}
+
 fn win32GetSecondsElasped(recent: i64, later: i64) f32 {
     return @intToFloat(f32, later - recent) / clock_frequency;
 }
@@ -354,7 +364,8 @@ pub export fn WinMain(hInstance: win32.HINSTANCE, hPrevInstance: win32.HINSTANCE
         last_counter = end_counter;
         input.frame += 1;
 
-        _ = win32_draw_buffer.blit(HDC);
+        const dimension = win32GetWindowDimensions(&window);
+        _ = win32_draw_buffer.blit(HDC, dimension);
     }
     return 0;
 }

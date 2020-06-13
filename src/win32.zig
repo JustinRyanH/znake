@@ -1,10 +1,11 @@
 const std = @import("std");
 const StackTrace = @import("builtin").StackTrace;
-const c_allocator = std.heap.c_allocator;
+const page_allocator = std.heap.page_allocator;
 const win32 = std.os.windows;
 
 // TYPE DEFS
 
+pub const BOOL = win32.BOOL;
 pub const DWORD = win32.DWORD;
 pub const HBRUSH = win32.HBRUSH;
 pub const HCURSOR = win32.HCURSOR;
@@ -38,6 +39,13 @@ pub const BI_PNG = 5;
 pub const POINT = extern struct {
     x: u32,
     y: u32,
+};
+
+pub const RECT = extern struct {
+    left: LONG,
+    top: LONG,
+    right: LONG,
+    bottom: LONG,
 };
 
 pub const MSG = extern struct {
@@ -406,6 +414,7 @@ pub extern "user32" fn DefWindowProcA(HWND, UINT, WPARAM, LPARAM) callconv(.Stdc
 pub extern "user32" fn TranslateMessage(*MSG) callconv(.Stdcall) bool;
 pub extern "user32" fn DispatchMessageA(*MSG) callconv(.Stdcall) LRESULT;
 pub extern "user32" fn GetDC(hWnd: HWND) HDC;
+pub extern "user32" fn GetClientRect(hWnd: HWND, lpRect: *RECT) BOOL;
 
 pub extern "kernel32" fn VirtualAlloc(lpAddress: ?LPVOID, dwSize: usize, flAllocationType: DWORD, flProtect: DWORD) ?LPVOID;
 pub extern "kernel32" fn VirtualFree(lpAddress: LPVOID, dwSize: usize, dwFreeType: DWORD) BOOL;
@@ -415,6 +424,7 @@ pub extern "kernel32" fn QueryPerformanceFrequency(*LARGE_INTEGER) bool;
 pub extern "kernel32" fn LoadLibraryA([*:0]const u8) ?HMODULE;
 
 pub extern "gdi32" fn StretchDIBits(hdc: HDC, xDest: i32, yDest: i32, DestWidth: i32, DestHeight: i32, xSrc: i32, ySrc: i32, SrcWidth: i32, SrcHeight: i32, lpBits: *c_void, lpbmi: *BITMAPINFO, iUsage: UINT, rop: DWORD) i32;
+pub extern "gdi32" fn PatBlt(hdc: HDC, x: c_int, y: c_int, w: c_int, h: c_int, rop: DWORD) BOOL;
 
 // Minimum timer resolution, in milliseconds, for the application or device driver. A lower value specifies a higher (more accurate) resolution.
 pub extern "Winmm" fn timeBeginPeriod(u32) u32;
@@ -498,9 +508,9 @@ pub const Window = struct {
 };
 
 pub fn debug(comptime fmt: []const u8, args: var) void {
-    const output = std.fmt.allocPrint0(c_allocator, fmt, args) catch unreachable;
+    const output = std.fmt.allocPrint0(page_allocator, fmt, args) catch unreachable;
     OutputDebugStringA(@ptrCast([*:0]const u8, output.ptr));
-    c_allocator.free(output);
+    page_allocator.free(output);
 }
 
 pub inline fn GetWallClock() i64 {

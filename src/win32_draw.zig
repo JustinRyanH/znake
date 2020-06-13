@@ -2,6 +2,11 @@ const std = @import("std");
 const win32 = @import("win32.zig");
 const snake = @import("snake_types.zig");
 
+pub const WindowDimension = struct {
+    width: i32,
+    height: i32,
+};
+
 pub const BYTES_PER_PIXEL = 4;
 pub const Win32OffscreenBuffer = struct {
     const BitmapInfoHeader = win32.BITMAPINFOHEADER;
@@ -73,19 +78,34 @@ pub const Win32OffscreenBuffer = struct {
         draw_buffer.memory = self.memory[0..(self.pitch * self.height)];
     }
 
-    pub fn blit(self: *Self, hdc: win32.HDC) bool {
+    pub fn blit(self: *Self, hdc: win32.HDC, dimension: WindowDimension) bool {
+        const buffer_width = @intCast(i32, self.width);
+        const buffer_height = @intCast(i32, self.height);
+
+        var center_window_x = std.math.max(0, @divTrunc(dimension.width, 2));
+        var center_window_y = std.math.max(0, @divTrunc(dimension.height, 2));
+        var center_buffer_x = std.math.max(0, @divTrunc(buffer_width, 2));
+        var center_buffer_y = std.math.max(0, @divTrunc(buffer_height, 2));
+
+        const draw_start_x = std.math.max(0, center_window_x - center_buffer_x);
+        const draw_start_y = std.math.max(0, center_window_y - center_buffer_y);
+
+        _ = win32.PatBlt(hdc, 0, 0, dimension.width, draw_start_y, win32.BLACKNESS) != 0;
+        _ = win32.PatBlt(hdc, 0, 0, draw_start_x, dimension.height, win32.BLACKNESS) != 0;
+        _ = win32.PatBlt(hdc, 0, draw_start_y + buffer_height, dimension.width, dimension.height - (draw_start_y - buffer_height), win32.BLACKNESS) != 0;
+        _ = win32.PatBlt(hdc, draw_start_x + buffer_width, 0, dimension.width - (draw_start_x + buffer_width), dimension.height - draw_start_y, win32.BLACKNESS) != 0;
         // TODO(justin): Take in Window Information and center it,
         // OR keep the aspect ratio the same and still center it
         return win32.StretchDIBits(
             hdc,
+            draw_start_x,
+            draw_start_y,
+            buffer_width,
+            buffer_height,
             0,
             0,
-            @intCast(i32, self.width),
-            @intCast(i32, self.height),
-            0,
-            0,
-            @intCast(i32, self.width),
-            @intCast(i32, self.height),
+            buffer_width,
+            buffer_height,
             self.memory,
             &self.info,
             win32.DIB_RGB_COLORS,
