@@ -27,13 +27,6 @@ pub const PixelF32 = packed struct {
     }
 };
 
-pub const Coords = struct {
-    min_x: u32,
-    min_y: u32,
-    max_x: u32,
-    max_y: u32,
-};
-
 fn clearBuffer(draw_buffer: *snake.DrawBuffer, color: Pixel) void {
     assert(draw_buffer.memory.len == draw_buffer.height * draw_buffer.pitch);
     var y_index: usize = 0;
@@ -51,13 +44,20 @@ fn clearBuffer(draw_buffer: *snake.DrawBuffer, color: Pixel) void {
     }
 }
 
-fn drawSquare(buffer: *snake.DrawBuffer, coords: var, pixel: PixelF32) void {
+const SquareCoordinates = struct {
+    min_x: f32 = 0.0,
+    min_y: f32 = 0.0,
+    max_x: f32 = 0.0,
+    max_y: f32 = 0.0,
+};
+
+fn drawSquare(buffer: *snake.DrawBuffer, coords: SquareCoordinates, pixel: PixelF32) void {
     var pixels = std.mem.bytesAsSlice(Pixel, buffer.memory);
 
-    var y: u32 = coords.min_y;
-    while (y < coords.max_y) : (y += 1) {
-        var x: u32 = coords.min_x;
-        while (x < coords.max_x) : (x += 1) {
+    var y: u32 = @floatToInt(u32, std.math.round(coords.min_y));
+    while (y < @floatToInt(u32, coords.max_y)) : (y += 1) {
+        var x: u32 = @floatToInt(u32, std.math.round(coords.min_x));
+        while (x < @floatToIn(u32, coords.max_x)) : (x += 1) {
             pixels[x + (y * buffer.width)] = pixel.to_u8();
         }
     }
@@ -71,8 +71,8 @@ const CornflowerBlue = PixelF32{
 
 export fn updateGame(input: *snake.Input, data: *snake.Data, draw_buffer: *snake.DrawBuffer) void {
     clearBuffer(draw_buffer, Pixel{});
-    drawSquare(draw_buffer, .{ .min_x = 0, .min_y = 0, .max_x = draw_buffer.width, .max_y = draw_buffer.height }, CornflowerBlue);
-    drawSquare(draw_buffer, .{ .min_x = 50, .min_y = 50, .max_x = 75, .max_y = 75 }, PixelF32{ .blue = 0.75, .red = 0.5 });
+    drawSquare(draw_buffer, SquareCoordinates{ .min_x = 0.0, .min_y = 0.0, .max_x = @intToFloat(f32, draw_buffer.width), .max_y = @intToFloat(f32, draw_buffer.height) }, CornflowerBlue);
+    drawSquare(draw_buffer, SquareCoordinates{ .min_x = 50.0, .min_y = 50.0, .max_x = 75.0, .max_y = 75.0 }, PixelF32{ .blue = 0.75, .red = 0.5 });
 }
 
 export fn updateSound(game_data: *snake.Data, sound: *snake.Sound) void {}
