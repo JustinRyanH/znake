@@ -1,7 +1,13 @@
 const std = @import("std");
+const builtin = @import("builtin");
 const win32 = @import("win32.zig");
 const assert = @import("utils.zig").assert;
 const snake = @import("snake_types.zig");
+
+pub const panic = switch (builtin.os.tag) {
+    builtin.Os.Tag.windows => win32.win32_panic,
+    else => @compileError("Unsupported OS"),
+};
 
 pub const Pixel = packed struct {
     blue: u8 = 0,
@@ -17,7 +23,7 @@ pub const PixelF32 = packed struct {
     red: f32 = 0.0,
     padding: f32 = 0.0,
 
-    pub fn to_u8(self: Self) Pixel {
+    inline fn to_u8(self: Self) Pixel {
         return Pixel{
             .blue = @floatToInt(u8, std.math.clamp(self.blue * 255.0, 0.0, 255.0)),
             .green = @floatToInt(u8, std.math.clamp(self.green * 255.0, 0.0, 255.0)),
@@ -26,23 +32,6 @@ pub const PixelF32 = packed struct {
         };
     }
 };
-
-fn clearBuffer(draw_buffer: *snake.DrawBuffer, color: Pixel) void {
-    assert(draw_buffer.memory.len == draw_buffer.height * draw_buffer.pitch);
-    var y_index: usize = 0;
-    var pixels = std.mem.bytesAsSlice(Pixel, draw_buffer.memory);
-
-    assert(pixels.len == draw_buffer.height * draw_buffer.width);
-
-    while (y_index < draw_buffer.height) {
-        const start = y_index * draw_buffer.width;
-        const end = start + draw_buffer.width;
-        for (pixels[start..end]) |*pixel, x_index| {
-            pixel.* = color;
-        }
-        y_index += 1;
-    }
-}
 
 const SquareCoordinates = struct {
     min_x: f32 = 0.0,
@@ -54,13 +43,48 @@ const SquareCoordinates = struct {
 fn drawSquare(buffer: *snake.DrawBuffer, coords: SquareCoordinates, pixel: PixelF32) void {
     var pixels = std.mem.bytesAsSlice(Pixel, buffer.memory);
 
-    var y: u32 = @floatToInt(u32, std.math.round(coords.min_y));
-    while (y < @floatToInt(u32, coords.max_y)) : (y += 1) {
-        var x: u32 = @floatToInt(u32, std.math.round(coords.min_x));
-        while (x < @floatToIn(u32, coords.max_x)) : (x += 1) {
+    const start_draw_edge_y: u32 = @floatToInt(u32, std.math.clamp(coords.min_y, 0, @intToFloat(f32, buffer.height)));
+    const start_draw_edge_x: u32 = @floatToInt(u32, std.math.clamp(coords.min_x, 0, @intToFloat(f32, buffer.width)));
+    const end_draw_edge_y = @floatToInt(u32, std.math.clamp(coords.max_y, 0, @intToFloat(f32, buffer.height)));
+    const end_draw_edge_x = @floatToInt(u32, std.math.clamp(coords.max_x, 0, @intToFloat(f32, buffer.width)));
+
+    var y = start_draw_edge_y;
+    while (y < end_draw_edge_y) : (y += 1) {
+        var x = start_draw_edge_x;
+        while (x < end_draw_edge_x) : (x += 1) {
             pixels[x + (y * buffer.width)] = pixel.to_u8();
         }
     }
+}
+
+const DebugData = struct {
+    const Self = @This();
+    const width = 16.0;
+    player_x: f32,
+    player_y: f32,
+
+    pub const ToDraw = struct {
+        coords: SquareCoordinates,
+        color: PixelF32,
+    };
+
+    pub fn to_draw_player(self: *Self) ToDraw {
+        return ToDraw{
+            .coords = SquareCoordinates{
+                .min_x = self.player_x - width,
+                .min_y = self.player_y - width,
+                .max_x = self.player_x + width,
+                .max_y = self.player_y + width,
+            },
+            .color = PixelF32{
+                .red = 1.0,
+            },
+        };
+    }
+};
+
+fn getDebugData(data: *snake.Data) *DebugData {
+    return @ptrCast(*DebugData, @alignCast(@alignOf(DebugData), data.permanent_storage[0..@sizeOf(DebugData)]));
 }
 
 const CornflowerBlue = PixelF32{
@@ -70,9 +94,30 @@ const CornflowerBlue = PixelF32{
 };
 
 export fn updateGame(input: *snake.Input, data: *snake.Data, draw_buffer: *snake.DrawBuffer) void {
-    clearBuffer(draw_buffer, Pixel{});
+    var debug_data = getDebugData(data);
+
+    if (!data.initialized) {
+        data.initialized = true;
+        debug_data.player_x = 32.0;
+        debug_data.player_y = 32.0;
+    }
+
+    if (input.keyboard.letter.a == .Down) {
+        debug_data.player_x -= (8.0 * 32.0 * input.delta_time);
+    }
+    if (input.keyboard.letter.d == .Down) {
+        debug_data.player_x += (8.0 * 32.0 * input.delta_time);
+    }
+    if (input.keyboard.letter.w == .Down) {
+        debug_data.player_y -= (8.0 * 32.0 * input.delta_time);
+    }
+    if (input.keyboard.letter.s == .Down) {
+        debug_data.player_y += (8.0 * 32.0 * input.delta_time);
+    }
+
+    const player_draw = debug_data.to_draw_player();
     drawSquare(draw_buffer, SquareCoordinates{ .min_x = 0.0, .min_y = 0.0, .max_x = @intToFloat(f32, draw_buffer.width), .max_y = @intToFloat(f32, draw_buffer.height) }, CornflowerBlue);
-    drawSquare(draw_buffer, SquareCoordinates{ .min_x = 50.0, .min_y = 50.0, .max_x = 75.0, .max_y = 75.0 }, PixelF32{ .blue = 0.75, .red = 0.5 });
+    drawSquare(draw_buffer, player_draw.coords, player_draw.color);
 }
 
 export fn updateSound(game_data: *snake.Data, sound: *snake.Sound) void {}
