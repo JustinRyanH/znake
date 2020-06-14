@@ -2,10 +2,10 @@
     - [x] Sound
     - [x] Draw Window
 - [x] Hot Reload
-- [ ] Draw Squares
-- [ ] Snake Head
+- [x] Draw Squares
 - [ ] Replay
+- [ ] Snake moves continiously, but on a grid
+- [ ] Snake head has a tiny tail
+- [ ] The tail moves on a delay
+- [ ] Static Order of Dots (That loops)
 - [ ] Platform IMGUI
-- [ ] Both Paddles
-- [ ] Ball
-- [ ] Ceiling Reflection

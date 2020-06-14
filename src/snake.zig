@@ -59,7 +59,7 @@ fn drawSquare(buffer: *snake.DrawBuffer, coords: SquareCoordinates, pixel: Pixel
 
 const DebugData = struct {
     const Self = @This();
-    const width = 16.0;
+    const width = 8.0;
     player_x: f32,
     player_y: f32,
 
@@ -98,21 +98,24 @@ export fn updateGame(input: *snake.Input, data: *snake.Data, draw_buffer: *snake
 
     if (!data.initialized) {
         data.initialized = true;
-        debug_data.player_x = 32.0;
-        debug_data.player_y = 32.0;
+        debug_data.player_x = @intToFloat(f32, @divFloor(draw_buffer.width, 2)) - 16.0;
+        debug_data.player_y = @intToFloat(f32, @divFloor(draw_buffer.height, 2)) - 32.0;
     }
 
     if (input.keyboard.letter.a == .Down) {
-        debug_data.player_x -= (8.0 * 32.0 * input.delta_time);
+        debug_data.player_x -= (4.0 * 32.0 * input.delta_time);
     }
+
     if (input.keyboard.letter.d == .Down) {
-        debug_data.player_x += (8.0 * 32.0 * input.delta_time);
+        debug_data.player_x += (4.0 * 32.0 * input.delta_time);
     }
+
     if (input.keyboard.letter.w == .Down) {
-        debug_data.player_y -= (8.0 * 32.0 * input.delta_time);
+        debug_data.player_y -= (4.0 * 32.0 * input.delta_time);
     }
+
     if (input.keyboard.letter.s == .Down) {
-        debug_data.player_y += (8.0 * 32.0 * input.delta_time);
+        debug_data.player_y += (4.0 * 32.0 * input.delta_time);
     }
 
     const player_draw = debug_data.to_draw_player();
