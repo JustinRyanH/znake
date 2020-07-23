@@ -3,8 +3,11 @@
     - [x] Draw Window
 - [x] Hot Reload
 - [x] Draw Squares
+- [ ] Swap Debug Platform to GLFW3
+- [ ] Create a IMGUI Vulkan Renderer
+- [ ] See if I can use wgpu for rendering
 - [ ] Replay
-- [ ] Snake moves continiously, but on a grid
+- [ ] Snake moves continuously, but on a grid
 - [ ] Snake head has a tiny tail
 - [ ] The tail moves on a delay
 - [ ] Static Order of Dots (That loops)
