@@ -507,7 +507,7 @@ pub const Window = struct {
     }
 };
 
-pub fn debug(comptime fmt: []const u8, args: var) void {
+pub fn debug(comptime fmt: []const u8, args: anytype) void {
     const output = std.fmt.allocPrint0(page_allocator, fmt, args) catch unreachable;
     OutputDebugStringA(@ptrCast([*:0]const u8, output.ptr));
     page_allocator.free(output);

@@ -36,7 +36,7 @@ const Win32GameCode = struct {
     tmp: []const u8,
     code: ?std.DynLib = null,
     game_functions: ?GameFunctions = null,
-    last_write_time: i64 = -1,
+    last_write_time: i128 = -1,
 
     pub fn load(source: []const u8, temp: []const u8) !Self {
         var result = Win32GameCode{
@@ -92,7 +92,7 @@ const Win32GameCode = struct {
         return self.last_write_time != new_time;
     }
 
-    fn getLastWrite(source: []const u8) !i64 {
+    fn getLastWrite(source: []const u8) !i128 {
         // TODO(jhurstwright): std.os.fstat
         const file = try std.fs.openFileAbsolute(source, OpenFlags{ .read = true, .write = false });
         defer file.close();
@@ -102,7 +102,7 @@ const Win32GameCode = struct {
     }
 };
 
-fn bitCastKey(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down: bool) void {
+fn bitCastKey(T: anytype, target: *T, vk_code: u32, key: u32, offset: u5, is_down: bool) void {
     if (vk_code == key) {
         const down_shift: i32 = @intCast(i32, (vk_code - key)) + @intCast(i32, offset);
         assert(down_shift >= 0);
@@ -114,7 +114,7 @@ fn bitCastKey(T: var, target: *T, vk_code: u32, key: u32, offset: u5, is_down: b
     }
 }
 
-fn bitCastKeys(T: var, target: *T, vk_code: u32, min: u32, max: u32, offset: u5, is_down: bool) void {
+fn bitCastKeys(T: anytype, target: *T, vk_code: u32, min: u32, max: u32, offset: u5, is_down: bool) void {
     if (vk_code >= min and vk_code <= max) {
         const down_shift: i32 = @intCast(i32, (vk_code - min)) + @intCast(i32, offset);
         assert(down_shift >= 0);
