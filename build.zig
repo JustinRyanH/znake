@@ -20,6 +20,7 @@ pub fn buildExe(b: *Builder, target: CrossTarget, mode: BuildMode) *LibExeObjSte
     const cflags = [_][]const u8{"-std=c99"};
 
     exe.addCSourceFile("src/sokol/sokol.c", &cflags);
+    exe.setOutputDir(build_root);
     exe.linkSystemLibrary("c");
 
 
