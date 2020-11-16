@@ -11,7 +11,6 @@ const SokolGameCode = @import("loader.zig").SokolGameCode;
 var pass_action: sg.PassAction = .{};
 var exe_dir: []const u8 = undefined;
 var game_code: SokolGameCode = undefined;
-var start: u64 = 0;
 
 var data: game.Data = undefined;
 var input = game.Input{
@@ -21,19 +20,27 @@ var input = game.Input{
 const DLL_NAME = "game.dll";
 const DLL_TEMP_NAME = "game_temp.dll";
 
+fn initTime(time: *game.Time) void {
+    stm.setup();
+    time.init_time = stm.now();
+}
+
+fn tickTime(time: *game.Time) void {
+    time.last_frame = time.current_frame;
+    time.current_frame = stm.now();
+}
 
 export fn init() void {
     sg.setup(.{
         .context = sgapp.context(),
     });
     pass_action.colors[0] = .{
-        .action=.CLEAR,
+        .action = .CLEAR,
         .val = .{ 1.0, 1.0, 0.0, 1.0 },
     };
 }
 
 export fn frame() void {
-    std.debug.print("Time Since Start: {}ms\n", .{ stm.sec(stm.since(start)) });
     const g = pass_action.colors[0].val[1] + 0.0;
     input.frame += 1;
 
@@ -41,6 +48,7 @@ export fn frame() void {
         game_code.reload() catch std.debug.print("Failed to Reload the code\n", .{});
     }
 
+    tickTime(&input.time);
     if (game_code.update) |update_game| {
         update_game(&input, &data);
     }
@@ -55,8 +63,7 @@ export fn cleanup() void {
 }
 
 pub fn main() anyerror!void {
-    stm.setup();
-    start = stm.now();
+    initTime(&input.time);
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     var arena_allocator = &arena.allocator;
     defer arena.deinit();
@@ -79,6 +86,6 @@ pub fn main() anyerror!void {
         .cleanup_cb = cleanup,
         .width = 640,
         .height = 480,
-        .window_title = "zsnake.zig"
+        .window_title = "zsnake.zig",
     });
 }
