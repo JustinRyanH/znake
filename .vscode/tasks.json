@@ -4,14 +4,22 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build",
+            "label": "all",
             "type": "shell",
-            "command": "zig build",
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
+            "command": "zig build all",
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": "build"
+        },
+        {
+            "label": "dll",
+            "type": "shell",
+            "command": "zig build dll",
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": "build"
         }
     ]
 }
