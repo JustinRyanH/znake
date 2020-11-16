@@ -3,6 +3,7 @@ const std = @import("std");
 const sg = @import("sokol").gfx;
 const sapp = @import("sokol").app;
 const sgapp = @import("sokol").app_gfx_glue;
+const stm = @import("sokol").time;
 
 const game = @import("game_types.zig");
 const SokolGameCode = @import("loader.zig").SokolGameCode;
@@ -10,6 +11,7 @@ const SokolGameCode = @import("loader.zig").SokolGameCode;
 var pass_action: sg.PassAction = .{};
 var exe_dir: []const u8 = undefined;
 var game_code: SokolGameCode = undefined;
+var start: u64 = 0;
 
 var data: game.Data = undefined;
 var input = game.Input{
@@ -31,7 +33,9 @@ export fn init() void {
 }
 
 export fn frame() void {
+    std.debug.print("Time Since Start: {}ms\n", .{ stm.sec(stm.since(start)) });
     const g = pass_action.colors[0].val[1] + 0.0;
+    input.frame += 1;
 
     if (game_code.hasChanged()) {
         game_code.reload() catch std.debug.print("Failed to Reload the code\n", .{});
@@ -51,6 +55,8 @@ export fn cleanup() void {
 }
 
 pub fn main() anyerror!void {
+    stm.setup();
+    start = stm.now();
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     var arena_allocator = &arena.allocator;
     defer arena.deinit();
