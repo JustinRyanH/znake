@@ -63,20 +63,20 @@ export fn cleanup() void {
 }
 
 pub fn main() anyerror!void {
+    var buffer: [1024]u8 = undefined;
+    var fba = std.heap.FixedBufferAllocator.init(&buffer);
+    var allocator = &fba.allocator;
     initTime(&input.time);
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    var arena_allocator = &arena.allocator;
-    defer arena.deinit();
 
-    var pathBuffer = std.fs.selfExePathAlloc(arena_allocator) catch |err| @panic("Failed to get Exe Path");
+    var pathBuffer = std.fs.selfExePathAlloc(allocator) catch |err| @panic("Failed to get Exe Path");
     if (std.fs.path.dirname(pathBuffer)) |path| {
         exe_dir = path[0..path.len];
     } else {
         @panic("Failed to get EXE Directory");
     }
 
-    const source_dll = try std.fs.path.join(arena_allocator, &[_][]const u8{ exe_dir, DLL_NAME });
-    const temp_dll = try std.fs.path.join(arena_allocator, &[_][]const u8{ exe_dir, DLL_TEMP_NAME });
+    const source_dll = try std.fs.path.join(allocator, &[_][]const u8{ exe_dir, DLL_NAME });
+    const temp_dll = try std.fs.path.join(allocator, &[_][]const u8{ exe_dir, DLL_TEMP_NAME });
 
     game_code = try SokolGameCode.load(source_dll, temp_dll);
 
@@ -85,7 +85,7 @@ pub fn main() anyerror!void {
         .frame_cb = frame,
         .cleanup_cb = cleanup,
         .width = 640,
-        .height = 480,
+        .height = 640,
         .window_title = "zsnake.zig",
     });
 }
