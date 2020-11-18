@@ -5,6 +5,7 @@ const sapp = @import("sokol").app;
 const sgapp = @import("sokol").app_gfx_glue;
 const stm = @import("sokol").time;
 
+const utils = @import("utils.zig");
 const game = @import("znake_types.zig");
 const SokolGame = @import("platform_code_loader.zig").SokolGame;
 
@@ -36,6 +37,20 @@ fn tickTime(time: *game.Time) void {
     time.current_frame = stm.now();
 }
 
+fn createGameData() !game.Data {
+    const allocator = std.heap.page_allocator;
+    const permament_storage_size = utils.megabytes(8);
+    const transient_storage_size = utils.megabytes(128);
+
+    var memory = try allocator.alloc(u8, permament_storage_size + transient_storage_size);
+
+    return game.Data{
+        .permanent_storage = memory[0..permament_storage_size],
+        .transient_storage = memory[permament_storage_size..(transient_storage_size + permament_storage_size)],
+    };
+}
+
+// Sokol Specific Code
 export fn init() void {
     sg.setup(.{
         .context = sgapp.context(),
@@ -102,6 +117,7 @@ export fn cleanup() void {
 }
 
 pub fn main() anyerror!void {
+    data = createGameData() catch |err| @panic("Failed to allocate initial memory for game");
     var buffer: [1024]u8 = undefined;
     var fba = std.heap.FixedBufferAllocator.init(&buffer);
     initTime(&input.time);
