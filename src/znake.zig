@@ -1,5 +1,5 @@
 const std = @import("std");
-const game = @import("game_types.zig");
+const game = @import("znake_types.zig");
 const Time = game.Time;
 
 export fn update_game(input: *game.Input, data: *game.Data) void {

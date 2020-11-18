@@ -33,7 +33,7 @@ pub fn buildExe(b: *Builder, target: CrossTarget, mode: BuildMode) *LibExeObjSte
 }
 
 pub fn buildDylib(b: *Builder, target: CrossTarget, mode: BuildMode) *LibExeObjStep  {
-        const dll = b.addSharedLibrary("game", "src/game.zig", b.version(0, 0, 1));
+        const dll = b.addSharedLibrary("game", "src/znake.zig", b.version(0, 0, 1));
         dll.setTarget(target);
         dll.setBuildMode(mode);
         dll.setOutputDir(build_root);

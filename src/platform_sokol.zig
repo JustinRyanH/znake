@@ -5,7 +5,7 @@ const sapp = @import("sokol").app;
 const sgapp = @import("sokol").app_gfx_glue;
 const stm = @import("sokol").time;
 
-const game = @import("game_types.zig");
+const game = @import("znake_types.zig");
 const SokolGame = @import("platform_code_loader.zig").SokolGame;
 
 var exe_dir: []const u8 = undefined;
@@ -104,18 +104,17 @@ export fn cleanup() void {
 pub fn main() anyerror!void {
     var buffer: [1024]u8 = undefined;
     var fba = std.heap.FixedBufferAllocator.init(&buffer);
-    var allocator = &fba.allocator;
     initTime(&input.time);
 
-    var pathBuffer = std.fs.selfExePathAlloc(allocator) catch |err| @panic("Failed to get Exe Path");
+    var pathBuffer = std.fs.selfExePathAlloc(&fba.allocator) catch |err| @panic("Failed to get Exe Path");
     if (std.fs.path.dirname(pathBuffer)) |path| {
         exe_dir = path[0..path.len];
     } else {
         @panic("Failed to get EXE Directory");
     }
 
-    const source_dll = try std.fs.path.join(allocator, &[_][]const u8{ exe_dir, DLL_NAME });
-    const temp_dll = try std.fs.path.join(allocator, &[_][]const u8{ exe_dir, DLL_TEMP_NAME });
+    const source_dll = try std.fs.path.join(&fba.allocator, &[_][]const u8{ exe_dir, DLL_NAME });
+    const temp_dll = try std.fs.path.join(&fba.allocator, &[_][]const u8{ exe_dir, DLL_TEMP_NAME });
 
     game_code = try SokolGame.load(source_dll, temp_dll);
 

@@ -1,5 +1,5 @@
 const std = @import("std");
-const game = @import("game_types.zig");
+const game = @import("znake_types.zig");
 
 pub const SokolGame = struct {
     const OpenFlags = std.fs.File.OpenFlags;
