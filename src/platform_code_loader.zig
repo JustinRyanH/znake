@@ -1,7 +1,7 @@
 const std = @import("std");
 const game = @import("game_types.zig");
 
-pub const SokolGameCode = struct {
+pub const SokolGame = struct {
     const OpenFlags = std.fs.File.OpenFlags;
     const CopyFileOptions = std.fs.CopyFileOptions;
     const Self = @This();
@@ -13,7 +13,7 @@ pub const SokolGameCode = struct {
     last_write_time: i128 = -1,
 
     pub fn load(source: []const u8, tmp: []const u8) !Self {
-        var result = SokolGameCode{
+        var result = SokolGame{
             .src = source,
             .tmp = tmp,
 

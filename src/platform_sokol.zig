@@ -6,10 +6,10 @@ const sgapp = @import("sokol").app_gfx_glue;
 const stm = @import("sokol").time;
 
 const game = @import("game_types.zig");
-const SokolGameCode = @import("loader.zig").SokolGameCode;
+const SokolGame = @import("platform_code_loader.zig").SokolGame;
 
 var exe_dir: []const u8 = undefined;
-var game_code: SokolGameCode = undefined;
+var game_code: SokolGame = undefined;
 
 var data: game.Data = undefined;
 var input = game.Input{
@@ -117,7 +117,7 @@ pub fn main() anyerror!void {
     const source_dll = try std.fs.path.join(allocator, &[_][]const u8{ exe_dir, DLL_NAME });
     const temp_dll = try std.fs.path.join(allocator, &[_][]const u8{ exe_dir, DLL_TEMP_NAME });
 
-    game_code = try SokolGameCode.load(source_dll, temp_dll);
+    game_code = try SokolGame.load(source_dll, temp_dll);
 
     sapp.run(.{
         .init_cb = init,
