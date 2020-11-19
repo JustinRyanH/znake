@@ -1,4 +1,4 @@
-const sg = @import("sokol/gfx.zig");
+const zgfx = @import("znake_gfx.zig");
 
 pub const Data = struct {
     initialized: bool = false,
@@ -52,29 +52,3 @@ pub const Time = struct {
 };
 
 pub const UpdateGame = fn (input: *Input, data: *Data, gfx: *GfxCommandBuffer) void;
-
-pub const MakeBuffer = fn (desc: sg.BufferDesc) sg.Buffer;
-pub const MakeShader = fn (desc: sg.ShaderDesc) sg.Shader;
-pub const MakePipeline = fn(desc: sg.PipelineDesc) sg.Pipeline;
-
-pub const BeginDefaultPass = fn(pass_action: sg.PassAction, width: i32, height: i32) void;
-pub const ApplyPipeline = fn(pip: sg.Pipeline) void;
-pub const ApplyBindings = fn(pip: sg.Bindings) void;
-pub const DrawCommand = fn(base_element: i32, num_elements: i32, num_instances: i32) void;
-pub const EndPass = fn() void;
-pub const Commit = fn() void;
-
-pub const GfxCommandBuffer = struct {
-    backend: sg.Backend,
-    makeBuffer: MakeBuffer,
-    makeShader: MakeShader,
-    makePipeline: MakePipeline,
-
-    beginDefaultPass: BeginDefaultPass,
-    applyPipeline: ApplyPipeline,
-    applyBindings: ApplyBindings,
-    draw: DrawCommand,
-    endPass: EndPass,
-    commit: Commit,
-
-};

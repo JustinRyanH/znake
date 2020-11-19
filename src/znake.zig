@@ -1,19 +1,19 @@
 const std = @import("std");
 
-const sg = @import("sokol/gfx.zig");
+const zgfx = @import("znake_gfx.zig");
 const game = @import("znake_types.zig");
 
 const Time = game.Time;
 
 const Renderer = struct {
     initialized: bool = false,
-    pass_action: sg.PassAction = .{},
-    pipeline: sg.Pipeline = .{},
-    bindings: sg.Bindings = .{},
+    pass_action: zgfx.PassAction = .{},
+    pipeline: zgfx.Pipeline = .{},
+    bindings: zgfx.Bindings = .{},
 
     const Self = @This();
 
-    pub fn init(self: *Self, gfx: *game.GfxCommandBuffer) void {
+    pub fn init(self: *Self, gfx: *zgfx.CommandBuffer) void {
         if (self.initialized) return;
         self.initialized = true;
         const vertices = [_]f32{
@@ -37,7 +37,7 @@ const Renderer = struct {
         });
 
         const shd = gfx.makeShader(shaderDesc(gfx));
-        var pipe_desc: sg.PipelineDesc = .{
+        var pipe_desc: zgfx.PipelineDesc = .{
             .index_type = .UINT16,
             .shader = shd,
         };
@@ -51,7 +51,7 @@ const Renderer = struct {
         };
     }
 
-    pub fn render(self: *Self, gfx: *game.GfxCommandBuffer) void {
+    pub fn render(self: *Self, gfx: *zgfx.CommandBuffer) void {
         gfx.beginDefaultPass(self.pass_action, 640, 640);
         gfx.applyPipeline(self.pipeline);
         gfx.applyBindings(self.bindings);
@@ -66,7 +66,7 @@ const GameState = struct {
     x: f32 = 16.,
     y: f32 = 16.,
     const Self = @This();
-    pub fn get(data: *game.Data, gfx: *game.GfxCommandBuffer) *Self {
+    pub fn get(data: *game.Data, gfx: *zgfx.CommandBuffer) *Self {
         var state = &std.mem.bytesAsSlice(Self, @alignCast(@alignOf(Self), data.permanent_storage[0..@sizeOf(Self)]))[0];
         if (!data.initialized) {
             state.* = GameState{};
@@ -77,7 +77,7 @@ const GameState = struct {
     }
 };
 
-export fn update_game(input: *game.Input, data: *game.Data, gfx: *game.GfxCommandBuffer) void {
+export fn update_game(input: *game.Input, data: *game.Data, gfx: *zgfx.CommandBuffer) void {
     var game_state = GameState.get(data, gfx);
     game_state.renderer.init(gfx);
     game_state.renderer.render(gfx);
@@ -88,8 +88,8 @@ export fn update_game(input: *game.Input, data: *game.Data, gfx: *game.GfxComman
 }
 
 // build a backend-specific ShaderDesc struct
-fn shaderDesc(buffer: *game.GfxCommandBuffer) sg.ShaderDesc {
-    var desc: sg.ShaderDesc = .{};
+fn shaderDesc(buffer: *zgfx.CommandBuffer) zgfx.ShaderDesc {
+    var desc: zgfx.ShaderDesc = .{};
     switch (buffer.backend) {
         .D3D11 => {
             desc.attrs[0].sem_name = "POS";
