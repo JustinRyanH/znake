@@ -2,13 +2,13 @@ const std = @import("std");
 
 const zgfx = @import("znake_gfx.zig");
 const shaders = @import("shaders/shaders.zig");
+const shader_types = shaders.types;
 const game = @import("znake_types.zig");
 
 const Time = game.Time;
 
-const Vertex = game.Vertex;
-
-const VsParams = game.VsParams;
+const Vertex = shader_types.Vertex;
+const VsParams = shader_types.VsParams;
 
 const Renderer = struct {
     initialized: bool = false,
