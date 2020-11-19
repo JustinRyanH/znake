@@ -5,7 +5,7 @@ const game = @import("znake_types.zig");
 
 const Time = game.Time;
 
-const State = struct {
+const Renderer = struct {
     initialized: bool = false,
     pass_action: sg.PassAction = .{},
     pipeline: sg.Pipeline = .{},
@@ -52,7 +52,7 @@ const State = struct {
 };
 
 const GameState = struct {
-    state: State = .{},
+    renderer: Renderer = .{},
     x: f32 = 16.,
     y: f32 = 16.,
     const Self = @This();
@@ -60,7 +60,7 @@ const GameState = struct {
         var state = &std.mem.bytesAsSlice(Self, @alignCast(@alignOf(Self), data.permanent_storage[0..@sizeOf(Self)]))[0];
         if (!data.initialized) {
             state.* = GameState{};
-            state.state.init(gfx);
+            state.renderer.init(gfx);
             data.initialized = true;
         }
 
@@ -71,9 +71,9 @@ const GameState = struct {
 export fn update_game(input: *game.Input, data: *game.Data, gfx: *game.GfxCommandBuffer) void {
     var game_state = GameState.get(data, gfx);
 
-    gfx.beginDefaultPass(game_state.state.pass_action, 640, 640);
-    gfx.applyPipeline(game_state.state.pipeline);
-    gfx.applyBindings(game_state.state.bindings);
+    gfx.beginDefaultPass(game_state.renderer.pass_action, 640, 640);
+    gfx.applyPipeline(game_state.renderer.pipeline);
+    gfx.applyBindings(game_state.renderer.bindings);
     gfx.draw(0, 6, 1);
     gfx.endPass();
     gfx.commit();
