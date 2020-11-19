@@ -6,6 +6,10 @@ const game = @import("znake_types.zig");
 
 const Time = game.Time;
 
+const Vertex = packed struct {
+    x: f32, y: f32, z: f32,
+};
+
 const Renderer = struct {
     initialized: bool = false,
     pass_action: zgfx.PassAction = .{},
@@ -17,16 +21,17 @@ const Renderer = struct {
     pub fn init(self: *Self, gfx: *zgfx.CommandBuffer) void {
         if (self.initialized) return;
         self.initialized = true;
-        const vertices = [_]f32{
-            -0.5, 0.5,  0.5, 1.0, 0.0, 0.0, 1.0,
-            0.5,  0.5,  0.5, 0.0, 1.0, 0.0, 1.0,
-            0.5,  -0.5, 0.5, 0.0, 0.0, 1.0, 1.0,
-            -0.5, -0.5, 0.5, 1.0, 1.0, 0.0, 1.0,
+
+        const ve = [_]Vertex{
+            .{ .x = -0.5, .y = 0.5,  .z = 0.5 },
+            .{ .x = 0.5,  .y = 0.5,  .z = 0.5 },
+            .{ .x = 0.5,  .y = -0.5, .z = 0.5 },
+            .{ .x = -0.5, .y = -0.5, .z = 0.5 },
         };
 
         self.bindings.vertex_buffers[0] = gfx.makeBuffer(.{
-            .size = vertices.len * @sizeOf(f32),
-            .content = &vertices[0],
+            .size = @sizeOf(@TypeOf(ve)),
+            .content = &ve[0],
             .type = .VERTEXBUFFER,
         });
 
@@ -44,7 +49,6 @@ const Renderer = struct {
         };
 
         pipe_desc.layout.attrs[0].format = .FLOAT3;
-        pipe_desc.layout.attrs[1].format = .FLOAT4;
         self.pipeline = gfx.makePipeline(pipe_desc);
         self.pass_action.colors[0] = .{
             .action = .CLEAR,
