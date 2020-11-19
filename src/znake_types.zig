@@ -54,4 +54,3 @@ pub const Time = struct {
 };
 
 pub const UpdateGame = fn (input: *Input, data: *Data, gfx: *zgfx.CommandBuffer) void;
-pub const CommandBuffer = zgfx.CommandBuffer;

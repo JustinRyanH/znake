@@ -7,6 +7,7 @@ const stm = @import("sokol").time;
 
 const utils = @import("utils.zig");
 const game = @import("znake_types.zig");
+const zgfx = @import("znake_gfx.zig");
 const SokolGame = @import("platform_code_loader.zig").SokolGame;
 
 var exe_dir: []const u8 = undefined;
@@ -23,7 +24,7 @@ const State = struct {
     bindings: sg.Bindings = .{},
 };
 var state = State{};
-var gfx_buffer: game.CommandBuffer = undefined;
+var gfx_buffer: zgfx.CommandBuffer = undefined;
 
 const DLL_NAME = "game.dll";
 const DLL_TEMP_NAME = "game_temp.dll";
@@ -57,7 +58,7 @@ export fn init() void {
         .context = sgapp.context(),
     });
 
-    gfx_buffer = game.CommandBuffer{
+    gfx_buffer = zgfx.CommandBuffer{
         .backend = sg.queryBackend(),
         .makeBuffer = sg.makeBuffer,
         .makeShader = sg.makeShader,
