@@ -6,28 +6,15 @@ const game = @import("znake_types.zig");
 const Time = game.Time;
 
 const State = struct {
+    initialized: bool = false,
     pass_action: sg.PassAction = .{},
     pipeline: sg.Pipeline = .{},
     bindings: sg.Bindings = .{},
-};
 
-const GameState = struct {
-    state: State = .{},
-    x: f32 = 16.,
-    y: f32 = 16.,
     const Self = @This();
-    pub fn get(data: *game.Data, gfx: *game.GfxCommandBuffer) *Self {
-        var state = &std.mem.bytesAsSlice(Self, @alignCast(@alignOf(Self), data.permanent_storage[0..@sizeOf(Self)]))[0];
-        if (!data.initialized) {
-            state.* = GameState{};
-            state.initGfx(gfx);
-            data.initialized = true;
-        }
 
-        return state;
-    }
-
-    pub fn initGfx(self: *Self, gfx: *game.GfxCommandBuffer) void {
+    pub fn init(self: *Self, gfx: *game.GfxCommandBuffer) void {
+        self.initialized = true;
         const vertices = [_]f32{
             -0.5, 0.5,  0.5, 1.0, 0.0, 0.0, 1.0,
             0.5,  0.5,  0.5, 0.0, 1.0, 0.0, 1.0,
@@ -35,14 +22,14 @@ const GameState = struct {
             -0.5, -0.5, 0.5, 1.0, 1.0, 0.0, 1.0,
         };
 
-        self.state.bindings.vertex_buffers[0] = gfx.makeBuffer(.{
+        self.bindings.vertex_buffers[0] = gfx.makeBuffer(.{
             .size = vertices.len * @sizeOf(f32),
             .content = &vertices[0],
             .type = .VERTEXBUFFER,
         });
 
         const indices = [_]u16{ 0, 1, 2, 0, 2, 3 };
-        self.state.bindings.index_buffer = gfx.makeBuffer(.{
+        self.bindings.index_buffer = gfx.makeBuffer(.{
             .type = .INDEXBUFFER,
             .content = &indices,
             .size = @sizeOf(@TypeOf(indices)),
@@ -56,11 +43,28 @@ const GameState = struct {
 
         pipe_desc.layout.attrs[0].format = .FLOAT3;
         pipe_desc.layout.attrs[1].format = .FLOAT4;
-        self.state.pipeline = gfx.makePipeline(pipe_desc);
-        self.state.pass_action.colors[0] = .{
+        self.pipeline = gfx.makePipeline(pipe_desc);
+        self.pass_action.colors[0] = .{
             .action = .CLEAR,
             .val = .{ 0.2, 0.2, 0.2, 1.0 },
         };
+    }
+};
+
+const GameState = struct {
+    state: State = .{},
+    x: f32 = 16.,
+    y: f32 = 16.,
+    const Self = @This();
+    pub fn get(data: *game.Data, gfx: *game.GfxCommandBuffer) *Self {
+        var state = &std.mem.bytesAsSlice(Self, @alignCast(@alignOf(Self), data.permanent_storage[0..@sizeOf(Self)]))[0];
+        if (!data.initialized) {
+            state.* = GameState{};
+            state.state.init(gfx);
+            data.initialized = true;
+        }
+
+        return state;
     }
 };
 
