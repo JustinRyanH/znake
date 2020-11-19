@@ -50,15 +50,6 @@ const Renderer = struct {
             .val = .{ 0.2, 0.2, 0.2, 1.0 },
         };
     }
-
-    pub fn render(self: *Self, gfx: *zgfx.CommandBuffer) void {
-        gfx.beginDefaultPass(self.pass_action, 640, 640);
-        gfx.applyPipeline(self.pipeline);
-        gfx.applyBindings(self.bindings);
-        gfx.draw(0, 6, 1);
-        gfx.endPass();
-        gfx.commit();
-    }
 };
 
 const GameState = struct {
@@ -80,7 +71,12 @@ const GameState = struct {
 export fn update_game(input: *game.Input, data: *game.Data, gfx: *zgfx.CommandBuffer) void {
     var game_state = GameState.get(data, gfx);
     game_state.renderer.init(gfx);
-    game_state.renderer.render(gfx);
+    gfx.beginDefaultPass(game_state.renderer.pass_action, 640, 640);
+    gfx.applyPipeline(game_state.renderer.pipeline);
+    gfx.applyBindings(game_state.renderer.bindings);
+    gfx.draw(0, 6, 1);
+    gfx.endPass();
+    gfx.commit();
 
     if (@mod(input.frame, 10) == 0) {
         std.debug.print("Head Positon:\n\tx: {}\n\ty: {}\n", .{ game_state.x, game_state.y });
