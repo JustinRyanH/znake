@@ -1,7 +1,7 @@
 const std = @import("std");
 
 const zgfx = @import("znake_gfx.zig");
-const shaders = @import("znake_shader.zig");
+const shaders = @import("shaders/shaders.zig");
 const game = @import("znake_types.zig");
 
 const Time = game.Time;
@@ -60,8 +60,6 @@ const Renderer = struct {
 
 const GameState = struct {
     renderer: Renderer = .{},
-    x: f32 = 16.,
-    y: f32 = 16.,
     const Self = @This();
     pub fn get(data: *game.Data, gfx: *zgfx.CommandBuffer) *Self {
         var state = &std.mem.bytesAsSlice(Self, @alignCast(@alignOf(Self), data.permanent_storage[0..@sizeOf(Self)]))[0];
@@ -77,6 +75,7 @@ const GameState = struct {
 export fn update_game(input: *game.Input, data: *game.Data, gfx: *zgfx.CommandBuffer) void {
     var game_state = GameState.get(data, gfx);
     var params = VsParams{ .color = .{ .r = 1.0, .b = 1.0, .g = 0.0, .a = 1.0 } };
+
     game_state.renderer.init(gfx);
     gfx.beginDefaultPass(game_state.renderer.pass_action, input.width, input.height);
     gfx.applyPipeline(game_state.renderer.pipeline);
@@ -85,8 +84,4 @@ export fn update_game(input: *game.Input, data: *game.Data, gfx: *zgfx.CommandBu
     gfx.draw(0, 6, 1);
     gfx.endPass();
     gfx.commit();
-
-    if (@mod(input.frame, 10) == 0) {
-        std.debug.print("Head Positon:\n\tx: {}\n\ty: {}\n", .{ game_state.x, game_state.y });
-    }
 }
