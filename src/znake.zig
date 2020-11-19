@@ -6,9 +6,9 @@ const game = @import("znake_types.zig");
 
 const Time = game.Time;
 
-const Vertex = packed struct {
-    x: f32, y: f32, z: f32,
-};
+const Vertex = game.Vertex;
+
+const VsParams = game.VsParams;
 
 const Renderer = struct {
     initialized: bool = false,
@@ -75,10 +75,12 @@ const GameState = struct {
 
 export fn update_game(input: *game.Input, data: *game.Data, gfx: *zgfx.CommandBuffer) void {
     var game_state = GameState.get(data, gfx);
+    var params = VsParams{ .color = .{ .r = 1.0, .b = 0.0, .g = 0.0, .a = 1.0 } };
     game_state.renderer.init(gfx);
     gfx.beginDefaultPass(game_state.renderer.pass_action, 640, 640);
     gfx.applyPipeline(game_state.renderer.pipeline);
     gfx.applyBindings(game_state.renderer.bindings);
+    gfx.applyUniforms(.VS, 0, &params, @sizeOf(@TypeOf(params)));
     gfx.draw(0, 6, 1);
     gfx.endPass();
     gfx.commit();

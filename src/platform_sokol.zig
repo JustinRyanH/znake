@@ -66,6 +66,7 @@ export fn init() void {
         .beginDefaultPass = sg.beginDefaultPass,
         .applyBindings = sg.applyBindings,
         .applyPipeline = sg.applyPipeline,
+        .applyUniforms = sg.applyUniforms,
         .draw = sg.draw,
         .endPass = sg.endPass,
         .commit = sg.commit,

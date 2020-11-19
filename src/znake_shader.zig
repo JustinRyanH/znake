@@ -1,13 +1,17 @@
 const std = @import("std");
 const zgfx = @import("znake_gfx.zig");
+const game = @import("znake_types.zig");
 
 pub fn simple(buffer: *zgfx.CommandBuffer) zgfx.ShaderDesc {
-    std.debug.warn("{}\n", . {buffer.backend });
     var desc: zgfx.ShaderDesc = .{};
+    desc.vs.uniform_blocks[0].size = @sizeOf(game.VsParams);
     switch (buffer.backend) {
         .D3D11 => {
             desc.attrs[0].sem_name = "POSITION";
             desc.vs.source =
+                \\cbuffer params: register(b0) {
+                \\  float4 color;
+                \\}
                 \\struct vs_in {
                 \\  float4 pos: POSITION;
                 \\};
@@ -18,7 +22,7 @@ pub fn simple(buffer: *zgfx.CommandBuffer) zgfx.ShaderDesc {
                 \\vs_out main(vs_in inp) {
                 \\  vs_out outp;
                 \\  outp.pos = inp.pos;
-                \\  outp.color = float4(1.0, 1.0, 1.0, 1.0);
+                \\  outp.color = color;
                 \\  return outp;
                 \\}
             ;
@@ -30,14 +34,14 @@ pub fn simple(buffer: *zgfx.CommandBuffer) zgfx.ShaderDesc {
         },
         .GLCORE33 => {
             desc.attrs[0].name = "position";
-            desc.attrs[1].name = "color0";
             desc.vs.source =
                 \\ #version 330
+                \\ uniform vec4 inColor;
                 \\ layout(location = 0) in vec4 position;
                 \\ out vec4 color;
                 \\ void main() {
                 \\   gl_Position = position;
-                \\   color = vec4(1.0, 1.0, 1.0, 1.0);
+                \\   color = inColor
                 \\ }
             ;
             desc.fs.source =
