@@ -14,6 +14,7 @@ const Renderer = struct {
     const Self = @This();
 
     pub fn init(self: *Self, gfx: *game.GfxCommandBuffer) void {
+        if (self.initialized) return;
         self.initialized = true;
         const vertices = [_]f32{
             -0.5, 0.5,  0.5, 1.0, 0.0, 0.0, 1.0,
@@ -49,6 +50,15 @@ const Renderer = struct {
             .val = .{ 0.2, 0.2, 0.2, 1.0 },
         };
     }
+
+    pub fn render(self: *Self, gfx: *game.GfxCommandBuffer) void {
+        gfx.beginDefaultPass(self.pass_action, 640, 640);
+        gfx.applyPipeline(self.pipeline);
+        gfx.applyBindings(self.bindings);
+        gfx.draw(0, 6, 1);
+        gfx.endPass();
+        gfx.commit();
+    }
 };
 
 const GameState = struct {
@@ -60,7 +70,6 @@ const GameState = struct {
         var state = &std.mem.bytesAsSlice(Self, @alignCast(@alignOf(Self), data.permanent_storage[0..@sizeOf(Self)]))[0];
         if (!data.initialized) {
             state.* = GameState{};
-            state.renderer.init(gfx);
             data.initialized = true;
         }
 
@@ -70,14 +79,8 @@ const GameState = struct {
 
 export fn update_game(input: *game.Input, data: *game.Data, gfx: *game.GfxCommandBuffer) void {
     var game_state = GameState.get(data, gfx);
-
-    gfx.beginDefaultPass(game_state.renderer.pass_action, 640, 640);
-    gfx.applyPipeline(game_state.renderer.pipeline);
-    gfx.applyBindings(game_state.renderer.bindings);
-    gfx.draw(0, 6, 1);
-    gfx.endPass();
-    gfx.commit();
-
+    game_state.renderer.init(gfx);
+    game_state.renderer.render(gfx);
 
     if (@mod(input.frame, 10) == 0) {
         std.debug.print("Head Positon:\n\tx: {}\n\ty: {}\n", .{ game_state.x, game_state.y });
