@@ -2,7 +2,7 @@ const std = @import("std");
 const zgfx = @import("znake_gfx.zig");
 const game = @import("znake_types.zig");
 
-pub fn simple(buffer: *zgfx.CommandBuffer) zgfx.ShaderDesc {
+pub fn simple() zgfx.ShaderDesc {
     var desc: zgfx.ShaderDesc = .{};
     desc.attrs[0].name = "position";
     desc.fs.uniform_blocks[0].size = @sizeOf(game.VsParams);

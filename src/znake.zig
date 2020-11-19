@@ -42,7 +42,7 @@ const Renderer = struct {
             .size = @sizeOf(@TypeOf(indices)),
         });
 
-        const shader_desc = shaders.simple(gfx);
+        const shader_desc = shaders.simple();
         const shd = gfx.makeShader(shader_desc);
         var pipe_desc: zgfx.PipelineDesc = .{
             .index_type = .UINT16,
@@ -78,7 +78,7 @@ export fn update_game(input: *game.Input, data: *game.Data, gfx: *zgfx.CommandBu
     var game_state = GameState.get(data, gfx);
     var params = VsParams{ .color = .{ .r = 1.0, .b = 0.0, .g = 0.0, .a = 1.0 } };
     game_state.renderer.init(gfx);
-    gfx.beginDefaultPass(game_state.renderer.pass_action, 640, 640);
+    gfx.beginDefaultPass(game_state.renderer.pass_action, input.width, input.height);
     gfx.applyPipeline(game_state.renderer.pipeline);
     gfx.applyBindings(game_state.renderer.bindings);
     gfx.applyUniforms(.FS, 0, &params, @sizeOf(@TypeOf(params)));
