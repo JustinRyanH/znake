@@ -5,6 +5,7 @@ pub const Pipeline = sg.Pipeline;
 pub const Bindings = sg.Bindings;
 pub const ShaderDesc = sg.ShaderDesc;
 pub const PipelineDesc = sg.PipelineDesc;
+pub const Backend = sg.Backend;
 
 pub const MakeBuffer = fn (desc: sg.BufferDesc) sg.Buffer;
 pub const MakeShader = fn (desc: sg.ShaderDesc) sg.Shader;
@@ -18,7 +19,7 @@ pub const EndPass = fn() void;
 pub const Commit = fn() void;
 
 pub const CommandBuffer = struct {
-    backend: sg.Backend,
+    backend: Backend,
     makeBuffer: MakeBuffer,
     makeShader: MakeShader,
     makePipeline: MakePipeline,

@@ -23,7 +23,7 @@ const State = struct {
     bindings: sg.Bindings = .{},
 };
 var state = State{};
-var gfx_buffer: game.GfxCommandBuffer = undefined;
+var gfx_buffer: game.CommandBuffer = undefined;
 
 const DLL_NAME = "game.dll";
 const DLL_TEMP_NAME = "game_temp.dll";
@@ -57,7 +57,7 @@ export fn init() void {
         .context = sgapp.context(),
     });
 
-    gfx_buffer = game.GfxCommandBuffer{
+    gfx_buffer = game.CommandBuffer{
         .backend = sg.queryBackend(),
         .makeBuffer = sg.makeBuffer,
         .makeShader = sg.makeShader,
@@ -73,6 +73,8 @@ export fn init() void {
 
 export fn frame() void {
     input.frame += 1;
+    input.height =sapp.height();
+    input.width = sapp.width();
 
     if (game_code.hasChanged()) {
         game_code.reload() catch std.debug.print("Failed to Reload the code\n", .{});

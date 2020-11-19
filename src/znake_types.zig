@@ -10,6 +10,8 @@ pub const Data = struct {
 pub const Input = struct {
     time: Time = .{},
     frame: usize = 0,
+    width: i32 = 0,
+    height: i32 = 0,
     delta_time: f32,
 };
 
@@ -51,4 +53,5 @@ pub const Time = struct {
     }
 };
 
-pub const UpdateGame = fn (input: *Input, data: *Data, gfx: *GfxCommandBuffer) void;
+pub const UpdateGame = fn (input: *Input, data: *Data, gfx: *zgfx.CommandBuffer) void;
+pub const CommandBuffer = zgfx.CommandBuffer;
