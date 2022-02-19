@@ -80,7 +80,7 @@ pub const Snake = struct {
 };
 
 pub const GameState = enum {
-    MenuMenu,
+    Menu,
     Play,
     GameOver,
 };
@@ -89,26 +89,60 @@ pub const State = struct {
     frame: u32 = 0,
     snake: Snake = .{},
     game_state: GameState = .GameOver,
+    last_input: u8 = 0,
+    current_input: u8 = 0,
+
+    pub fn button_1_just_pressed() bool {
+        return false;
+    }
+
+    pub fn button_1_down() bool {
+        return state.current_input & w4.BUTTON_1 != 0;
+    }
+
+    pub fn button_1_up() bool {
+        return !State.button_1_down();
+    }
+
+    pub fn button_1_just_released() bool {
+        return false;
+    }
 };
 var state: State = .{};
 
+fn mainMenu() void {}
+
+fn play() void {
+    state.snake.tick();
+    if (state.snake.out_of_bounds()) {
+        state.snake.reset();
+    }
+
+    state.snake.draw();
+    state.frame += 1;
+}
+fn gameOver() void {
+    w4.text("GAME OVER", 42, w4.CANVAS_SIZE / 2);
+    if (State.button_1_down()) {
+        w4.DRAW_COLORS.* = 0x02;
+    } else {
+        w4.DRAW_COLORS.* = 0x04;
+    }
+    w4.text("Press X to Restart", 8, w4.CANVAS_SIZE / 2 + 14);
+}
+
 export fn update() void {
+    state.current_input = w4.GAMEPAD1.*;
+
     w4.DRAW_COLORS.* = 0x04;
     w4.rect(0, 0, w4.CANVAS_SIZE, TopBarSize);
     w4.DRAW_COLORS.* = 2;
     w4.text("WASM4 Znake", 32, 4);
 
     switch (state.game_state) {
-        .MenuMenu => {},
-        .Play => {
-            state.snake.tick();
-            if (state.snake.out_of_bounds()) {
-                state.snake.reset();
-            }
-
-            state.snake.draw();
-            state.frame += 1;
-        },
-        .GameOver => {},
+        .Menu => mainMenu(),
+        .Play => play(),
+        .GameOver => gameOver(),
     }
+    state.last_input = state.current_input;
 }
