@@ -39,6 +39,41 @@ pub const Vec2 = struct {
             .y = self.y + other.y,
         };
     }
+
+    pub fn equals(self: Vec2, other: Vec2) bool {
+        return self.x == other.x and self.y == other.y;
+    }
+};
+
+pub const Fruit = struct {
+    pos: ?Vec2 = null,
+
+    pub fn draw(self: *Fruit) void {
+        if (self.pos) |pos| {
+            const x = (pos.x * SnakeSize);
+            const y = (pos.y * SnakeSize);
+            w4.DRAW_COLORS.* = 3;
+            w4.rect(x + 1, y + 1, 2, 2);
+        }
+    }
+
+    pub fn exists(self: *Fruit) bool {
+        self.pos == null;
+    }
+
+    pub fn overlaps(self: *Fruit, other: Vec2) bool {
+        if (self.pos) |pos| {
+            return pos.equals(other);
+        }
+        return false;
+    }
+
+    pub fn next(self: *Fruit, random: *rand.Random) void {
+        self.pos = Vec2{
+            .x = random.intRangeLessThan(i32, 0, WorldWidth),
+            .y = random.intRangeLessThan(i32, TitleBarSize, WorldHeight + TitleBarSize),
+        };
+    }
 };
 
 pub const Snake = struct {
@@ -56,6 +91,12 @@ pub const Snake = struct {
 
     pub fn will_move(self: *Snake) bool {
         return state.frame == self.next_update_frame;
+    }
+
+    pub fn maybe_eat(self: *Snake, fruit: *Fruit) void {
+        if (fruit.overlaps(self.pos)) {
+            fruit.pos = null;
+        }
     }
 
     pub fn tick(self: *Snake) void {
@@ -137,7 +178,7 @@ pub const State = struct {
     input: Input = .{},
     snake: Snake = .{},
     random: rand.Random = prng.random(),
-    fruit: ?Vec2 = undefined,
+    fruit: Fruit = .{},
     game_state: GameState = .GameOver,
 
     pub fn reset(self: *State) void {
@@ -170,16 +211,13 @@ fn play() void {
         } else {
             state.snake.tick();
         }
+        state.snake.maybe_eat(&state.fruit);
     }
     state.frame += 1;
     state.snake.draw();
-    if (state.fruit) |fruit| {
-        const x = (fruit.x * SnakeSize);
-        const y = (fruit.y * SnakeSize);
-        w4.DRAW_COLORS.* = 3;
-        w4.rect(x + 1, y + 1, 2, 2);
-    }
+    state.fruit.draw();
 }
+
 fn gameOver() void {
     w4.text("GAME OVER", 42, w4.CANVAS_SIZE / 2);
     if (state.input.down(Input.ButtonB)) {
@@ -194,10 +232,7 @@ fn gameOver() void {
 }
 
 export fn start() void {
-    state.fruit = Vec2{
-        .x = state.random.intRangeLessThan(i32, 0, WorldWidth),
-        .y = state.random.intRangeLessThan(i32, TitleBarSize, WorldHeight + TitleBarSize),
-    };
+    state.fruit.next(&state.random);
 }
 
 export fn update() void {
