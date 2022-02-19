@@ -79,6 +79,35 @@ pub const Snake = struct {
     }
 };
 
+pub const Input = packed struct {
+    frame: u8 = 0,
+    last_frame: u8 = 0,
+
+    pub fn up(self: *Input, button: u8) bool {
+        _ = self;
+        _ = button;
+        return false;
+    }
+
+    pub fn down(self: *Input, button: u8) bool {
+        _ = self;
+        _ = button;
+        return false;
+    }
+
+    pub fn just_released(self: *Input, button: u8) bool {
+        _ = self;
+        _ = button;
+        return false;
+    }
+
+    pub fn just_pressed(self: *Input, button: u8) bool {
+        _ = self;
+        _ = button;
+        return false;
+    }
+};
+
 pub const GameState = enum {
     Menu,
     Play,
