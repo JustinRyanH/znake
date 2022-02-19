@@ -63,11 +63,12 @@ pub const Snake = struct {
         self.next_update_frame = state.frame + StepStride;
     }
 
-    pub fn out_of_bounds(self: *Snake) bool {
-        if (self.pos.y < SnakeYMin or self.pos.y > SnakeYMax) {
+    pub fn will_be_out_of_bounds(self: *Snake) bool {
+        const pos = self.pos.add(self.dir.to_vec2());
+        if (pos.y < SnakeYMin or pos.y > SnakeYMax) {
             return true;
         }
-        if (self.pos.x < SnakeXMin or self.pos.x > SnakeYMax) {
+        if (pos.x < SnakeXMin or pos.x > SnakeYMax) {
             return true;
         }
         return false;
@@ -148,13 +149,12 @@ fn mainMenu() void {}
 fn play() void {
     if (state.snake.will_move()) {
         state.snake.tick();
-        if (state.snake.out_of_bounds()) {
+        if (state.snake.will_be_out_of_bounds()) {
             state.game_state = .GameOver;
         }
-
-        state.snake.draw();
     }
     state.frame += 1;
+    state.snake.draw();
 }
 fn gameOver() void {
     w4.text("GAME OVER", 42, w4.CANVAS_SIZE / 2);
