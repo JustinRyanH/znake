@@ -80,31 +80,44 @@ pub const Snake = struct {
 };
 
 pub const Input = packed struct {
+    const ButtonA = w4.BUTTON_1;
+    const ButtonB = w4.BUTTON_2;
+    const Left = w4.BUTTON_LEFT;
+    const Right = w4.BUTTON_RIGHT;
+    const Up = w4.BUTTON_UP;
+    const Down = w4.BUTTON_DOWN;
+
     frame: u8 = 0,
     last_frame: u8 = 0,
 
-    pub fn up(self: *Input, button: u8) bool {
-        _ = self;
-        _ = button;
-        return false;
+    pub fn down(self: *Input, button: u8) bool {
+        return self.frame & button != 0;
     }
 
-    pub fn down(self: *Input, button: u8) bool {
-        _ = self;
-        _ = button;
-        return false;
+    pub fn up(self: *Input, button: u8) bool {
+        return !self.down(button);
     }
 
     pub fn just_released(self: *Input, button: u8) bool {
-        _ = self;
-        _ = button;
-        return false;
+        const last_down = self.last_frame_down(button);
+        return last_down and self.up(button);
     }
 
     pub fn just_pressed(self: *Input, button: u8) bool {
-        _ = self;
-        _ = button;
-        return false;
+        const last_up = !self.last_frame_down(button);
+        return last_up and self.down(button);
+    }
+
+    pub fn process(self: *Input) void {
+        self.frame = w4.GAMEPAD1.*;
+    }
+
+    pub fn swap(self: *Input) void {
+        self.last_frame = self.frame;
+    }
+
+    fn last_frame_down(self: *Input, button: u8) bool {
+        return self.last_frame & button != 0;
     }
 };
 
@@ -116,6 +129,7 @@ pub const GameState = enum {
 
 pub const State = struct {
     frame: u32 = 0,
+    input: Input = .{},
     snake: Snake = .{},
     game_state: GameState = .GameOver,
     last_input: u8 = 0,
@@ -160,18 +174,19 @@ fn play() void {
 }
 fn gameOver() void {
     w4.text("GAME OVER", 42, w4.CANVAS_SIZE / 2);
-    if (State.button_1_down()) {
+    if (state.input.down(Input.ButtonB)) {
         w4.DRAW_COLORS.* = 0x02;
     } else {
         w4.DRAW_COLORS.* = 0x04;
     }
-    w4.text("Press X to Restart", 8, w4.CANVAS_SIZE / 2 + 14);
-    if (State.button_1_just_released()) {
+    w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE / 2 + 14);
+    if (state.input.just_released(Input.ButtonB)) {
         state.reset();
     }
 }
 
 export fn update() void {
+    state.input.process();
     state.current_input = w4.GAMEPAD1.*;
 
     w4.DRAW_COLORS.* = 0x04;
@@ -185,4 +200,5 @@ export fn update() void {
         .GameOver => gameOver(),
     }
     state.last_input = state.current_input;
+    state.input.swap();
 }
