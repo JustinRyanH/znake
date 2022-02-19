@@ -1,4 +1,5 @@
 const w4 = @import("wasm4.zig");
+const rand = @import("std").rand;
 
 const TitleBarSize = 4;
 const WorldWidth = w4.CANVAS_SIZE / SnakeSize;
@@ -29,8 +30,8 @@ pub const Direction = enum {
 };
 
 pub const Vec2 = struct {
-    x: i16 = 0,
-    y: i16 = 0,
+    x: i32 = 0,
+    y: i32 = 0,
 
     pub fn add(self: Vec2, other: Vec2) Vec2 {
         return Vec2{
@@ -130,10 +131,13 @@ pub const GameState = enum {
     GameOver,
 };
 
+var prng = rand.DefaultPrng.init(40);
 pub const State = struct {
     frame: u32 = 0,
     input: Input = .{},
     snake: Snake = .{},
+    random: rand.Random = prng.random(),
+    fruit: ?Vec2 = undefined,
     game_state: GameState = .GameOver,
 
     pub fn reset(self: *State) void {
@@ -169,6 +173,12 @@ fn play() void {
     }
     state.frame += 1;
     state.snake.draw();
+    if (state.fruit) |fruit| {
+        const x = (fruit.x * SnakeSize);
+        const y = (fruit.y * SnakeSize);
+        w4.DRAW_COLORS.* = 3;
+        w4.rect(x + 1, y + 1, 2, 2);
+    }
 }
 fn gameOver() void {
     w4.text("GAME OVER", 42, w4.CANVAS_SIZE / 2);
@@ -181,6 +191,13 @@ fn gameOver() void {
     if (state.input.just_released(Input.ButtonB)) {
         state.reset();
     }
+}
+
+export fn start() void {
+    state.fruit = Vec2{
+        .x = state.random.intRangeLessThan(i32, 0, WorldWidth),
+        .y = state.random.intRangeLessThan(i32, TitleBarSize, WorldHeight + TitleBarSize),
+    };
 }
 
 export fn update() void {
