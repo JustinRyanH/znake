@@ -29,8 +29,8 @@ pub const Direction = enum {
 };
 
 pub const Vec2 = struct {
-    x: i32 = 0,
-    y: i32 = 0,
+    x: i16 = 0,
+    y: i16 = 0,
 
     pub fn add(self: Vec2, other: Vec2) Vec2 {
         return Vec2{
@@ -53,12 +53,14 @@ pub const Snake = struct {
         self.dir = DefaultDirectoin;
     }
 
+    pub fn will_move(self: *Snake) bool {
+        return state.frame == self.next_update_frame;
+    }
+
     pub fn tick(self: *Snake) void {
-        if (state.frame == self.next_update_frame) {
-            const d = self.dir.to_vec2();
-            self.pos = self.pos.add(d);
-            self.next_update_frame = state.frame + StepStride;
-        }
+        const d = self.dir.to_vec2();
+        self.pos = self.pos.add(d);
+        self.next_update_frame = state.frame + StepStride;
     }
 
     pub fn out_of_bounds(self: *Snake) bool {
@@ -132,31 +134,11 @@ pub const State = struct {
     input: Input = .{},
     snake: Snake = .{},
     game_state: GameState = .GameOver,
-    last_input: u8 = 0,
-    current_input: u8 = 0,
 
     pub fn reset(self: *State) void {
         self.frame = 0;
         self.snake.reset();
         self.game_state = .Play;
-    }
-
-    pub fn button_1_just_pressed() bool {
-        const last_down = state.last_input & w4.BUTTON_1 != 0;
-        return !last_down and state.current_input & w4.BUTTON_1 != 0;
-    }
-
-    pub fn button_1_down() bool {
-        return state.current_input & w4.BUTTON_1 != 0;
-    }
-
-    pub fn button_1_up() bool {
-        return !State.button_1_down();
-    }
-
-    pub fn button_1_just_released() bool {
-        const last_down = state.last_input & w4.BUTTON_1 != 0;
-        return last_down and !(state.current_input & w4.BUTTON_1 != 0);
     }
 };
 var state: State = .{};
@@ -164,12 +146,14 @@ var state: State = .{};
 fn mainMenu() void {}
 
 fn play() void {
-    state.snake.tick();
-    if (state.snake.out_of_bounds()) {
-        state.game_state = .GameOver;
-    }
+    if (state.snake.will_move()) {
+        state.snake.tick();
+        if (state.snake.out_of_bounds()) {
+            state.game_state = .GameOver;
+        }
 
-    state.snake.draw();
+        state.snake.draw();
+    }
     state.frame += 1;
 }
 fn gameOver() void {
@@ -187,7 +171,6 @@ fn gameOver() void {
 
 export fn update() void {
     state.input.process();
-    state.current_input = w4.GAMEPAD1.*;
 
     w4.DRAW_COLORS.* = 0x04;
     w4.rect(0, 0, w4.CANVAS_SIZE, TopBarSize);
@@ -199,6 +182,5 @@ export fn update() void {
         .Play => play(),
         .GameOver => gameOver(),
     }
-    state.last_input = state.current_input;
     state.input.swap();
 }
