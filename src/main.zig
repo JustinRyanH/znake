@@ -92,8 +92,15 @@ pub const State = struct {
     last_input: u8 = 0,
     current_input: u8 = 0,
 
+    pub fn reset(self: *State) void {
+        self.frame = 0;
+        self.snake.reset();
+        self.game_state = .Play;
+    }
+
     pub fn button_1_just_pressed() bool {
-        return false;
+        const last_down = state.last_input & w4.BUTTON_1 != 0;
+        return !last_down and state.current_input & w4.BUTTON_1 != 0;
     }
 
     pub fn button_1_down() bool {
@@ -105,7 +112,8 @@ pub const State = struct {
     }
 
     pub fn button_1_just_released() bool {
-        return false;
+        const last_down = state.last_input & w4.BUTTON_1 != 0;
+        return last_down and !(state.current_input & w4.BUTTON_1 != 0);
     }
 };
 var state: State = .{};
@@ -115,7 +123,7 @@ fn mainMenu() void {}
 fn play() void {
     state.snake.tick();
     if (state.snake.out_of_bounds()) {
-        state.snake.reset();
+        state.game_state = .GameOver;
     }
 
     state.snake.draw();
@@ -129,6 +137,9 @@ fn gameOver() void {
         w4.DRAW_COLORS.* = 0x04;
     }
     w4.text("Press X to Restart", 8, w4.CANVAS_SIZE / 2 + 14);
+    if (State.button_1_just_released()) {
+        state.reset();
+    }
 }
 
 export fn update() void {
