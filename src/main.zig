@@ -5,7 +5,7 @@ const WorldWidth = w4.CANVAS_SIZE / SnakeSize;
 const WorldHeight = (w4.CANVAS_SIZE - TitleBarSize) / SnakeSize;
 const SnakeSize = 4;
 const TopBarSize = SnakeSize * TitleBarSize;
-const StepStride = 8;
+const StepStride = 10;
 
 const SnakeYMin = TitleBarSize;
 const SnakeYMax = WorldHeight;
@@ -147,10 +147,24 @@ var state: State = .{};
 fn mainMenu() void {}
 
 fn play() void {
+    if (state.input.just_pressed(Input.Left)) {
+        state.snake.dir = .Left;
+    }
+    if (state.input.just_pressed(Input.Right)) {
+        state.snake.dir = .Right;
+    }
+    if (state.input.just_pressed(Input.Up)) {
+        state.snake.dir = .Up;
+    }
+    if (state.input.just_pressed(Input.Down)) {
+        state.snake.dir = .Down;
+    }
+
     if (state.snake.will_move()) {
-        state.snake.tick();
         if (state.snake.will_be_out_of_bounds()) {
             state.game_state = .GameOver;
+        } else {
+            state.snake.tick();
         }
     }
     state.frame += 1;
