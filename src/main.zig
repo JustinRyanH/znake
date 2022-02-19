@@ -40,9 +40,9 @@ pub const Vec2 = struct {
     }
 };
 
-const DefaultDirectoin: Direction = .Right;
-
 pub const Snake = struct {
+    const DefaultDirectoin: Direction = .Up;
+
     next_update_frame: u32 = StepStride,
     pos: Vec2 = .{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) },
     dir: Direction = DefaultDirectoin,
@@ -78,9 +78,17 @@ pub const Snake = struct {
         w4.rect(x, y, SnakeSize, SnakeSize);
     }
 };
+
+pub const GameState = enum {
+    MenuMenu,
+    Play,
+    GameOver,
+};
+
 pub const State = struct {
     frame: u32 = 0,
     snake: Snake = .{},
+    game_state: GameState = .GameOver,
 };
 var state: State = .{};
 
@@ -90,11 +98,17 @@ export fn update() void {
     w4.DRAW_COLORS.* = 2;
     w4.text("WASM4 Znake", 32, 4);
 
-    state.snake.tick();
-    if (state.snake.out_of_bounds()) {
-        state.snake.reset();
-    }
+    switch (state.game_state) {
+        .MenuMenu => {},
+        .Play => {
+            state.snake.tick();
+            if (state.snake.out_of_bounds()) {
+                state.snake.reset();
+            }
 
-    state.snake.draw();
-    state.frame += 1;
+            state.snake.draw();
+            state.frame += 1;
+        },
+        .GameOver => {},
+    }
 }
