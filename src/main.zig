@@ -6,7 +6,7 @@ const StackMemorySize = 0x2000;
 const FreeMemoryStart = 0x19A0 + StackMemorySize;
 const FreeMemoryAvailable = 0xE65F - StackMemorySize;
 
-const FreeMemory: *[FreeMemoryAvailable]u8 = @intToPtr(*[FreeMemoryAvailable]u8, FreeMemoryStart);
+var FreeMemory: *[10_000]u8 = @intToPtr(*[10_000]u8, FreeMemoryStart);
 
 const TitleBarSize = 4;
 const WorldWidth = w4.CANVAS_SIZE / SnakeSize;
@@ -20,7 +20,8 @@ const SnakeYMax = WorldHeight;
 const SnakeXMin = 0;
 const SnakeXMax = WorldWidth;
 
-var fba = heap.FixedBufferAllocator.init(FreeMemory);
+var FixedBufferAllocator = heap.FixedBufferAllocator.init(FreeMemory[0..]);
+var fixedAlloator = FixedBufferAllocator.allocator();
 
 pub const Direction = enum {
     Up,
@@ -182,11 +183,12 @@ pub const GameState = enum {
 };
 
 var prng = rand.DefaultPrng.init(40);
+var global_random: rand.Random = prng.random();
+
 pub const State = struct {
     frame: u32 = 0,
     input: Input = .{},
     snake: Snake = .{},
-    random: rand.Random = prng.random(),
     fruit: Fruit = .{},
     game_state: GameState = .GameOver,
 
@@ -196,7 +198,8 @@ pub const State = struct {
         self.game_state = .Play;
     }
 };
-var state: State = .{};
+var stack_state: State = .{};
+var state: *State = undefined;
 
 fn mainMenu() void {}
 
@@ -241,7 +244,8 @@ fn gameOver() void {
 }
 
 export fn start() void {
-    state.fruit.next(&state.random);
+    state = fixedAlloator.create(State) catch unreachable;
+    state.fruit.next(&global_random);
 }
 
 export fn update() void {
