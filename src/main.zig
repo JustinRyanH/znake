@@ -23,6 +23,8 @@ const SnakeXMax = WorldWidth;
 var FixedBufferAllocator = heap.FixedBufferAllocator.init(FreeMemory[0..]);
 var fixedAlloator = FixedBufferAllocator.allocator();
 
+var prng = rand.DefaultPrng.init(40);
+
 pub const Direction = enum {
     Up,
     Down,
@@ -242,7 +244,6 @@ fn gameOver() void {
 
 export fn start() void {
     state = fixedAlloator.create(State) catch unreachable;
-    var prng = rand.DefaultPrng.init(40);
     state.random = prng.random();
     state.fruit.next(&state.random);
 }
