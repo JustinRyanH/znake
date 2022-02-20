@@ -1,5 +1,12 @@
 const w4 = @import("wasm4.zig");
+const heap = @import("std").heap;
 const rand = @import("std").rand;
+
+const StackMemorySize = 0x2000;
+const FreeMemoryStart = 0x19A0 + StackMemorySize;
+const FreeMemoryAvailable = 0xE65F - StackMemorySize;
+
+const FreeMemory: *[FreeMemoryAvailable]u8 = @intToPtr(*[FreeMemoryAvailable]u8, FreeMemoryStart);
 
 const TitleBarSize = 4;
 const WorldWidth = w4.CANVAS_SIZE / SnakeSize;
@@ -12,6 +19,8 @@ const SnakeYMin = TitleBarSize;
 const SnakeYMax = WorldHeight;
 const SnakeXMin = 0;
 const SnakeXMax = WorldWidth;
+
+var fba = heap.FixedBufferAllocator.init(FreeMemory);
 
 pub const Direction = enum {
     Up,
