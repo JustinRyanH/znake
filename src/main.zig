@@ -217,6 +217,7 @@ pub const State = struct {
     frame: u32 = 0,
     next_tick: u32 = StepStride,
     input: Input = .{},
+    maybe_next_direction: Direction = .Up,
     segments: SegmentList,
     fruit: Fruit = .{},
     game_state: GameState = .GameOver,
@@ -243,13 +244,14 @@ pub const State = struct {
         self.frame = 0;
         self.next_tick = StepStride;
         self.segments.clearAndFree();
+        state.maybe_next_direction = .Up;
 
         const starting_segment = Segment{
-            .direction = .Up,
+            .direction = state.maybe_next_direction,
             .position = .{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) },
         };
         const starting_tail = Segment{
-            .direction = .Up,
+            .direction = state.maybe_next_direction,
             .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }),
         };
         self.segments.append(starting_segment) catch unreachable;
@@ -320,19 +322,28 @@ fn mainMenu() void {}
 fn play() void {
     var snake_head = state.snakeHead();
     if (state.input.just_pressed(Input.Left)) {
-        snake_head.go(.Left);
+        if (snake_head.direction.opposite() != .Left) {
+            state.maybe_next_direction = .Left;
+        }
     }
     if (state.input.just_pressed(Input.Right)) {
-        snake_head.go(.Right);
+        if (snake_head.direction.opposite() != .Right) {
+            state.maybe_next_direction = .Right;
+        }
     }
     if (state.input.just_pressed(Input.Up)) {
-        snake_head.go(.Up);
+        if (snake_head.direction.opposite() != .Up) {
+            state.maybe_next_direction = .Up;
+        }
     }
     if (state.input.just_pressed(Input.Down)) {
-        snake_head.go(.Down);
+        if (snake_head.direction.opposite() != .Down) {
+            state.maybe_next_direction = .Down;
+        }
     }
 
     if (state.should_tick()) {
+        snake_head.direction = state.maybe_next_direction;
         if (snake_head.willBeOutOfBounds() or state.willCollideWithSelf()) {
             state.game_state = .GameOver;
         } else if (state.fruit.missing()) {
