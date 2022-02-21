@@ -115,54 +115,6 @@ pub const Fruit = struct {
     }
 };
 
-pub const Snake = struct {
-    const DefaultDirectoin: Direction = .Up;
-
-    next_update_frame: u32 = StepStride,
-    pos: Vec2 = .{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) },
-    dir: Direction = DefaultDirectoin,
-
-    pub fn reset(self: *Snake) void {
-        self.next_update_frame = state.frame + StepStride;
-        self.pos = .{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) };
-        self.dir = DefaultDirectoin;
-    }
-
-    pub fn will_move(self: *Snake) bool {
-        return state.frame == self.next_update_frame;
-    }
-
-    pub fn maybe_eat(self: *Snake, fruit: *Fruit) void {
-        if (fruit.overlaps(self.pos)) {
-            fruit.pos = null;
-        }
-    }
-
-    pub fn tick(self: *Snake) void {
-        const d = self.dir.to_vec2();
-        self.pos = self.pos.add(d);
-        self.next_update_frame = state.frame + StepStride;
-    }
-
-    pub fn will_be_out_of_bounds(self: *Snake) bool {
-        const pos = self.pos.add(self.dir.to_vec2());
-        if (pos.y < SnakeYMin or pos.y > SnakeYMax) {
-            return true;
-        }
-        if (pos.x < SnakeXMin or pos.x > SnakeYMax) {
-            return true;
-        }
-        return false;
-    }
-
-    pub fn draw(self: *Snake) void {
-        const x = (self.pos.x * SnakeSize);
-        const y = (self.pos.y * SnakeSize);
-        w4.DRAW_COLORS.* = 2;
-        w4.rect(x, y, SnakeSize, SnakeSize);
-    }
-};
-
 pub const Input = packed struct {
     const ButtonA = w4.BUTTON_1;
     const ButtonB = w4.BUTTON_2;
@@ -218,7 +170,6 @@ pub const State = struct {
     frame: u32 = 0,
     next_tick: u32 = StepStride,
     input: Input = .{},
-    snake: Snake = .{},
     segments: SegmentList,
     fruit: Fruit = .{},
     game_state: GameState = .GameOver,
@@ -243,7 +194,14 @@ pub const State = struct {
 
     pub fn reset(self: *State) void {
         self.frame = 0;
-        self.snake.reset();
+        self.next_tick = StepStride;
+        self.segments.clearAndFree();
+
+        const starting_segment = Segment{
+            .direction = .Up,
+            .position = .{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) },
+        };
+        self.segments.append(starting_segment) catch unreachable;
         self.game_state = .Play;
         prng = rand.DefaultPrng.init(40);
         self.random = prng.random();
@@ -292,19 +250,15 @@ fn play() void {
     var snake_head = state.snakeHead();
     if (state.input.just_pressed(Input.Left)) {
         snake_head.direction = .Left;
-        state.snake.dir = .Left;
     }
     if (state.input.just_pressed(Input.Right)) {
         snake_head.direction = .Right;
-        state.snake.dir = .Right;
     }
     if (state.input.just_pressed(Input.Up)) {
         snake_head.direction = .Up;
-        state.snake.dir = .Up;
     }
     if (state.input.just_pressed(Input.Down)) {
         snake_head.direction = .Down;
-        state.snake.dir = .Down;
     }
 
     if (state.should_tick()) {
@@ -317,7 +271,6 @@ fn play() void {
         state.maybEat();
     }
     state.frame += 1;
-    state.snake.draw();
     state.draw();
     state.fruit.draw();
 }
@@ -337,12 +290,8 @@ fn gameOver() void {
 
 export fn start() void {
     state = State.alloc_and_init(fixedAlloator);
+    state.reset();
 
-    const starting_segment = Segment{
-        .direction = .Up,
-        .position = .{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) },
-    };
-    state.segments.append(starting_segment) catch unreachable;
     state.next_fruit();
 }
 
