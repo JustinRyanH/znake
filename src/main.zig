@@ -125,8 +125,8 @@ pub const Fruit = struct {
 
     pub fn next(self: *Fruit, random: rand.Random) void {
         self.pos = Vec2{
-            .x = random.intRangeLessThan(i32, 0, WorldWidth),
-            .y = random.intRangeLessThan(i32, TitleBarSize, WorldHeight + TitleBarSize),
+            .x = random.intRangeLessThan(i32, 1, WorldWidth - 1),
+            .y = random.intRangeLessThan(i32, TitleBarSize + 1, WorldHeight + TitleBarSize - 1),
         };
     }
 };
@@ -224,6 +224,10 @@ pub const State = struct {
         self.nextFruit();
     }
 
+    pub fn willCollideWithSelf(self: *State) bool {
+        return false;
+    }
+
     pub fn nextFruit(self: *State) void {
         self.fruit.next(state.random);
     }
@@ -253,7 +257,7 @@ pub const State = struct {
     }
 
     pub fn draw(self: *State) void {
-        var i: u8 = 0;
+        var i: i16 = 0;
         const segments = self.segments.items;
         while (i < segments.len) : (i += 1) {
             segments[i].draw();
@@ -280,7 +284,7 @@ fn play() void {
     }
 
     if (state.should_tick()) {
-        if (snake_head.willBeOutOfBounds()) {
+        if (snake_head.willBeOutOfBounds() or state.willCollideWithSelf()) {
             state.game_state = .GameOver;
         } else if (state.fruit.missing()) {
             var segments = state.segments.items;
@@ -291,7 +295,7 @@ fn play() void {
             state.nextFruit();
         } else {
             state.updateSegments();
-            w4.tone(90, 1, 10, w4.TONE_MODE1);
+            w4.tone(90, 3, 10, w4.TONE_MODE1);
         }
 
         state.maybEat();
@@ -335,7 +339,7 @@ export fn update() void {
         .GameOver => gameOver(),
     }
     state.input.swap();
-    printMemory();
+    // printMemory();
 }
 
 fn printMemory() void {
