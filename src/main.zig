@@ -217,6 +217,9 @@ pub const State = struct {
         self.frame = 0;
         self.snake.reset();
         self.game_state = .Play;
+        prng = rand.DefaultPrng.init(40);
+        self.random = prng.random();
+        self.next_fruit();
     }
 
     pub fn next_fruit(self: *State) void {
