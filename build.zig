@@ -2,7 +2,7 @@ const std = @import("std");
 
 // Returns true if the version includes https://github.com/ziglang/zig/pull/10572/commits.
 // When this is false, trying to place the stack first will result in data corruption.
-fn version_supports_stack_first(zig_version: std.SemanticVersion) !bool {
+fn versionSupportsStackFirst(zig_version: std.SemanticVersion) !bool {
     if (zig_version.order(try std.SemanticVersion.parse("0.10.0")).compare(.gte)) {
         // Merged here: https://github.com/ziglang/zig/pull/10572
         return true;
@@ -22,26 +22,26 @@ fn version_supports_stack_first(zig_version: std.SemanticVersion) !bool {
 test "stack version check" {
     const expect = std.testing.expect;
     const parse = std.SemanticVersion.parse;
-    try expect(!try version_supports_stack_first(try parse("0.8.0")));
+    try expect(!try versionSupportsStackFirst(try parse("0.8.0")));
 
-    try expect(!try version_supports_stack_first(try parse("0.9.0")));
-    try expect(!try version_supports_stack_first(try parse("0.9.1-dev.259")));
-    try expect(try version_supports_stack_first(try parse("0.9.1")));
+    try expect(!try versionSupportsStackFirst(try parse("0.9.0")));
+    try expect(!try versionSupportsStackFirst(try parse("0.9.1-dev.259")));
+    try expect(try versionSupportsStackFirst(try parse("0.9.1")));
 
     // Conservatively don't recognize tags other than 'dev'.
-    try expect(!try version_supports_stack_first(try parse("0.10.0-aev.259")));
-    try expect(!try version_supports_stack_first(try parse("0.10.0-zev.259")));
+    try expect(!try versionSupportsStackFirst(try parse("0.10.0-aev.259")));
+    try expect(!try versionSupportsStackFirst(try parse("0.10.0-zev.259")));
 
-    try expect(!try version_supports_stack_first(try parse("0.10.0-dev.257")));
-    try expect(try version_supports_stack_first(try parse("0.10.0-dev.258")));
-    try expect(try version_supports_stack_first(try parse("0.10.0-dev.259")));
-    try expect(try version_supports_stack_first(try parse("0.10.0")));
+    try expect(!try versionSupportsStackFirst(try parse("0.10.0-dev.257")));
+    try expect(try versionSupportsStackFirst(try parse("0.10.0-dev.258")));
+    try expect(try versionSupportsStackFirst(try parse("0.10.0-dev.259")));
+    try expect(try versionSupportsStackFirst(try parse("0.10.0")));
 
-    try expect(try version_supports_stack_first(try parse("0.10.1-dev.100")));
-    try expect(try version_supports_stack_first(try parse("0.10.1-dev.300")));
-    try expect(try version_supports_stack_first(try parse("0.10.1")));
+    try expect(try versionSupportsStackFirst(try parse("0.10.1-dev.100")));
+    try expect(try versionSupportsStackFirst(try parse("0.10.1-dev.300")));
+    try expect(try versionSupportsStackFirst(try parse("0.10.1")));
 
-    try expect(try version_supports_stack_first(try parse("1.0.0")));
+    try expect(try versionSupportsStackFirst(try parse("1.0.0")));
 }
 
 pub fn build(b: *std.build.Builder) !void {
@@ -53,7 +53,7 @@ pub fn build(b: *std.build.Builder) !void {
     lib.import_memory = true;
     lib.initial_memory = 65536;
     lib.max_memory = 65536;
-    if (try version_supports_stack_first(zig_version)) {
+    if (try versionSupportsStackFirst(zig_version)) {
         lib.stack_size = 14752;
     } else {
         // `--stack-first` option have been reenabled on wasm targets with https://github.com/ziglang/zig/pull/10572
