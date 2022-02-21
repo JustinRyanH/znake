@@ -2,6 +2,7 @@ const w4 = @import("wasm4.zig");
 const heap = @import("std").heap;
 const rand = @import("std").rand;
 const Allocator = @import("std").mem.Allocator;
+const ArrayList = @import("std").ArrayList;
 
 const StackMemorySize = 0x3000;
 const FreeMemoryStart = 0x19A0 + StackMemorySize;
@@ -25,6 +26,12 @@ var FixedBufferAllocator = heap.FixedBufferAllocator.init(FreeMemory[0..]);
 var fixedAlloator = FixedBufferAllocator.allocator();
 
 var prng = rand.DefaultPrng.init(40);
+
+const SegmentList = ArrayList(Segment);
+pub const Segment = struct {
+    position: Vec2,
+    direction: Direction,
+};
 
 pub const Direction = enum {
     Up,
@@ -192,6 +199,7 @@ pub const State = struct {
     frame: u32 = 0,
     input: Input = .{},
     snake: Snake = .{},
+    segments: SegmentList,
     fruit: Fruit = .{},
     game_state: GameState = .GameOver,
 
@@ -200,6 +208,7 @@ pub const State = struct {
         state.* = .{
             .allocator = allocator,
             .random = prng.random(),
+            .segments = SegmentList.init(allocator),
         };
         return state;
     }
@@ -277,4 +286,5 @@ export fn update() void {
         .GameOver => gameOver(),
     }
     state.input.swap();
+    // w4.tracef("%d/%d", FixedBufferAllocator.end_index, FreeMemory[0..].len);
 }
