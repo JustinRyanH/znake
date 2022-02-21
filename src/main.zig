@@ -11,10 +11,11 @@ const FreeMemoryAvailable = 0xE65F - StackMemorySize;
 
 var FreeMemory: *[FreeMemoryAvailable]u8 = @intToPtr(*[FreeMemoryAvailable]u8, FreeMemoryStart);
 
-const TitleBarSize = 4;
+const TitleBarSize = 2;
 const WorldWidth = w4.CANVAS_SIZE / SnakeSize;
 const WorldHeight = (w4.CANVAS_SIZE - TitleBarSize) / SnakeSize;
-const SnakeSize = 4;
+const SnakeSize = 8;
+const SnakeSizeHalf = SnakeSize / 2;
 const TopBarSize = SnakeSize * TitleBarSize;
 const StepStride = 10;
 
@@ -42,22 +43,28 @@ pub const Segment = struct {
     }
 
     pub fn drawSmall(self: *Segment) void {
-        const direction = self.direction.to_vec2();
+        const dir = self.direction.to_vec2();
         var x = (self.position.x * SnakeSize);
         var y = (self.position.y * SnakeSize);
-        if (direction.y == -1) {
-            x += 1;
-        } else if (direction.y == 1) {
-            x += 1;
-            y += 2;
-        } else if (direction.x == -1) {
-            y += 1;
-        } else {
-            y += 1;
-            x += 2;
+
+        if (dir.x == 0) {
+            x += SnakeSizeHalf / 2;
         }
+
+        if (dir.y > 0) {
+            y += SnakeSizeHalf;
+        }
+
+        if (dir.x > 0) {
+            x += SnakeSizeHalf;
+        }
+
+        if (dir.y == 0) {
+            y += SnakeSizeHalf / 2;
+        }
+
         w4.DRAW_COLORS.* = 2;
-        w4.rect(x, y, 2, 2);
+        w4.rect(x, y, SnakeSizeHalf, SnakeSizeHalf);
     }
 
     pub fn nextPosition(self: *const Segment) Vec2 {
@@ -126,6 +133,13 @@ pub const Vec2 = struct {
         };
     }
 
+    pub fn scalar(self: Vec2, by: i32) Vec2 {
+        return Vec2{
+            .x = self.x * by,
+            .y = self.y * by,
+        };
+    }
+
     pub fn equals(self: Vec2, other: Vec2) bool {
         return self.x == other.x and self.y == other.y;
     }
@@ -139,7 +153,7 @@ pub const Fruit = struct {
             const x = (pos.x * SnakeSize);
             const y = (pos.y * SnakeSize);
             w4.DRAW_COLORS.* = 3;
-            w4.rect(x + 1, y + 1, 2, 2);
+            w4.rect(x + SnakeSizeHalf / 2, y + SnakeSizeHalf / 2, SnakeSizeHalf, SnakeSizeHalf);
         }
     }
 
