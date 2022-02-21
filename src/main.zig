@@ -1,3 +1,8 @@
+// TODO: More Juicy Death
+// TODO: Score, Collect and Show Score on Game Over
+// TODO: Particals when Snake eats fruit
+// TODO: Textures for Snake
+
 const w4 = @import("wasm4.zig");
 const heap = @import("std").heap;
 const rand = @import("std").rand;
@@ -8,6 +13,7 @@ const ArrayList = @import("std").ArrayList;
 ///////////////////////
 // "Heap" Allocation
 //////////////////////
+
 const StackMemorySize = 0x3000;
 const FreeMemoryStart = 0x19A0 + StackMemorySize;
 const FreeMemoryAvailable = 0xE65F - StackMemorySize;
@@ -263,24 +269,20 @@ pub const State = struct {
     }
 
     pub fn reset(self: *State) void {
+        prng = rand.DefaultPrng.init(self.frame);
         self.frame = 0;
+        self.random = prng.random();
+
         self.next_tick = StepStride;
         self.segments.clearAndFree();
         state.maybe_next_direction = .Up;
 
-        const starting_segment = Segment{
-            .direction = state.maybe_next_direction,
-            .position = .{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) },
-        };
-        const starting_tail = Segment{
-            .direction = state.maybe_next_direction,
-            .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }),
-        };
-        self.segments.append(starting_segment) catch @panic("Cannot Grow Snake");
-        self.segments.append(starting_tail) catch @panic("Cannot Grow Snake");
+        const StartPosition = Vec2{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) };
+        const starting_segment = Segment{ .direction = state.maybe_next_direction, .position = StartPosition };
+        const starting_tail = Segment{ .direction = state.maybe_next_direction, .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }) };
+        self.addSegment(starting_segment);
+        self.addSegment(starting_tail);
         self.game_state = .Play;
-        prng = rand.DefaultPrng.init(40);
-        self.random = prng.random();
         self.nextFruit();
     }
 
@@ -324,6 +326,10 @@ pub const State = struct {
         }
     }
 
+    pub fn addSegment(self: *State, segment: Segment) void {
+        self.segments.append(segment) catch @panic("Cannot Grow Snake");
+    }
+
     pub fn draw(self: *State) void {
         var i: usize = 1;
         const segments = self.segments.items;
@@ -339,7 +345,18 @@ pub const State = struct {
 };
 
 var state: *State = undefined;
-fn mainMenu() void {}
+fn mainMenu() void {
+    w4.text("WELCOME!", 48, w4.CANVAS_SIZE / 2);
+    if (state.input.down(Input.ButtonB)) {
+        w4.DRAW_COLORS.* = 0x02;
+    } else {
+        w4.DRAW_COLORS.* = 0x04;
+    }
+    w4.text("Press Z to Start", 16, w4.CANVAS_SIZE / 2 + 14);
+    if (state.input.just_released(Input.ButtonB)) {
+        state.reset();
+    }
+}
 
 fn play() void {
     var snake_head = state.snakeHead();
@@ -372,7 +389,7 @@ fn play() void {
             var segments = state.segments.items;
             const last_segment = segments[segments.len - 1];
             state.updateSegments();
-            state.segments.append(last_segment) catch @panic("Cannot Grow Snake");
+            state.addSegment(last_segment);
             w4.tone(180, 4, 50, w4.TONE_MODE1);
             state.nextFruit();
         } else {
@@ -382,7 +399,6 @@ fn play() void {
 
         state.maybEat();
     }
-    state.frame += 1;
     state.draw();
     state.fruit.draw();
 }
@@ -403,7 +419,7 @@ fn gameOver() void {
 export fn start() void {
     state = State.alloc_and_init(fixedAlloator);
     state.reset();
-    state.game_state = .GameOver;
+    state.game_state = .Menu;
     state.nextFruit();
 }
 
@@ -420,6 +436,8 @@ export fn update() void {
         .Play => play(),
         .GameOver => gameOver(),
     }
+
+    state.frame += 1;
     state.input.swap();
     // Uncomment to see Memory Allocation size on the screen
     // printMemory();
