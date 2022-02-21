@@ -225,19 +225,14 @@ pub const State = struct {
     }
 
     pub fn updateSegments(self: *State) void {
-        var i: u8 = 1;
         const segments = self.segments.items;
-        {
-            const segment = segments[0];
-            const new_position = segment.position.add(segment.direction.to_vec2());
-            segments[0].position = new_position;
-        }
-
-        while (i < segments.len) : (i += 1) {
+        var i: usize = segments.len;
+        while (i > 0) {
+            i -= 1;
             const segment = segments[i];
             const new_position = segment.position.add(segment.direction.to_vec2());
             segments[i].position = new_position;
-            segments[i].direction = segments[i - 1].direction;
+            segments[i + 1].direction = segments[i].direction;
         }
     }
 
@@ -332,7 +327,6 @@ fn printMemory() void {
     defer list.deinit();
 
     list.writer().print("mem: {}/{}", .{ FixedBufferAllocator.end_index, FreeMemory[0..].len }) catch unreachable;
-    w4.tracef("%d", list.items.len);
 
     w4.DRAW_COLORS.* = 0x3;
     w4.text(list.items, 4, 148);
