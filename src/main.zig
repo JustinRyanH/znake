@@ -5,12 +5,18 @@ const math = @import("std").math;
 const Allocator = @import("std").mem.Allocator;
 const ArrayList = @import("std").ArrayList;
 
+///////////////////////
+// "Heap" Allocation
+//////////////////////
 const StackMemorySize = 0x3000;
 const FreeMemoryStart = 0x19A0 + StackMemorySize;
 const FreeMemoryAvailable = 0xE65F - StackMemorySize;
 
 var FreeMemory: *[FreeMemoryAvailable]u8 = @intToPtr(*[FreeMemoryAvailable]u8, FreeMemoryStart);
 
+///////////////////////
+// "Game Globals"
+//////////////////////
 const TitleBarSize = 2;
 const WorldWidth = w4.CANVAS_SIZE / SnakeSize;
 const WorldHeight = (w4.CANVAS_SIZE - TitleBarSize) / SnakeSize;
@@ -29,8 +35,9 @@ var fixedAlloator = FixedBufferAllocator.allocator();
 
 var prng = rand.DefaultPrng.init(40);
 
-const SegmentList = ArrayList(Segment);
-
+///////////////////////
+// Game Types
+//////////////////////
 pub const Segment = struct {
     position: Vec2,
     direction: Direction,
@@ -89,6 +96,7 @@ pub const Segment = struct {
         return false;
     }
 };
+const SegmentList = ArrayList(Segment);
 
 pub const Direction = enum {
     Up,
@@ -329,8 +337,8 @@ pub const State = struct {
         }
     }
 };
-var state: *State = undefined;
 
+var state: *State = undefined;
 fn mainMenu() void {}
 
 fn play() void {
@@ -395,6 +403,7 @@ fn gameOver() void {
 export fn start() void {
     state = State.alloc_and_init(fixedAlloator);
     state.reset();
+    state.game_state = .GameOver;
 
     state.nextFruit();
 }
@@ -413,6 +422,7 @@ export fn update() void {
         .GameOver => gameOver(),
     }
     state.input.swap();
+    // Uncomment to see Memory Allocation size on the screen
     // printMemory();
 }
 
