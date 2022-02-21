@@ -245,7 +245,7 @@ pub const State = struct {
     game_state: GameState = .GameOver,
 
     pub fn alloc_and_init(allocator: Allocator) *State {
-        state = allocator.create(State) catch unreachable;
+        state = allocator.create(State) catch @panic("Could not Allocate Game Data");
         state.* = .{
             .allocator = allocator,
             .random = prng.random(),
@@ -276,8 +276,8 @@ pub const State = struct {
             .direction = state.maybe_next_direction,
             .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }),
         };
-        self.segments.append(starting_segment) catch unreachable;
-        self.segments.append(starting_tail) catch unreachable;
+        self.segments.append(starting_segment) catch @panic("Cannot Grow Snake");
+        self.segments.append(starting_tail) catch @panic("Cannot Grow Snake");
         self.game_state = .Play;
         prng = rand.DefaultPrng.init(40);
         self.random = prng.random();
@@ -372,7 +372,7 @@ fn play() void {
             var segments = state.segments.items;
             const last_segment = segments[segments.len - 1];
             state.updateSegments();
-            state.segments.append(last_segment) catch unreachable;
+            state.segments.append(last_segment) catch @panic("Cannot Grow Snake");
             w4.tone(180, 4, 50, w4.TONE_MODE1);
             state.nextFruit();
         } else {
@@ -404,7 +404,6 @@ export fn start() void {
     state = State.alloc_and_init(fixedAlloator);
     state.reset();
     state.game_state = .GameOver;
-
     state.nextFruit();
 }
 
