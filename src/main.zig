@@ -286,5 +286,18 @@ export fn update() void {
         .GameOver => gameOver(),
     }
     state.input.swap();
-    // w4.tracef("%d/%d", FixedBufferAllocator.end_index, FreeMemory[0..].len);
+    printMemory();
+}
+
+fn printMemory() void {
+    var buffer: [32]u8 = undefined;
+    var stack_allocator = heap.FixedBufferAllocator.init(buffer[0..]);
+    var list = ArrayList(u8).init(stack_allocator.allocator());
+    defer list.deinit();
+
+    list.writer().print("mem: {}/{}", .{ FixedBufferAllocator.end_index, FreeMemory[0..].len }) catch unreachable;
+    w4.tracef("%d", list.items.len);
+
+    w4.DRAW_COLORS.* = 0x3;
+    w4.text(list.items, 4, 148);
 }
