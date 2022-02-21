@@ -40,6 +40,13 @@ pub const Segment = struct {
         w4.rect(x, y, SnakeSize, SnakeSize);
     }
 
+    pub fn go(self: *Segment, direction: Direction) void {
+        if (self.direction == direction.opposite()) {
+            return;
+        }
+        self.direction = direction;
+    }
+
     pub fn willBeOutOfBounds(self: *Segment) bool {
         const position = self.position.add(self.direction.to_vec2());
         if (position.y < SnakeYMin or position.y > SnakeYMax) {
@@ -64,6 +71,15 @@ pub const Direction = enum {
             .Down => .{ .y = 1 },
             .Left => .{ .x = -1 },
             .Right => .{ .x = 1 },
+        };
+    }
+
+    pub fn opposite(self: Direction) Direction {
+        return switch (self) {
+            .Up => .Down,
+            .Down => .Up,
+            .Left => .Right,
+            .Right => .Left,
         };
     }
 };
@@ -251,16 +267,16 @@ fn mainMenu() void {}
 fn play() void {
     var snake_head = state.snakeHead();
     if (state.input.just_pressed(Input.Left)) {
-        snake_head.direction = .Left;
+        snake_head.go(.Left);
     }
     if (state.input.just_pressed(Input.Right)) {
-        snake_head.direction = .Right;
+        snake_head.go(.Right);
     }
     if (state.input.just_pressed(Input.Up)) {
-        snake_head.direction = .Up;
+        snake_head.go(.Up);
     }
     if (state.input.just_pressed(Input.Down)) {
-        snake_head.direction = .Down;
+        snake_head.go(.Down);
     }
 
     if (state.should_tick()) {
@@ -275,7 +291,7 @@ fn play() void {
             state.nextFruit();
         } else {
             state.updateSegments();
-            w4.tone(90, 1, 50, w4.TONE_MODE1);
+            w4.tone(90, 1, 10, w4.TONE_MODE1);
         }
 
         state.maybEat();
