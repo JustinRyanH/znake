@@ -1,6 +1,7 @@
 const w4 = @import("wasm4.zig");
 const heap = @import("std").heap;
 const rand = @import("std").rand;
+const math = @import("std").math;
 const Allocator = @import("std").mem.Allocator;
 const ArrayList = @import("std").ArrayList;
 
@@ -38,6 +39,25 @@ pub const Segment = struct {
         const y = (self.position.y * SnakeSize);
         w4.DRAW_COLORS.* = 2;
         w4.rect(x, y, SnakeSize, SnakeSize);
+    }
+
+    pub fn drawSmall(self: *Segment) void {
+        const direction = self.direction.to_vec2();
+        var x = (self.position.x * SnakeSize);
+        var y = (self.position.y * SnakeSize);
+        if (direction.y == -1) {
+            x += 1;
+        } else if (direction.y == 1) {
+            x += 1;
+            y += 2;
+        } else if (direction.x == -1) {
+            y += 1;
+        } else {
+            y += 1;
+            x += 2;
+        }
+        w4.DRAW_COLORS.* = 2;
+        w4.rect(x, y, 2, 2);
     }
 
     pub fn nextPosition(self: *const Segment) Vec2 {
@@ -96,6 +116,13 @@ pub const Vec2 = struct {
         return Vec2{
             .x = self.x + other.x,
             .y = self.y + other.y,
+        };
+    }
+
+    pub fn sub(self: Vec2, other: Vec2) Vec2 {
+        return Vec2{
+            .x = self.x - other.x,
+            .y = self.y - other.y,
         };
     }
 
@@ -221,7 +248,12 @@ pub const State = struct {
             .direction = .Up,
             .position = .{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) },
         };
+        const starting_tail = Segment{
+            .direction = .Up,
+            .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }),
+        };
         self.segments.append(starting_segment) catch unreachable;
+        self.segments.append(starting_tail) catch unreachable;
         self.game_state = .Play;
         prng = rand.DefaultPrng.init(40);
         self.random = prng.random();
@@ -269,10 +301,15 @@ pub const State = struct {
     }
 
     pub fn draw(self: *State) void {
-        var i: usize = 0;
+        var i: usize = 1;
         const segments = self.segments.items;
+        segments[0].draw();
         while (i < segments.len) : (i += 1) {
-            segments[i].draw();
+            if (i == segments.len - 1) {
+                segments[i].drawSmall();
+            } else {
+                segments[i].draw();
+            }
         }
     }
 };
