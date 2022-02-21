@@ -1,4 +1,5 @@
 // TODO: More Juicy Death
+// TODO: Fix where Food can spawn on top of snake
 // TODO: Score, Collect and Show Score on Game Over
 // TODO: Particals when Snake eats fruit
 // TODO: Textures for Snake
