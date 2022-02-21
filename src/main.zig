@@ -96,8 +96,8 @@ pub const Fruit = struct {
         }
     }
 
-    pub fn exists(self: *Fruit) bool {
-        self.pos == null;
+    pub fn missing(self: *Fruit) bool {
+        return self.pos == null;
     }
 
     pub fn overlaps(self: *Fruit, other: Vec2) bool {
@@ -205,10 +205,10 @@ pub const State = struct {
         self.game_state = .Play;
         prng = rand.DefaultPrng.init(40);
         self.random = prng.random();
-        self.next_fruit();
+        self.nextFruit();
     }
 
-    pub fn next_fruit(self: *State) void {
+    pub fn nextFruit(self: *State) void {
         self.fruit.next(state.random);
     }
 
@@ -225,12 +225,19 @@ pub const State = struct {
     }
 
     pub fn updateSegments(self: *State) void {
-        var i: u8 = 0;
+        var i: u8 = 1;
         const segments = self.segments.items;
+        {
+            const segment = segments[0];
+            const new_position = segment.position.add(segment.direction.to_vec2());
+            segments[0].position = new_position;
+        }
+
         while (i < segments.len) : (i += 1) {
             const segment = segments[i];
             const new_position = segment.position.add(segment.direction.to_vec2());
             segments[i].position = new_position;
+            segments[i].direction = segments[i - 1].direction;
         }
     }
 
@@ -264,6 +271,12 @@ fn play() void {
     if (state.should_tick()) {
         if (snake_head.willBeOutOfBounds()) {
             state.game_state = .GameOver;
+        } else if (state.fruit.missing()) {
+            var segments = state.segments.items;
+            const last_segment = segments[segments.len - 1];
+            state.updateSegments();
+            state.segments.append(last_segment) catch unreachable;
+            state.nextFruit();
         } else {
             state.updateSegments();
         }
@@ -292,7 +305,7 @@ export fn start() void {
     state = State.alloc_and_init(fixedAlloator);
     state.reset();
 
-    state.next_fruit();
+    state.nextFruit();
 }
 
 export fn update() void {
