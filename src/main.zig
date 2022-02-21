@@ -28,9 +28,28 @@ var fixedAlloator = FixedBufferAllocator.allocator();
 var prng = rand.DefaultPrng.init(40);
 
 const SegmentList = ArrayList(Segment);
+
 pub const Segment = struct {
     position: Vec2,
     direction: Direction,
+
+    pub fn draw(self: *Segment) void {
+        const x = (self.position.x * SnakeSize);
+        const y = (self.position.y * SnakeSize);
+        w4.DRAW_COLORS.* = 2;
+        w4.rect(x, y, SnakeSize, SnakeSize);
+    }
+
+    pub fn willBeOutOfBounds(self: *Segment) bool {
+        const position = self.position.add(self.direction.to_vec2());
+        if (position.y < SnakeYMin or position.y > SnakeYMax) {
+            return true;
+        }
+        if (position.x < SnakeXMin or position.x > SnakeYMax) {
+            return true;
+        }
+        return false;
+    }
 };
 
 pub const Direction = enum {
@@ -197,6 +216,7 @@ pub const State = struct {
     random: rand.Random,
 
     frame: u32 = 0,
+    next_tick: u32 = StepStride,
     input: Input = .{},
     snake: Snake = .{},
     segments: SegmentList,
@@ -213,6 +233,14 @@ pub const State = struct {
         return state;
     }
 
+    pub fn should_tick(self: *State) bool {
+        if (self.frame == self.next_tick) {
+            self.next_tick = self.frame + StepStride;
+            return true;
+        }
+        return false;
+    }
+
     pub fn reset(self: *State) void {
         self.frame = 0;
         self.snake.reset();
@@ -225,35 +253,72 @@ pub const State = struct {
     pub fn next_fruit(self: *State) void {
         self.fruit.next(state.random);
     }
+
+    pub fn snakeHead(self: *State) *Segment {
+        return &self.segments.items[0];
+    }
+
+    pub fn maybEat(self: *State) void {
+        const snake_head = self.snakeHead();
+        if (!self.fruit.overlaps(snake_head.position)) {
+            return;
+        }
+        self.fruit.pos = null;
+    }
+
+    pub fn updateSegments(self: *State) void {
+        var i: u8 = 0;
+        const segments = self.segments.items;
+        while (i < segments.len) : (i += 1) {
+            const segment = segments[i];
+            const new_position = segment.position.add(segment.direction.to_vec2());
+            segments[i].position = new_position;
+        }
+    }
+
+    pub fn draw(self: *State) void {
+        var i: u8 = 0;
+        const segments = self.segments.items;
+        while (i < segments.len) : (i += 1) {
+            segments[i].draw();
+        }
+    }
 };
 var state: *State = undefined;
 
 fn mainMenu() void {}
 
 fn play() void {
+    var snake_head = state.snakeHead();
     if (state.input.just_pressed(Input.Left)) {
+        snake_head.direction = .Left;
         state.snake.dir = .Left;
     }
     if (state.input.just_pressed(Input.Right)) {
+        snake_head.direction = .Right;
         state.snake.dir = .Right;
     }
     if (state.input.just_pressed(Input.Up)) {
+        snake_head.direction = .Up;
         state.snake.dir = .Up;
     }
     if (state.input.just_pressed(Input.Down)) {
+        snake_head.direction = .Down;
         state.snake.dir = .Down;
     }
 
-    if (state.snake.will_move()) {
-        if (state.snake.will_be_out_of_bounds()) {
+    if (state.should_tick()) {
+        if (snake_head.willBeOutOfBounds()) {
             state.game_state = .GameOver;
         } else {
-            state.snake.tick();
+            state.updateSegments();
         }
-        state.snake.maybe_eat(&state.fruit);
+
+        state.maybEat();
     }
     state.frame += 1;
     state.snake.draw();
+    state.draw();
     state.fruit.draw();
 }
 
@@ -272,6 +337,12 @@ fn gameOver() void {
 
 export fn start() void {
     state = State.alloc_and_init(fixedAlloator);
+
+    const starting_segment = Segment{
+        .direction = .Up,
+        .position = .{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) },
+    };
+    state.segments.append(starting_segment) catch unreachable;
     state.next_fruit();
 }
 
