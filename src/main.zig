@@ -13,7 +13,7 @@ var FreeMemory: *[FreeMemoryAvailable]u8 = @intToPtr(*[FreeMemoryAvailable]u8, F
 const TitleBarSize = 4;
 const WorldWidth = w4.CANVAS_SIZE / SnakeSize;
 const WorldHeight = (w4.CANVAS_SIZE - TitleBarSize) / SnakeSize;
-const SnakeSize = 8;
+const SnakeSize = 4;
 const TopBarSize = SnakeSize * TitleBarSize;
 const StepStride = 10;
 
@@ -230,7 +230,12 @@ pub const State = struct {
 
     pub fn willCollideWithSelf(self: *State) bool {
         const snake_head = self.snakeHead();
-        _ = snake_head.nextPosition();
+        const next_pos = snake_head.nextPosition();
+        for (self.segments.items[1..]) |segment| {
+            if (segment.nextPosition().equals(next_pos)) {
+                return true;
+            }
+        }
 
         return false;
     }
