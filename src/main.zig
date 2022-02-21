@@ -1,8 +1,9 @@
 const w4 = @import("wasm4.zig");
 const heap = @import("std").heap;
 const rand = @import("std").rand;
+const Allocator = @import("std").mem.Allocator;
 
-const StackMemorySize = 0x2000;
+const StackMemorySize = 0x3000;
 const FreeMemoryStart = 0x19A0 + StackMemorySize;
 const FreeMemoryAvailable = 0xE65F - StackMemorySize;
 
@@ -80,7 +81,7 @@ pub const Fruit = struct {
         return false;
     }
 
-    pub fn next(self: *Fruit, random: *rand.Random) void {
+    pub fn next(self: *Fruit, random: rand.Random) void {
         self.pos = Vec2{
             .x = random.intRangeLessThan(i32, 0, WorldWidth),
             .y = random.intRangeLessThan(i32, TitleBarSize, WorldHeight + TitleBarSize),
@@ -185,17 +186,32 @@ pub const GameState = enum {
 };
 
 pub const State = struct {
+    allocator: Allocator,
+    random: rand.Random,
+
     frame: u32 = 0,
     input: Input = .{},
     snake: Snake = .{},
     fruit: Fruit = .{},
-    random: rand.Random,
     game_state: GameState = .GameOver,
+
+    pub fn alloc_and_init(allocator: Allocator) *State {
+        state = allocator.create(State) catch unreachable;
+        state.* = .{
+            .allocator = allocator,
+            .random = prng.random(),
+        };
+        return state;
+    }
 
     pub fn reset(self: *State) void {
         self.frame = 0;
         self.snake.reset();
         self.game_state = .Play;
+    }
+
+    pub fn next_fruit(self: *State) void {
+        self.fruit.next(state.random);
     }
 };
 var state: *State = undefined;
@@ -243,9 +259,8 @@ fn gameOver() void {
 }
 
 export fn start() void {
-    state = fixedAlloator.create(State) catch unreachable;
-    state.random = prng.random();
-    state.fruit.next(&state.random);
+    state = State.alloc_and_init(fixedAlloator);
+    state.next_fruit();
 }
 
 export fn update() void {
