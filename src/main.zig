@@ -13,7 +13,7 @@ var FreeMemory: *[FreeMemoryAvailable]u8 = @intToPtr(*[FreeMemoryAvailable]u8, F
 const TitleBarSize = 4;
 const WorldWidth = w4.CANVAS_SIZE / SnakeSize;
 const WorldHeight = (w4.CANVAS_SIZE - TitleBarSize) / SnakeSize;
-const SnakeSize = 4;
+const SnakeSize = 8;
 const TopBarSize = SnakeSize * TitleBarSize;
 const StepStride = 10;
 
@@ -38,6 +38,10 @@ pub const Segment = struct {
         const y = (self.position.y * SnakeSize);
         w4.DRAW_COLORS.* = 2;
         w4.rect(x, y, SnakeSize, SnakeSize);
+    }
+
+    pub fn nextPosition(self: *const Segment) Vec2 {
+        return self.position.add(self.direction.to_vec2());
     }
 
     pub fn go(self: *Segment, direction: Direction) void {
@@ -225,6 +229,9 @@ pub const State = struct {
     }
 
     pub fn willCollideWithSelf(self: *State) bool {
+        const snake_head = self.snakeHead();
+        _ = snake_head.nextPosition();
+
         return false;
     }
 
@@ -250,14 +257,14 @@ pub const State = struct {
         while (i > 0) {
             i -= 1;
             const segment = segments[i];
-            const new_position = segment.position.add(segment.direction.to_vec2());
-            segments[i].position = new_position;
+            const nextPosition = segment.nextPosition();
+            segments[i].position = nextPosition;
             segments[i + 1].direction = segments[i].direction;
         }
     }
 
     pub fn draw(self: *State) void {
-        var i: i16 = 0;
+        var i: usize = 0;
         const segments = self.segments.items;
         while (i < segments.len) : (i += 1) {
             segments[i].draw();
