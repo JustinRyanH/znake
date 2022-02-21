@@ -271,9 +271,11 @@ fn play() void {
             const last_segment = segments[segments.len - 1];
             state.updateSegments();
             state.segments.append(last_segment) catch unreachable;
+            w4.tone(180, 4, 50, w4.TONE_MODE1);
             state.nextFruit();
         } else {
             state.updateSegments();
+            w4.tone(90, 1, 50, w4.TONE_MODE1);
         }
 
         state.maybEat();
