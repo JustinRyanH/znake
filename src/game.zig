@@ -52,3 +52,19 @@ pub const Direction = enum {
         };
     }
 };
+
+pub const Segment = struct {
+    position: Vec2,
+    direction: Direction,
+
+    pub fn nextPosition(self: *const Segment) Vec2 {
+        return self.position.add(self.direction.to_vec2());
+    }
+
+    pub fn go(self: *Segment, direction: Direction) void {
+        if (self.direction == direction.opposite()) {
+            return;
+        }
+        self.direction = direction;
+    }
+};

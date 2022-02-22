@@ -47,22 +47,8 @@ var prng = rand.DefaultPrng.init(40);
 ///////////////////////
 // Game Types
 //////////////////////
-pub const Segment = struct {
-    position: Vec2,
-    direction: Direction,
 
-    pub fn nextPosition(self: *const Segment) Vec2 {
-        return self.position.add(self.direction.to_vec2());
-    }
-
-    pub fn go(self: *Segment, direction: Direction) void {
-        if (self.direction == direction.opposite()) {
-            return;
-        }
-        self.direction = direction;
-    }
-};
-
+pub const Segment = Game.Segment;
 const SegmentList = ArrayList(Segment);
 
 pub const Direction = Game.Direction;
