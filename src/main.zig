@@ -141,6 +141,10 @@ pub const GameState = enum {
 pub const State = struct {
     allocator: Allocator,
     random: rand.Random,
+    y_min: u8 = SnakeYMin,
+    y_max: u8 = SnakeYMax,
+    x_min: u8 = SnakeXMin,
+    x_max: u8 = SnakeXMax,
 
     frame: u32 = 0,
     next_tick: u32 = StepStride,
@@ -233,12 +237,11 @@ pub const State = struct {
     }
 
     pub fn willBeOutOfBounds(self: *const State, segment: *Segment) bool {
-        _ = self;
         const position = segment.position.add(segment.direction.to_vec2());
-        if (position.y < SnakeYMin or position.y > SnakeYMax) {
+        if (position.y < self.y_min or position.y > self.y_max) {
             return true;
         }
-        if (position.x < SnakeXMin or position.x > SnakeXMax) {
+        if (position.x < self.x_min or position.x > self.x_max) {
             return true;
         }
         return false;
