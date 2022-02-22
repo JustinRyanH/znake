@@ -1,6 +1,6 @@
-// TODO: More Juicy Death
 // TODO: Fix where Food can spawn on top of snake
 // TODO: Score, Collect and Show Score on Game Over
+// TODO: More Juicy Death
 // TODO: Particals when Snake eats fruit
 // TODO: Textures for Snake
 
@@ -49,7 +49,7 @@ pub const Segment = struct {
     position: Vec2,
     direction: Direction,
 
-    pub fn draw(self: *Segment) void {
+    pub fn draw(self: *const Segment) void {
         const x = (self.position.x * SnakeSize);
         const y = (self.position.y * SnakeSize);
         w4.DRAW_COLORS.* = 2;
@@ -248,6 +248,7 @@ pub const State = struct {
     input: Input = .{},
     maybe_next_direction: Direction = .Up,
     segments: SegmentList,
+    deadSegments: SegmentList,
     fruit: Fruit = .{},
     game_state: GameState = .GameOver,
 
@@ -257,6 +258,7 @@ pub const State = struct {
             .allocator = allocator,
             .random = prng.random(),
             .segments = SegmentList.init(allocator),
+            .deadSegments = SegmentList.init(allocator),
         };
         return state;
     }
@@ -405,13 +407,15 @@ fn play() void {
 }
 
 fn gameOver() void {
-    w4.text("GAME OVER", 42, w4.CANVAS_SIZE / 2);
+    w4.DRAW_COLORS.* = 0x04;
+    w4.text("GAME OVER", 42, w4.CANVAS_SIZE - 15);
     if (state.input.down(Input.ButtonB)) {
         w4.DRAW_COLORS.* = 0x02;
     } else {
         w4.DRAW_COLORS.* = 0x04;
     }
-    w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE / 2 + 14);
+
+    w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE - 30);
     if (state.input.just_released(Input.ButtonB)) {
         state.reset();
     }
