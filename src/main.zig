@@ -5,6 +5,8 @@
 // TODO: Textures for Snake
 
 const w4 = @import("wasm4.zig");
+const Game = @import("game.zig");
+
 const heap = @import("std").heap;
 const rand = @import("std").rand;
 const math = @import("std").math;
@@ -98,35 +100,7 @@ pub const Direction = enum {
     }
 };
 
-pub const Vec2 = struct {
-    x: i32 = 0,
-    y: i32 = 0,
-
-    pub fn add(self: Vec2, other: Vec2) Vec2 {
-        return Vec2{
-            .x = self.x + other.x,
-            .y = self.y + other.y,
-        };
-    }
-
-    pub fn sub(self: Vec2, other: Vec2) Vec2 {
-        return Vec2{
-            .x = self.x - other.x,
-            .y = self.y - other.y,
-        };
-    }
-
-    pub fn scalar(self: Vec2, by: i32) Vec2 {
-        return Vec2{
-            .x = self.x * by,
-            .y = self.y * by,
-        };
-    }
-
-    pub fn equals(self: Vec2, other: Vec2) bool {
-        return self.x == other.x and self.y == other.y;
-    }
-};
+pub const Vec2 = Game.Vec2;
 
 pub const Fruit = struct {
     pos: ?Vec2 = null,
@@ -444,18 +418,4 @@ export fn update() void {
 
     state.frame += 1;
     state.input.swap();
-    // Uncomment to see Memory Allocation size on the screen
-    // printMemory();
-}
-
-fn printMemory() void {
-    var buffer: [32]u8 = undefined;
-    var stack_allocator = heap.FixedBufferAllocator.init(buffer[0..]);
-    var list = ArrayList(u8).init(stack_allocator.allocator());
-    defer list.deinit();
-
-    list.writer().print("mem: {}/{}", .{ FixedBufferAllocator.end_index, FreeMemory[0..].len }) catch unreachable;
-
-    w4.DRAW_COLORS.* = 0x3;
-    w4.text(list.items, 4, 148);
 }
