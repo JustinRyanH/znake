@@ -49,38 +49,6 @@ pub const Segment = struct {
     position: Vec2,
     direction: Direction,
 
-    pub fn draw(self: *const Segment) void {
-        const x = (self.position.x * SnakeSize);
-        const y = (self.position.y * SnakeSize);
-        w4.DRAW_COLORS.* = 2;
-        w4.rect(x, y, SnakeSize, SnakeSize);
-    }
-
-    pub fn drawSmall(self: *Segment) void {
-        const dir = self.direction.to_vec2();
-        var x = (self.position.x * SnakeSize);
-        var y = (self.position.y * SnakeSize);
-
-        if (dir.x == 0) {
-            x += SnakeSizeHalf / 2;
-        }
-
-        if (dir.y > 0) {
-            y += SnakeSizeHalf;
-        }
-
-        if (dir.x > 0) {
-            x += SnakeSizeHalf;
-        }
-
-        if (dir.y == 0) {
-            y += SnakeSizeHalf / 2;
-        }
-
-        w4.DRAW_COLORS.* = 2;
-        w4.rect(x, y, SnakeSizeHalf, SnakeSizeHalf);
-    }
-
     pub fn nextPosition(self: *const Segment) Vec2 {
         return self.position.add(self.direction.to_vec2());
     }
@@ -162,15 +130,6 @@ pub const Vec2 = struct {
 
 pub const Fruit = struct {
     pos: ?Vec2 = null,
-
-    pub fn draw(self: *Fruit) void {
-        if (self.pos) |pos| {
-            const x = (pos.x * SnakeSize);
-            const y = (pos.y * SnakeSize);
-            w4.DRAW_COLORS.* = 3;
-            w4.rect(x + SnakeSizeHalf / 2, y + SnakeSizeHalf / 2, SnakeSizeHalf, SnakeSizeHalf);
-        }
-    }
 
     pub fn missing(self: *Fruit) bool {
         return self.pos == null;
@@ -332,20 +291,62 @@ pub const State = struct {
     pub fn addSegment(self: *State, segment: Segment) void {
         self.segments.append(segment) catch @panic("Cannot Grow Snake");
     }
+};
 
-    pub fn draw(self: *State) void {
-        var i: usize = 1;
-        const segments = self.segments.items;
-        segments[0].draw();
-        while (i < segments.len) : (i += 1) {
-            if (i == segments.len - 1) {
-                segments[i].drawSmall();
-            } else {
-                segments[i].draw();
-            }
+pub fn drawSegment(segment: *const Segment) void {
+    const x = (segment.position.x * SnakeSize);
+    const y = (segment.position.y * SnakeSize);
+    w4.DRAW_COLORS.* = 2;
+    w4.rect(x, y, SnakeSize, SnakeSize);
+}
+
+pub fn drawSegmentSmall(segment: *const Segment) void {
+    const dir = segment.direction.to_vec2();
+    var x = (segment.position.x * SnakeSize);
+    var y = (segment.position.y * SnakeSize);
+
+    if (dir.x == 0) {
+        x += SnakeSizeHalf / 2;
+    }
+
+    if (dir.y > 0) {
+        y += SnakeSizeHalf;
+    }
+
+    if (dir.x > 0) {
+        x += SnakeSizeHalf;
+    }
+
+    if (dir.y == 0) {
+        y += SnakeSizeHalf / 2;
+    }
+
+    w4.DRAW_COLORS.* = 2;
+    w4.rect(x, y, SnakeSizeHalf, SnakeSizeHalf);
+}
+
+pub fn drawFruit(fruit: *const Fruit) void {
+    if (fruit.pos) |pos| {
+        const x = (pos.x * SnakeSize);
+        const y = (pos.y * SnakeSize);
+        w4.DRAW_COLORS.* = 3;
+        w4.rect(x + SnakeSizeHalf / 2, y + SnakeSizeHalf / 2, SnakeSizeHalf, SnakeSizeHalf);
+    }
+}
+
+pub fn drawState(st: *const State) void {
+    var i: usize = 1;
+    const segments = st.segments.items;
+    drawSegment(&segments[0]);
+    while (i < segments.len) : (i += 1) {
+        if (i == segments.len - 1) {
+            drawSegmentSmall(&segments[i]);
+        } else {
+            drawSegment(&segments[i]);
         }
     }
-};
+    drawFruit(&st.fruit);
+}
 
 var state: *State = undefined;
 fn mainMenu() void {
@@ -402,8 +403,7 @@ fn play() void {
 
         state.maybEat();
     }
-    state.draw();
-    state.fruit.draw();
+    drawState(state);
 }
 
 fn gameOver() void {
