@@ -67,13 +67,6 @@ pub const Fruit = struct {
         }
         return false;
     }
-
-    pub fn next(self: *Fruit, random: rand.Random) void {
-        self.pos = Vec2{
-            .x = random.intRangeLessThan(i32, 1, WorldWidth - 1),
-            .y = random.intRangeLessThan(i32, TitleBarSize + 1, WorldHeight + TitleBarSize - 1),
-        };
-    }
 };
 
 pub const Input = packed struct {
@@ -191,7 +184,10 @@ pub const State = struct {
     }
 
     pub fn nextFruit(self: *State) void {
-        self.fruit.next(state.random);
+        self.fruit.pos = Vec2{
+            .x = self.random.intRangeLessThan(i32, self.x_min, self.x_max),
+            .y = self.random.intRangeLessThan(i32, self.y_min + 1, self.y_max),
+        };
     }
 
     pub fn snakeHead(self: *State) *Segment {
