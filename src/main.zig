@@ -50,24 +50,9 @@ var prng = rand.DefaultPrng.init(40);
 
 pub const Segment = Game.Segment;
 const SegmentList = ArrayList(Segment);
-
 pub const Direction = Game.Direction;
 pub const Vec2 = Game.Vec2;
-
-pub const Fruit = struct {
-    pos: ?Vec2 = null,
-
-    pub fn missing(self: *Fruit) bool {
-        return self.pos == null;
-    }
-
-    pub fn overlaps(self: *Fruit, other: Vec2) bool {
-        if (self.pos) |pos| {
-            return pos.equals(other);
-        }
-        return false;
-    }
-};
+pub const Fruit = Game.Fruit;
 
 pub const Input = packed struct {
     const ButtonA = w4.BUTTON_1;
