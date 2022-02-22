@@ -61,18 +61,8 @@ pub const Segment = struct {
         }
         self.direction = direction;
     }
-
-    pub fn willBeOutOfBounds(self: *Segment) bool {
-        const position = self.position.add(self.direction.to_vec2());
-        if (position.y < SnakeYMin or position.y > SnakeYMax) {
-            return true;
-        }
-        if (position.x < SnakeXMin or position.x > SnakeYMax) {
-            return true;
-        }
-        return false;
-    }
 };
+
 const SegmentList = ArrayList(Segment);
 
 pub const Direction = Game.Direction;
@@ -241,6 +231,18 @@ pub const State = struct {
     pub fn addSegment(self: *State, segment: Segment) void {
         self.segments.append(segment) catch @panic("Cannot Grow Snake");
     }
+
+    pub fn willBeOutOfBounds(self: *const State, segment: *Segment) bool {
+        _ = self;
+        const position = segment.position.add(segment.direction.to_vec2());
+        if (position.y < SnakeYMin or position.y > SnakeYMax) {
+            return true;
+        }
+        if (position.x < SnakeXMin or position.x > SnakeXMax) {
+            return true;
+        }
+        return false;
+    }
 };
 
 pub fn drawSegment(segment: *const Segment) void {
@@ -337,7 +339,7 @@ fn play() void {
 
     if (state.should_tick()) {
         snake_head.direction = state.maybe_next_direction;
-        if (snake_head.willBeOutOfBounds() or state.willCollideWithSelf()) {
+        if (state.willBeOutOfBounds(snake_head) or state.willCollideWithSelf()) {
             state.game_state = .GameOver;
         } else if (state.fruit.missing()) {
             var segments = state.segments.items;
