@@ -160,7 +160,6 @@ pub const State = struct {
     input: Input = .{},
     fruit_missing: bool = false,
 
-    next_tick: u32,
     maybe_next_direction: Direction = .Up,
     segments: SegmentList,
     deadSegments: SegmentList,
@@ -205,6 +204,23 @@ pub const State = struct {
                         self.maybe_next_direction = .Down;
                     }
                 }
+                if (self.shouldTick()) {
+                    snake_head.direction = self.maybe_next_direction;
+                    if (self.willBeOutOfBounds(snake_head) or self.willCollideWithSelf()) {
+                        self.game_state = .GameOver;
+                    } else if (self.fruit.missing()) {
+                        self.fruit_missing = true;
+                        var segments = self.segments.items;
+                        const last_segment = segments[segments.len - 1];
+                        self.updateSegments();
+                        self.addSegment(last_segment);
+                        self.nextFruit();
+                    } else {
+                        self.updateSegments();
+                    }
+
+                    self.maybEat();
+                }
             },
         }
     }
@@ -217,7 +233,6 @@ pub const State = struct {
             .x_min = config.x_min,
             .x_max = config.x_max,
             .step_stride = config.step_stride,
-            .next_tick = config.step_stride,
             .allocator = allocator,
             .random = config.random,
             .segments = SegmentList.init(allocator),
@@ -227,16 +242,11 @@ pub const State = struct {
     }
 
     pub fn shouldTick(self: *State) bool {
-        if (self.frame == self.next_tick) {
-            self.next_tick = self.frame + self.step_stride;
-            return true;
-        }
-        return false;
+        return @mod(self.frame, self.step_stride) == 0;
     }
 
     pub fn reset(self: *State) void {
         self.frame = 0;
-        self.next_tick = self.step_stride;
         self.segments.clearAndFree();
         self.maybe_next_direction = .Up;
 

@@ -130,24 +130,6 @@ fn mainMenu() void {
 }
 
 fn play() void {
-    var snake_head = global_state.snakeHead();
-    if (global_state.shouldTick()) {
-        snake_head.direction = global_state.maybe_next_direction;
-        if (global_state.willBeOutOfBounds(snake_head) or global_state.willCollideWithSelf()) {
-            global_state.game_state = .GameOver;
-        } else if (global_state.fruit.missing()) {
-            global_state.fruit_missing = true;
-            var segments = global_state.segments.items;
-            const last_segment = segments[segments.len - 1];
-            global_state.updateSegments();
-            global_state.addSegment(last_segment);
-            global_state.nextFruit();
-        } else {
-            global_state.updateSegments();
-        }
-
-        global_state.maybEat();
-    }
     if (global_state.shouldTick()) {
         if (global_state.fruit_missing) {
             w4.tone(180, 4, 50, w4.TONE_MODE1);
@@ -155,7 +137,7 @@ fn play() void {
             w4.tone(90, 3, 10, w4.TONE_MODE1);
         }
     }
-    global_state.fruit_missing = true;
+    global_state.fruit_missing = false;
     drawState(global_state);
 }
 
