@@ -89,7 +89,7 @@ pub const State = struct {
             .step_stride = config.step_stride,
             .next_tick = config.step_stride,
             .allocator = allocator,
-            .random = prng.random(),
+            .random = config.random,
             .segments = SegmentList.init(allocator),
             .deadSegments = SegmentList.init(allocator),
         };
