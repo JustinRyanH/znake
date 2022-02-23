@@ -56,12 +56,12 @@ pub const Fruit = Game.Fruit;
 pub const GameState = Game.GameState;
 
 pub const Input = packed struct {
-    const ButtonA = w4.BUTTON_1;
-    const ButtonB = w4.BUTTON_2;
-    const Left = w4.BUTTON_LEFT;
-    const Right = w4.BUTTON_RIGHT;
-    const Up = w4.BUTTON_UP;
-    const Down = w4.BUTTON_DOWN;
+    const ButtonA = 1;
+    const ButtonB = 2;
+    const Left = 16;
+    const Right = 32;
+    const Up = 64;
+    const Down = 128;
 
     frame: u8 = 0,
     last_frame: u8 = 0,
@@ -84,8 +84,8 @@ pub const Input = packed struct {
         return last_up and self.down(button);
     }
 
-    pub fn process(self: *Input) void {
-        self.frame = w4.GAMEPAD1.*;
+    pub fn process(self: *Input, current: u8) void {
+        self.frame = current;
     }
 
     pub fn swap(self: *Input) void {
@@ -359,7 +359,7 @@ export fn start() void {
 }
 
 export fn update() void {
-    state.input.process();
+    state.input.process(w4.GAMEPAD1.*);
 
     w4.DRAW_COLORS.* = 0x04;
     w4.rect(0, 0, w4.CANVAS_SIZE, TopBarSize);
