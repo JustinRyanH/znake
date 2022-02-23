@@ -4,13 +4,37 @@ const sg = @import("sokol").gfx;
 const sapp = @import("sokol").app;
 const sgapp = @import("sokol").app_gfx_glue;
 
+var general_purpose_allocator = std.heap.GeneralPurposeAllocator(.{}){};
+var prng = std.rand.DefaultPrng.init(0);
+
+const gpa = general_purpose_allocator.allocator();
+const global_random = prng.random();
+
+const Game = @import("game.zig");
+
 var pass_action: sg.Action = .{};
 
-export fn init() void {}
+var game: *Game.State = undefined;
+var input: Game.Input = .{};
 
-export fn frame() void {}
+export fn init() void {
+    game = Game.State.allocAndInit(gpa, .{
+        .y_min = 0,
+        .y_max = 40,
+        .x_min = 0,
+        .x_max = 40,
+        .step_stride = 5,
+        .random = global_random,
+    });
+}
 
-export fn cleanup() void {}
+export fn frame() void {
+    input.frame += 1;
+}
+
+export fn cleanup() void {
+    std.debug.assert(!general_purpose_allocator.deinit());
+}
 
 pub fn main() void {
     sapp.run(.{
