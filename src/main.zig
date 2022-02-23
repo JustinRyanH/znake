@@ -87,8 +87,8 @@ pub const State = struct {
     }
 
     pub fn allocAndInit(allocator: mem.Allocator, config: StateSetup) *State {
-        global_state = allocator.create(State) catch @panic("Could not Allocate Game Data");
-        global_state.* = .{
+        var state = allocator.create(State) catch @panic("Could not Allocate Game Data");
+        state.* = .{
             .y_min = config.y_min,
             .y_max = config.y_max,
             .x_min = config.x_min,
@@ -100,7 +100,7 @@ pub const State = struct {
             .segments = SegmentList.init(allocator),
             .deadSegments = SegmentList.init(allocator),
         };
-        return global_state;
+        return state;
     }
 
     pub fn shouldTick(self: *State) bool {
