@@ -54,48 +54,7 @@ pub const Direction = Game.Direction;
 pub const Vec2 = Game.Vec2;
 pub const Fruit = Game.Fruit;
 pub const GameState = Game.GameState;
-
-pub const Input = packed struct {
-    const ButtonA = 1;
-    const ButtonB = 2;
-    const Left = 16;
-    const Right = 32;
-    const Up = 64;
-    const Down = 128;
-
-    frame: u8 = 0,
-    last_frame: u8 = 0,
-
-    pub fn down(self: *Input, button: u8) bool {
-        return self.frame & button != 0;
-    }
-
-    pub fn up(self: *Input, button: u8) bool {
-        return !self.down(button);
-    }
-
-    pub fn just_released(self: *Input, button: u8) bool {
-        const last_down = self.last_frame_down(button);
-        return last_down and self.up(button);
-    }
-
-    pub fn just_pressed(self: *Input, button: u8) bool {
-        const last_up = !self.last_frame_down(button);
-        return last_up and self.down(button);
-    }
-
-    pub fn process(self: *Input, current: u8) void {
-        self.frame = current;
-    }
-
-    pub fn swap(self: *Input) void {
-        self.last_frame = self.frame;
-    }
-
-    fn last_frame_down(self: *Input, button: u8) bool {
-        return self.last_frame & button != 0;
-    }
-};
+pub const Input = Game.Input;
 
 pub const StateSetup = struct {
     y_min: u8 = SnakeYMin,

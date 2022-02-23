@@ -89,3 +89,45 @@ pub const GameState = enum {
     Play,
     GameOver,
 };
+
+pub const Input = packed struct {
+    pub const ButtonA = 1;
+    pub const ButtonB = 2;
+    pub const Left = 16;
+    pub const Right = 32;
+    pub const Up = 64;
+    pub const Down = 128;
+
+    frame: u8 = 0,
+    last_frame: u8 = 0,
+
+    pub fn down(self: *Input, button: u8) bool {
+        return self.frame & button != 0;
+    }
+
+    pub fn up(self: *Input, button: u8) bool {
+        return !self.down(button);
+    }
+
+    pub fn just_released(self: *Input, button: u8) bool {
+        const last_down = self.last_frame_down(button);
+        return last_down and self.up(button);
+    }
+
+    pub fn just_pressed(self: *Input, button: u8) bool {
+        const last_up = !self.last_frame_down(button);
+        return last_up and self.down(button);
+    }
+
+    pub fn process(self: *Input, current: u8) void {
+        self.frame = current;
+    }
+
+    pub fn swap(self: *Input) void {
+        self.last_frame = self.frame;
+    }
+
+    fn last_frame_down(self: *Input, button: u8) bool {
+        return self.last_frame & button != 0;
+    }
+};
