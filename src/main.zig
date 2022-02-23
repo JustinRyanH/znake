@@ -89,7 +89,7 @@ pub const State = struct {
             .step_stride = config.step_stride,
             .next_tick = config.step_stride,
             .allocator = allocator,
-            .random = config.random,
+            .random = prng.random(),
             .segments = SegmentList.init(allocator),
             .deadSegments = SegmentList.init(allocator),
         };
@@ -299,14 +299,16 @@ fn play() void {
 fn gameOver() void {
     w4.DRAW_COLORS.* = 0x04;
     w4.text("GAME OVER", 42, w4.CANVAS_SIZE - 15);
-    if (global_input.down(Input.ButtonB)) {
+
+    if (global_state.input.down(Input.ButtonB)) {
         w4.DRAW_COLORS.* = 0x02;
+        w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE - 30);
     } else {
         w4.DRAW_COLORS.* = 0x04;
+        w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE - 30);
     }
 
-    w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE - 30);
-    if (global_input.just_released(Input.ButtonB)) {
+    if (global_state.input.just_released(Input.ButtonB)) {
         prng.seed(global_state.frame);
         global_state.reset();
     }
