@@ -70,6 +70,7 @@ pub const State = struct {
     y_max: u8,
     x_min: u8,
     x_max: u8,
+    step_stride: u32,
 
     frame: u32 = 0,
     input: Input = .{},
@@ -92,6 +93,7 @@ pub const State = struct {
             .y_max = config.y_max,
             .x_min = config.x_min,
             .x_max = config.x_max,
+            .step_stride = config.step_stride,
             .next_tick = config.step_stride,
             .allocator = allocator,
             .random = prng.random(),
@@ -103,7 +105,7 @@ pub const State = struct {
 
     pub fn shouldTick(self: *State) bool {
         if (self.frame == self.next_tick) {
-            self.next_tick = self.frame + StepStride;
+            self.next_tick = self.frame + self.step_stride;
             return true;
         }
         return false;
@@ -111,7 +113,7 @@ pub const State = struct {
 
     pub fn reset(self: *State) void {
         self.frame = 0;
-        self.next_tick = StepStride;
+        self.next_tick = self.step_stride;
         self.segments.clearAndFree();
         global_state.maybe_next_direction = .Up;
 
