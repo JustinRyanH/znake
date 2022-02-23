@@ -80,8 +80,8 @@ pub const State = struct {
     game_state: GameState = .GameOver,
 
     pub fn alloc_and_init(allocator: mem.Allocator, config: StateSetup) *State {
-        state = allocator.create(State) catch @panic("Could not Allocate Game Data");
-        state.* = .{
+        global_state = allocator.create(State) catch @panic("Could not Allocate Game Data");
+        global_state.* = .{
             .y_min = config.y_min,
             .y_max = config.y_max,
             .x_min = config.x_min,
@@ -92,7 +92,7 @@ pub const State = struct {
             .segments = SegmentList.init(allocator),
             .deadSegments = SegmentList.init(allocator),
         };
-        return state;
+        return global_state;
     }
 
     pub fn should_tick(self: *State) bool {
@@ -107,13 +107,13 @@ pub const State = struct {
         self.frame = 0;
         self.next_tick = StepStride;
         self.segments.clearAndFree();
-        state.maybe_next_direction = .Up;
+        global_state.maybe_next_direction = .Up;
 
         const x = (self.x_max - self.x_min) / 2 - 1;
         const y = (self.y_max - self.y_min) / 2 - 1;
         const StartPosition = Vec2{ .x = x, .y = y };
-        const starting_segment = Segment{ .direction = state.maybe_next_direction, .position = StartPosition };
-        const starting_tail = Segment{ .direction = state.maybe_next_direction, .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }) };
+        const starting_segment = Segment{ .direction = global_state.maybe_next_direction, .position = StartPosition };
+        const starting_tail = Segment{ .direction = global_state.maybe_next_direction, .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }) };
         self.addSegment(starting_segment);
         self.addSegment(starting_tail);
         self.game_state = .Play;
@@ -234,111 +234,111 @@ pub fn drawState(st: *const State) void {
     drawFruit(&st.fruit);
 }
 
-var state: *State = undefined;
-var input: Input = .{};
+var global_state: *State = undefined;
+var global_input: Input = .{};
 
 fn mainMenu() void {
     w4.text("WELCOME!", 48, w4.CANVAS_SIZE / 2);
-    if (input.down(Input.ButtonB)) {
+    if (global_input.down(Input.ButtonB)) {
         w4.DRAW_COLORS.* = 0x02;
     } else {
         w4.DRAW_COLORS.* = 0x04;
     }
     w4.text("Press Z to Start", 16, w4.CANVAS_SIZE / 2 + 14);
-    if (input.just_released(Input.ButtonB)) {
-        prng.seed(state.frame);
-        state.reset();
+    if (global_input.just_released(Input.ButtonB)) {
+        prng.seed(global_state.frame);
+        global_state.reset();
     }
 }
 
 fn play() void {
-    var snake_head = state.snakeHead();
-    if (input.just_pressed(Input.Left)) {
+    var snake_head = global_state.snakeHead();
+    if (global_input.just_pressed(Input.Left)) {
         if (snake_head.direction.opposite() != .Left) {
-            state.maybe_next_direction = .Left;
+            global_state.maybe_next_direction = .Left;
         }
     }
-    if (input.just_pressed(Input.Right)) {
+    if (global_input.just_pressed(Input.Right)) {
         if (snake_head.direction.opposite() != .Right) {
-            state.maybe_next_direction = .Right;
+            global_state.maybe_next_direction = .Right;
         }
     }
-    if (input.just_pressed(Input.Up)) {
+    if (global_input.just_pressed(Input.Up)) {
         if (snake_head.direction.opposite() != .Up) {
-            state.maybe_next_direction = .Up;
+            global_state.maybe_next_direction = .Up;
         }
     }
-    if (input.just_pressed(Input.Down)) {
+    if (global_input.just_pressed(Input.Down)) {
         if (snake_head.direction.opposite() != .Down) {
-            state.maybe_next_direction = .Down;
+            global_state.maybe_next_direction = .Down;
         }
     }
 
-    if (state.should_tick()) {
-        snake_head.direction = state.maybe_next_direction;
-        if (state.willBeOutOfBounds(snake_head) or state.willCollideWithSelf()) {
-            state.game_state = .GameOver;
-        } else if (state.fruit.missing()) {
-            var segments = state.segments.items;
+    if (global_state.should_tick()) {
+        snake_head.direction = global_state.maybe_next_direction;
+        if (global_state.willBeOutOfBounds(snake_head) or global_state.willCollideWithSelf()) {
+            global_state.game_state = .GameOver;
+        } else if (global_state.fruit.missing()) {
+            var segments = global_state.segments.items;
             const last_segment = segments[segments.len - 1];
-            state.updateSegments();
-            state.addSegment(last_segment);
+            global_state.updateSegments();
+            global_state.addSegment(last_segment);
             w4.tone(180, 4, 50, w4.TONE_MODE1);
-            state.nextFruit();
+            global_state.nextFruit();
         } else {
-            state.updateSegments();
+            global_state.updateSegments();
             w4.tone(90, 3, 10, w4.TONE_MODE1);
         }
 
-        state.maybEat();
+        global_state.maybEat();
     }
-    drawState(state);
+    drawState(global_state);
 }
 
 fn gameOver() void {
     w4.DRAW_COLORS.* = 0x04;
     w4.text("GAME OVER", 42, w4.CANVAS_SIZE - 15);
-    if (input.down(Input.ButtonB)) {
+    if (global_input.down(Input.ButtonB)) {
         w4.DRAW_COLORS.* = 0x02;
     } else {
         w4.DRAW_COLORS.* = 0x04;
     }
 
     w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE - 30);
-    if (input.just_released(Input.ButtonB)) {
-        prng.seed(state.frame);
-        state.reset();
+    if (global_input.just_released(Input.ButtonB)) {
+        prng.seed(global_state.frame);
+        global_state.reset();
     }
 }
 
 export fn start() void {
-    state = State.alloc_and_init(fixedAlloator, .{
+    global_state = State.alloc_and_init(fixedAlloator, .{
         .y_min = SnakeYMin,
         .y_max = SnakeYMax,
         .x_min = SnakeXMin,
         .x_max = SnakeXMax,
         .step_stride = StepStride,
     });
-    prng.seed(state.frame);
-    state.reset();
-    state.game_state = .Menu;
-    state.nextFruit();
+    prng.seed(global_state.frame);
+    global_state.reset();
+    global_state.game_state = .Menu;
+    global_state.nextFruit();
 }
 
 export fn update() void {
-    input.process(w4.GAMEPAD1.*);
+    global_input.process(w4.GAMEPAD1.*);
 
     w4.DRAW_COLORS.* = 0x04;
     w4.rect(0, 0, w4.CANVAS_SIZE, TopBarSize);
     w4.DRAW_COLORS.* = 2;
     w4.text("WASM4 Znake", 32, 4);
 
-    switch (state.game_state) {
+    switch (global_state.game_state) {
         .Menu => mainMenu(),
         .Play => play(),
         .GameOver => gameOver(),
     }
 
-    state.frame += 1;
-    input.swap();
+    global_state.frame += 1;
+    global_input.swap();
 }
