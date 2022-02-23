@@ -85,7 +85,7 @@ pub const State = struct {
         self.input = input;
     }
 
-    pub fn alloc_and_init(allocator: mem.Allocator, config: StateSetup) *State {
+    pub fn allocAndInit(allocator: mem.Allocator, config: StateSetup) *State {
         global_state = allocator.create(State) catch @panic("Could not Allocate Game Data");
         global_state.* = .{
             .y_min = config.y_min,
@@ -101,7 +101,7 @@ pub const State = struct {
         return global_state;
     }
 
-    pub fn should_tick(self: *State) bool {
+    pub fn shouldTick(self: *State) bool {
         if (self.frame == self.next_tick) {
             self.next_tick = self.frame + StepStride;
             return true;
@@ -280,7 +280,7 @@ fn play() void {
         }
     }
 
-    if (global_state.should_tick()) {
+    if (global_state.shouldTick()) {
         snake_head.direction = global_state.maybe_next_direction;
         if (global_state.willBeOutOfBounds(snake_head) or global_state.willCollideWithSelf()) {
             global_state.game_state = .GameOver;
@@ -318,7 +318,7 @@ fn gameOver() void {
 }
 
 export fn start() void {
-    global_state = State.alloc_and_init(fixedAlloator, .{
+    global_state = State.allocAndInit(fixedAlloator, .{
         .y_min = SnakeYMin,
         .y_max = SnakeYMax,
         .x_min = SnakeXMin,
