@@ -47,21 +47,14 @@ var prng = rand.DefaultPrng.init(40);
 // Game Types
 //////////////////////
 
-pub const Segment = Game.Segment;
-pub const SegmentList = Game.SegmentList;
 pub const Direction = Game.Direction;
-pub const Vec2 = Game.Vec2;
 pub const Fruit = Game.Fruit;
 pub const GameState = Game.GameState;
 pub const Input = Game.Input;
-
-pub const StateSetup = struct {
-    y_min: u8,
-    y_max: u8,
-    x_min: u8,
-    x_max: u8,
-    step_stride: u32,
-};
+pub const Segment = Game.Segment;
+pub const SegmentList = Game.SegmentList;
+pub const StateSetup = Game.StateSetup;
+pub const Vec2 = Game.Vec2;
 
 pub const State = struct {
     allocator: mem.Allocator,

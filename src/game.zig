@@ -137,3 +137,11 @@ pub const Input = packed struct {
         return self.last_frame & button != 0;
     }
 };
+
+pub const StateSetup = struct {
+    y_min: u8,
+    y_max: u8,
+    x_min: u8,
+    x_max: u8,
+    step_stride: u32,
+};
