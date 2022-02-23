@@ -103,10 +103,8 @@ pub const State = struct {
         return false;
     }
 
-    pub fn reset(self: *State, new_random: rand.Random) void {
+    pub fn reset(self: *State) void {
         self.frame = 0;
-        self.random = new_random;
-
         self.next_tick = StepStride;
         self.segments.clearAndFree();
         state.maybe_next_direction = .Up;
@@ -248,8 +246,8 @@ fn mainMenu() void {
     }
     w4.text("Press Z to Start", 16, w4.CANVAS_SIZE / 2 + 14);
     if (input.just_released(Input.ButtonB)) {
-        prng = rand.DefaultPrng.init(state.frame);
-        state.reset(prng.random());
+        prng.seed(state.frame);
+        state.reset();
     }
 }
 
@@ -308,8 +306,8 @@ fn gameOver() void {
 
     w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE - 30);
     if (input.just_released(Input.ButtonB)) {
-        prng = rand.DefaultPrng.init(state.frame);
-        state.reset(prng.random());
+        prng.seed(state.frame);
+        state.reset();
     }
 }
 
@@ -321,8 +319,8 @@ export fn start() void {
         .x_max = SnakeXMax,
         .step_stride = StepStride,
     });
-    prng = rand.DefaultPrng.init(state.frame);
-    state.reset(prng.random());
+    prng.seed(state.frame);
+    state.reset();
     state.game_state = .Menu;
     state.nextFruit();
 }
