@@ -313,14 +313,15 @@ fn gameOver() void {
 }
 
 export fn start() void {
+    prng.seed(0);
     global_state = State.allocAndInit(fixedAlloator, .{
         .y_min = SnakeYMin,
         .y_max = SnakeYMax,
         .x_min = SnakeXMin,
         .x_max = SnakeXMax,
         .step_stride = StepStride,
+        .random = prng.random(),
     });
-    prng.seed(global_state.frame);
     global_state.reset();
     global_state.game_state = .Menu;
     global_state.nextFruit();

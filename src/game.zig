@@ -144,4 +144,5 @@ pub const StateSetup = struct {
     x_min: u8,
     x_max: u8,
     step_stride: u32,
+    random: rand.Random,
 };
