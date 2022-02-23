@@ -1,9 +1,26 @@
 const std = @import("std");
 
-pub fn main() anyerror!void {
-    std.log.info("All your codebase are belong to us.", .{});
-}
+const sg = @import("sokol").gfx;
+const sapp = @import("sokol").app;
+const sgapp = @import("sokol").app_gfx_glue;
 
-test "basic test" {
-    try std.testing.expectEqual(10, 3 + 7);
+var pass_action: sg.Action = .{};
+
+export fn init() void {}
+
+export fn frame() void {}
+
+export fn cleanup() void {}
+
+pub fn main() void {
+    sapp.run(.{
+        .init_cb = init,
+        .frame_cb = frame,
+        .width = 480,
+        .height = 480,
+        .icon = .{
+            .sokol_default = true,
+        },
+        .window_title = "Znake",
+    });
 }
