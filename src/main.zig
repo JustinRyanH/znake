@@ -102,16 +102,24 @@ pub const GameState = enum {
     GameOver,
 };
 
-pub const State = struct {
-    allocator: Allocator,
-    random: rand.Random,
+pub const StateSetup = struct {
     y_min: u8 = SnakeYMin,
     y_max: u8 = SnakeYMax,
     x_min: u8 = SnakeXMin,
     x_max: u8 = SnakeXMax,
+    step_stride: u32 = StepStride,
+};
+
+pub const State = struct {
+    allocator: Allocator,
+    random: rand.Random,
+    y_min: u8,
+    y_max: u8,
+    x_min: u8,
+    x_max: u8,
 
     frame: u32 = 0,
-    next_tick: u32 = StepStride,
+    next_tick: u32,
     input: Input = .{},
     maybe_next_direction: Direction = .Up,
     segments: SegmentList,
@@ -119,9 +127,14 @@ pub const State = struct {
     fruit: Fruit = .{},
     game_state: GameState = .GameOver,
 
-    pub fn alloc_and_init(allocator: Allocator) *State {
+    pub fn alloc_and_init(allocator: Allocator, config: StateSetup) *State {
         state = allocator.create(State) catch @panic("Could not Allocate Game Data");
         state.* = .{
+            .y_min = config.y_min,
+            .y_max = config.y_max,
+            .x_min = config.x_min,
+            .x_max = config.x_max,
+            .next_tick = config.step_stride,
             .allocator = allocator,
             .random = prng.random(),
             .segments = SegmentList.init(allocator),
@@ -344,7 +357,7 @@ fn gameOver() void {
 }
 
 export fn start() void {
-    state = State.alloc_and_init(fixedAlloator);
+    state = State.alloc_and_init(fixedAlloator, .{});
     state.reset();
     state.game_state = .Menu;
     state.nextFruit();
