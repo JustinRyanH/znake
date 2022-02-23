@@ -10,7 +10,7 @@ const Game = @import("game.zig");
 const heap = @import("std").heap;
 const rand = @import("std").rand;
 const math = @import("std").math;
-const Allocator = @import("std").mem.Allocator;
+const mem = @import("std").mem;
 
 ///////////////////////
 // "Heap" Allocation
@@ -64,7 +64,7 @@ pub const StateSetup = struct {
 };
 
 pub const State = struct {
-    allocator: Allocator,
+    allocator: mem.Allocator,
     random: rand.Random,
     y_min: u8,
     y_max: u8,
@@ -79,7 +79,7 @@ pub const State = struct {
     fruit: Fruit = .{},
     game_state: GameState = .GameOver,
 
-    pub fn alloc_and_init(allocator: Allocator, config: StateSetup) *State {
+    pub fn alloc_and_init(allocator: mem.Allocator, config: StateSetup) *State {
         state = allocator.create(State) catch @panic("Could not Allocate Game Data");
         state.* = .{
             .y_min = config.y_min,
@@ -103,10 +103,9 @@ pub const State = struct {
         return false;
     }
 
-    pub fn reset(self: *State) void {
-        prng = rand.DefaultPrng.init(self.frame);
+    pub fn reset(self: *State, new_random: rand.Random) void {
         self.frame = 0;
-        self.random = prng.random();
+        self.random = new_random;
 
         self.next_tick = StepStride;
         self.segments.clearAndFree();
@@ -249,7 +248,8 @@ fn mainMenu() void {
     }
     w4.text("Press Z to Start", 16, w4.CANVAS_SIZE / 2 + 14);
     if (input.just_released(Input.ButtonB)) {
-        state.reset();
+        prng = rand.DefaultPrng.init(state.frame);
+        state.reset(prng.random());
     }
 }
 
@@ -308,7 +308,8 @@ fn gameOver() void {
 
     w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE - 30);
     if (input.just_released(Input.ButtonB)) {
-        state.reset();
+        prng = rand.DefaultPrng.init(state.frame);
+        state.reset(prng.random());
     }
 }
 
@@ -320,7 +321,8 @@ export fn start() void {
         .x_max = SnakeXMax,
         .step_stride = StepStride,
     });
-    state.reset();
+    prng = rand.DefaultPrng.init(state.frame);
+    state.reset(prng.random());
     state.game_state = .Menu;
     state.nextFruit();
 }
