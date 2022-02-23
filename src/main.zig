@@ -313,7 +313,6 @@ fn gameOver() void {
 }
 
 export fn start() void {
-    prng.seed(0);
     global_state = State.allocAndInit(fixedAlloator, .{
         .y_min = SnakeYMin,
         .y_max = SnakeYMax,
