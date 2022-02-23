@@ -83,3 +83,9 @@ pub const Fruit = struct {
         return false;
     }
 };
+
+pub const GameState = enum {
+    Menu,
+    Play,
+    GameOver,
+};

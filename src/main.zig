@@ -53,6 +53,7 @@ const SegmentList = ArrayList(Segment);
 pub const Direction = Game.Direction;
 pub const Vec2 = Game.Vec2;
 pub const Fruit = Game.Fruit;
+pub const GameState = Game.GameState;
 
 pub const Input = packed struct {
     const ButtonA = w4.BUTTON_1;
@@ -94,12 +95,6 @@ pub const Input = packed struct {
     fn last_frame_down(self: *Input, button: u8) bool {
         return self.last_frame & button != 0;
     }
-};
-
-pub const GameState = enum {
-    Menu,
-    Play,
-    GameOver,
 };
 
 pub const StateSetup = struct {
