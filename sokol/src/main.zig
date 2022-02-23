@@ -32,6 +32,25 @@ export fn frame() void {
     input.frame += 1;
 }
 
+export fn sokol_input(event: ?*const sapp.Event) void {
+    const ev = event.?;
+    switch (ev.type) {
+        .KEY_DOWN, .KEY_UP => {
+            // const key_down = ev.type == .KEY_DOWN;
+            switch (ev.key_code) {
+                .LEFT => {},
+                .RIGHT => {},
+                .UP => {},
+                .DOWN => {},
+                .Z => {},
+                .X => {},
+                else => {},
+            }
+        },
+        else => {},
+    }
+}
+
 export fn cleanup() void {
     std.debug.assert(!general_purpose_allocator.deinit());
 }
@@ -40,6 +59,7 @@ pub fn main() void {
     sapp.run(.{
         .init_cb = init,
         .frame_cb = frame,
+        .event_cb = sokol_input,
         .width = 480,
         .height = 480,
         .icon = .{
