@@ -72,12 +72,18 @@ pub const State = struct {
     x_max: u8,
 
     frame: u32 = 0,
+    input: Input = .{},
+
     next_tick: u32,
     maybe_next_direction: Direction = .Up,
     segments: SegmentList,
     deadSegments: SegmentList,
     fruit: Fruit = .{},
     game_state: GameState = .GameOver,
+
+    pub fn updateInput(self: *State, input: Input) void {
+        self.input = input;
+    }
 
     pub fn alloc_and_init(allocator: mem.Allocator, config: StateSetup) *State {
         global_state = allocator.create(State) catch @panic("Could not Allocate Game Data");
@@ -327,6 +333,7 @@ export fn start() void {
 
 export fn update() void {
     global_input.process(w4.GAMEPAD1.*);
+    global_state.updateInput(global_input);
 
     w4.DRAW_COLORS.* = 0x04;
     w4.rect(0, 0, w4.CANVAS_SIZE, TopBarSize);
