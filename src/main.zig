@@ -11,7 +11,6 @@ const heap = @import("std").heap;
 const rand = @import("std").rand;
 const math = @import("std").math;
 const Allocator = @import("std").mem.Allocator;
-const ArrayList = @import("std").ArrayList;
 
 ///////////////////////
 // "Heap" Allocation
@@ -49,7 +48,7 @@ var prng = rand.DefaultPrng.init(40);
 //////////////////////
 
 pub const Segment = Game.Segment;
-const SegmentList = ArrayList(Segment);
+pub const SegmentList = Game.SegmentList;
 pub const Direction = Game.Direction;
 pub const Vec2 = Game.Vec2;
 pub const Fruit = Game.Fruit;
@@ -57,11 +56,11 @@ pub const GameState = Game.GameState;
 pub const Input = Game.Input;
 
 pub const StateSetup = struct {
-    y_min: u8 = SnakeYMin,
-    y_max: u8 = SnakeYMax,
-    x_min: u8 = SnakeXMin,
-    x_max: u8 = SnakeXMax,
-    step_stride: u32 = StepStride,
+    y_min: u8,
+    y_max: u8,
+    x_min: u8,
+    x_max: u8,
+    step_stride: u32,
 };
 
 pub const State = struct {
@@ -312,7 +311,13 @@ fn gameOver() void {
 }
 
 export fn start() void {
-    state = State.alloc_and_init(fixedAlloator, .{});
+    state = State.alloc_and_init(fixedAlloator, .{
+        .y_min = SnakeYMin,
+        .y_max = SnakeYMax,
+        .x_min = SnakeXMin,
+        .x_max = SnakeXMax,
+        .step_stride = StepStride,
+    });
     state.reset();
     state.game_state = .Menu;
     state.nextFruit();

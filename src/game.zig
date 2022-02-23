@@ -1,3 +1,8 @@
+const mem = @import("std").mem;
+const rand = @import("std").rand;
+
+const ArrayList = @import("std").ArrayList;
+
 pub const Vec2 = struct {
     x: i32 = 0,
     y: i32 = 0,
@@ -68,6 +73,7 @@ pub const Segment = struct {
         self.direction = direction;
     }
 };
+pub const SegmentList = ArrayList(Segment);
 
 pub const Fruit = struct {
     pos: ?Vec2 = null,
