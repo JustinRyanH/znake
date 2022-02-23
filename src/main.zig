@@ -74,7 +74,6 @@ pub const State = struct {
 
     frame: u32 = 0,
     next_tick: u32,
-    input: Input = .{},
     maybe_next_direction: Direction = .Up,
     segments: SegmentList,
     deadSegments: SegmentList,
@@ -238,37 +237,39 @@ pub fn drawState(st: *const State) void {
 }
 
 var state: *State = undefined;
+var input: Input = .{};
+
 fn mainMenu() void {
     w4.text("WELCOME!", 48, w4.CANVAS_SIZE / 2);
-    if (state.input.down(Input.ButtonB)) {
+    if (input.down(Input.ButtonB)) {
         w4.DRAW_COLORS.* = 0x02;
     } else {
         w4.DRAW_COLORS.* = 0x04;
     }
     w4.text("Press Z to Start", 16, w4.CANVAS_SIZE / 2 + 14);
-    if (state.input.just_released(Input.ButtonB)) {
+    if (input.just_released(Input.ButtonB)) {
         state.reset();
     }
 }
 
 fn play() void {
     var snake_head = state.snakeHead();
-    if (state.input.just_pressed(Input.Left)) {
+    if (input.just_pressed(Input.Left)) {
         if (snake_head.direction.opposite() != .Left) {
             state.maybe_next_direction = .Left;
         }
     }
-    if (state.input.just_pressed(Input.Right)) {
+    if (input.just_pressed(Input.Right)) {
         if (snake_head.direction.opposite() != .Right) {
             state.maybe_next_direction = .Right;
         }
     }
-    if (state.input.just_pressed(Input.Up)) {
+    if (input.just_pressed(Input.Up)) {
         if (snake_head.direction.opposite() != .Up) {
             state.maybe_next_direction = .Up;
         }
     }
-    if (state.input.just_pressed(Input.Down)) {
+    if (input.just_pressed(Input.Down)) {
         if (snake_head.direction.opposite() != .Down) {
             state.maybe_next_direction = .Down;
         }
@@ -298,14 +299,14 @@ fn play() void {
 fn gameOver() void {
     w4.DRAW_COLORS.* = 0x04;
     w4.text("GAME OVER", 42, w4.CANVAS_SIZE - 15);
-    if (state.input.down(Input.ButtonB)) {
+    if (input.down(Input.ButtonB)) {
         w4.DRAW_COLORS.* = 0x02;
     } else {
         w4.DRAW_COLORS.* = 0x04;
     }
 
     w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE - 30);
-    if (state.input.just_released(Input.ButtonB)) {
+    if (input.just_released(Input.ButtonB)) {
         state.reset();
     }
 }
@@ -318,7 +319,7 @@ export fn start() void {
 }
 
 export fn update() void {
-    state.input.process(w4.GAMEPAD1.*);
+    input.process(w4.GAMEPAD1.*);
 
     w4.DRAW_COLORS.* = 0x04;
     w4.rect(0, 0, w4.CANVAS_SIZE, TopBarSize);
@@ -332,5 +333,5 @@ export fn update() void {
     }
 
     state.frame += 1;
-    state.input.swap();
+    input.swap();
 }
