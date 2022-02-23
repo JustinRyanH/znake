@@ -112,7 +112,9 @@ pub const State = struct {
         self.segments.clearAndFree();
         state.maybe_next_direction = .Up;
 
-        const StartPosition = Vec2{ .x = (WorldWidth / 2) - 1, .y = (WorldHeight / 2) };
+        const x = (self.x_max - self.x_min) / 2 - 1;
+        const y = (self.y_max - self.y_min) / 2 - 1;
+        const StartPosition = Vec2{ .x = x, .y = y };
         const starting_segment = Segment{ .direction = state.maybe_next_direction, .position = StartPosition };
         const starting_tail = Segment{ .direction = state.maybe_next_direction, .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }) };
         self.addSegment(starting_segment);
