@@ -158,6 +158,7 @@ pub const State = struct {
 
     frame: u32 = 0,
     input: Input = .{},
+    fruit_missing: bool = false,
 
     next_tick: u32,
     maybe_next_direction: Direction = .Up,
@@ -168,6 +169,44 @@ pub const State = struct {
 
     pub fn updateInput(self: *State, input: Input) void {
         self.input = input;
+    }
+
+    pub fn updateGame(self: *State) void {
+        switch (self.game_state) {
+            .GameOver => {
+                if (self.input.just_released(Input.ButtonB)) {
+                    self.reset();
+                }
+            },
+            .Menu => {
+                if (self.input.just_released(Input.ButtonB)) {
+                    self.reset();
+                }
+            },
+            .Play => {
+                var snake_head = self.snakeHead();
+                if (self.input.just_pressed(Input.Left)) {
+                    if (snake_head.direction.opposite() != .Left) {
+                        self.maybe_next_direction = .Left;
+                    }
+                }
+                if (self.input.just_pressed(Input.Right)) {
+                    if (snake_head.direction.opposite() != .Right) {
+                        self.maybe_next_direction = .Right;
+                    }
+                }
+                if (self.input.just_pressed(Input.Up)) {
+                    if (snake_head.direction.opposite() != .Up) {
+                        self.maybe_next_direction = .Up;
+                    }
+                }
+                if (self.input.just_pressed(Input.Down)) {
+                    if (snake_head.direction.opposite() != .Down) {
+                        self.maybe_next_direction = .Down;
+                    }
+                }
+            },
+        }
     }
 
     pub fn allocAndInit(allocator: mem.Allocator, config: StateSetup) *State {

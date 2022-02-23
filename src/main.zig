@@ -131,45 +131,31 @@ fn mainMenu() void {
 
 fn play() void {
     var snake_head = global_state.snakeHead();
-    if (global_input.just_pressed(Input.Left)) {
-        if (snake_head.direction.opposite() != .Left) {
-            global_state.maybe_next_direction = .Left;
-        }
-    }
-    if (global_input.just_pressed(Input.Right)) {
-        if (snake_head.direction.opposite() != .Right) {
-            global_state.maybe_next_direction = .Right;
-        }
-    }
-    if (global_input.just_pressed(Input.Up)) {
-        if (snake_head.direction.opposite() != .Up) {
-            global_state.maybe_next_direction = .Up;
-        }
-    }
-    if (global_input.just_pressed(Input.Down)) {
-        if (snake_head.direction.opposite() != .Down) {
-            global_state.maybe_next_direction = .Down;
-        }
-    }
-
     if (global_state.shouldTick()) {
         snake_head.direction = global_state.maybe_next_direction;
         if (global_state.willBeOutOfBounds(snake_head) or global_state.willCollideWithSelf()) {
             global_state.game_state = .GameOver;
         } else if (global_state.fruit.missing()) {
+            global_state.fruit_missing = true;
             var segments = global_state.segments.items;
             const last_segment = segments[segments.len - 1];
             global_state.updateSegments();
             global_state.addSegment(last_segment);
-            w4.tone(180, 4, 50, w4.TONE_MODE1);
             global_state.nextFruit();
         } else {
             global_state.updateSegments();
-            w4.tone(90, 3, 10, w4.TONE_MODE1);
         }
 
         global_state.maybEat();
     }
+    if (global_state.shouldTick()) {
+        if (global_state.fruit_missing) {
+            w4.tone(180, 4, 50, w4.TONE_MODE1);
+        } else {
+            w4.tone(90, 3, 10, w4.TONE_MODE1);
+        }
+    }
+    global_state.fruit_missing = true;
     drawState(global_state);
 }
 
@@ -186,7 +172,6 @@ fn gameOver() void {
     }
 
     if (global_state.input.just_released(Input.ButtonB)) {
-        prng.seed(global_state.frame);
         global_state.reset();
     }
 }
@@ -196,7 +181,7 @@ export fn start() void {
         .y_min = SnakeYMin,
         .y_max = SnakeYMax,
         .x_min = SnakeXMin,
-        .x_max = SnakeXMax,
+        .x_max = SnakeXMax - 1,
         .step_stride = StepStride,
         .random = prng.random(),
     });
@@ -214,6 +199,7 @@ export fn update() void {
     w4.DRAW_COLORS.* = 2;
     w4.text("WASM4 Znake", 32, 4);
 
+    global_state.updateGame();
     switch (global_state.game_state) {
         .Menu => mainMenu(),
         .Play => play(),
