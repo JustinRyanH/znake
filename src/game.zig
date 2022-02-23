@@ -3,6 +3,73 @@ const rand = @import("std").rand;
 
 const ArrayList = @import("std").ArrayList;
 
+pub const GameEvent = enum {
+    EatFruit,
+    TickHappened,
+    Died,
+    NextStage,
+};
+pub const GameEvents = struct {
+    inner: ArrayList(GameEvent),
+
+    pub fn init(allocator: mem.Allocator) GameEvents {
+        return .{
+            .inner = ArrayList(GameEvent).init(allocator),
+        };
+    }
+
+    pub fn clear(self: *GameEvents) void {
+        self.inner.clearAndFree();
+    }
+
+    pub fn ticked(self: *GameEvents) void {
+        self.append(.TickHappened);
+    }
+
+    pub fn died(self: *GameEvents) void {
+        self.append(.Died);
+    }
+
+    pub fn eatFruit(self: *GameEvents) void {
+        self.append(.EatFruit);
+    }
+
+    pub fn nextStage(self: *GameEvents) void {
+        self.append(.NextStage);
+    }
+
+    pub fn hasNextStage(self: *GameEvents) bool {
+        for (self.inner.items) |event| {
+            if (event == .NextStage) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn hasTicked(self: *GameEvents) bool {
+        for (self.inner.items) |event| {
+            if (event == .TickHappened) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn hasEatenFruit(self: *GameEvents) bool {
+        for (self.inner.items) |event| {
+            if (event == .EatFruit) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    fn append(self: *GameEvents, event: GameEvent) void {
+        self.inner.append(event) catch @panic("Cannot Append Event");
+    }
+};
+
 pub const Vec2 = struct {
     x: i32 = 0,
     y: i32 = 0,
@@ -158,11 +225,11 @@ pub const State = struct {
 
     frame: u32 = 0,
     input: Input = .{},
-    fruit_missing: bool = false,
 
     maybe_next_direction: Direction = .Up,
     segments: SegmentList,
     deadSegments: SegmentList,
+    events: GameEvents,
     fruit: Fruit = .{},
     game_state: GameState = .GameOver,
 
@@ -174,11 +241,13 @@ pub const State = struct {
         switch (self.game_state) {
             .GameOver => {
                 if (self.input.just_released(Input.ButtonB)) {
+                    self.events.nextStage();
                     self.reset();
                 }
             },
             .Menu => {
                 if (self.input.just_released(Input.ButtonB)) {
+                    self.events.nextStage();
                     self.reset();
                 }
             },
@@ -205,11 +274,12 @@ pub const State = struct {
                     }
                 }
                 if (self.shouldTick()) {
+                    self.events.ticked();
                     snake_head.direction = self.maybe_next_direction;
                     if (self.willBeOutOfBounds(snake_head) or self.willCollideWithSelf()) {
+                        self.events.died();
                         self.game_state = .GameOver;
                     } else if (self.fruit.missing()) {
-                        self.fruit_missing = true;
                         var segments = self.segments.items;
                         const last_segment = segments[segments.len - 1];
                         self.updateSegments();
@@ -237,6 +307,7 @@ pub const State = struct {
             .random = config.random,
             .segments = SegmentList.init(allocator),
             .deadSegments = SegmentList.init(allocator),
+            .events = GameEvents.init(allocator),
         };
         return state;
     }
@@ -259,6 +330,10 @@ pub const State = struct {
         self.addSegment(starting_tail);
         self.game_state = .Play;
         self.nextFruit();
+    }
+
+    pub fn clearEvents(self: *State) void {
+        self.events.clear();
     }
 
     pub fn willCollideWithSelf(self: *State) bool {
@@ -289,6 +364,7 @@ pub const State = struct {
         if (!self.fruit.overlaps(snake_head.position)) {
             return;
         }
+        self.events.eatFruit();
         self.fruit.pos = null;
     }
 

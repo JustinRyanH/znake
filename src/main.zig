@@ -54,6 +54,7 @@ pub const Input = Game.Input;
 pub const Segment = Game.Segment;
 pub const SegmentList = Game.SegmentList;
 pub const StateSetup = Game.StateSetup;
+pub const GameEvent = Game.GameEvent;
 pub const Vec2 = Game.Vec2;
 
 pub const State = Game.State;
@@ -123,21 +124,22 @@ fn mainMenu() void {
         w4.DRAW_COLORS.* = 0x04;
     }
     w4.text("Press Z to Start", 16, w4.CANVAS_SIZE / 2 + 14);
-    if (global_input.just_released(Input.ButtonB)) {
+    if (global_state.events.hasNextStage()) {
         prng.seed(global_state.frame);
-        global_state.reset();
     }
 }
 
 fn play() void {
-    if (global_state.shouldTick()) {
-        if (global_state.fruit_missing) {
+    const tick_happened = global_state.events.hasTicked();
+    const has_eaten = global_state.events.hasEatenFruit();
+
+    if (tick_happened) {
+        if (has_eaten) {
             w4.tone(180, 4, 50, w4.TONE_MODE1);
         } else {
             w4.tone(90, 3, 10, w4.TONE_MODE1);
         }
     }
-    global_state.fruit_missing = false;
     drawState(global_state);
 }
 
@@ -152,9 +154,8 @@ fn gameOver() void {
         w4.DRAW_COLORS.* = 0x04;
         w4.text("Press Z to Restart", 8, w4.CANVAS_SIZE - 30);
     }
-
-    if (global_state.input.just_released(Input.ButtonB)) {
-        global_state.reset();
+    if (global_state.events.hasNextStage()) {
+        prng.seed(global_state.frame);
     }
 }
 
@@ -190,4 +191,5 @@ export fn update() void {
 
     global_state.frame += 1;
     global_input.swap();
+    global_state.clearEvents();
 }
