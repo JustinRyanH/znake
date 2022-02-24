@@ -14,12 +14,26 @@ const global_random = prng.random();
 
 const GameInput = Game.Input;
 
-var pass_action: sg.Action = .{};
+pub const Renderer = struct {
+    pass_action: sg.PassAction = .{},
+};
 
+var renderer: Renderer = .{};
 var game: *Game.State = undefined;
 var input: GameInput = .{};
 
+fn drawGame(gm: *Game.State, rdr: *Renderer) void {
+    _ = gm;
+    sg.beginDefaultPass(rdr.pass_action, sapp.width(), sapp.height());
+    sg.endPass();
+    sg.commit();
+}
+
 export fn init() void {
+    sg.setup(.{
+        .context = sgapp.context(),
+    });
+
     game = Game.State.allocAndInit(gpa, .{
         .y_min = 0,
         .y_max = 40,
@@ -32,6 +46,7 @@ export fn init() void {
 
 export fn frame() void {
     game.frame += 1;
+    drawGame(game, &renderer);
     input.swap();
 }
 
