@@ -17,10 +17,10 @@ const GameInput = Game.Input;
 pub const Color = sg.Color;
 
 const ColorPallete = [_]Color{
-    .{ .r = 255 / 225, .g = 255 / 248, .b = 255 / 207, .a = 1 },
-    .{ .r = 255 / 108, .g = 255 / 192, .b = 255 / 108, .a = 1 },
-    .{ .r = 255 / 80, .g = 255 / 104, .b = 255 / 80, .a = 1 },
-    .{ .r = 255 / 7, .g = 255 / 24, .b = 255 / 33, .a = 1 },
+    .{ .r = 225.0 / 255.0, .g = 248.0 / 255.0, .b = 207.0 / 255.0, .a = 1 },
+    .{ .r = 108.0 / 255.0, .g = 192.0 / 255.0, .b = 108.0 / 255.0, .a = 1 },
+    .{ .r = 80.0 / 255.0, .g = 104.0 / 255.0, .b = 80.0 / 255.0, .a = 1 },
+    .{ .r = 7.0 / 255.0, .g = 24.0 / 255.0, .b = 33.0 / 255.0, .a = 1 },
 };
 
 pub const Renderer = struct {
@@ -44,7 +44,9 @@ export fn init() void {
         .context = sgapp.context(),
     });
 
-    renderer.pass_action.colors[0] = .{ .action = .CLEAR, .value = ColorPallete[0] };
+    var color = ColorPallete[0];
+    std.debug.print("r: {}, b: {}, g: {}, a: {}", .{ color.r, color.b, color.g, color.a });
+    renderer.pass_action.colors[0] = .{ .action = .CLEAR, .value = color };
 
     game = Game.State.allocAndInit(gpa, .{
         .y_min = 0,
