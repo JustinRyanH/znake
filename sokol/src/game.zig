@@ -1,7 +1,7 @@
-const mem = @import("std").mem;
-const rand = @import("std").rand;
-
-const ArrayList = @import("std").ArrayList;
+const std = @import("std");
+const mem = std.mem;
+const rand = std.rand;
+const ArrayList = std.ArrayList;
 
 pub const GameEvent = enum {
     EatFruit,
@@ -182,14 +182,21 @@ pub const Input = packed struct {
         return !self.down(button);
     }
 
-    pub fn just_released(self: *Input, button: u8) bool {
+    pub fn justReleased(self: *Input, button: u8) bool {
         const last_down = self.last_frame_down(button);
         return last_down and self.up(button);
     }
 
-    pub fn just_pressed(self: *Input, button: u8) bool {
+    pub fn justPressed(self: *Input, button: u8) bool {
         const last_up = !self.last_frame_down(button);
         return last_up and self.down(button);
+    }
+
+    pub fn setDown(self: *Input, button: u8) void {
+        self.frame = self.frame | button;
+    }
+    pub fn setUp(self: *Input, button: u8) void {
+        self.frame = self.frame & ~button;
     }
 
     pub fn process(self: *Input, current: u8) void {
@@ -240,35 +247,35 @@ pub const State = struct {
     pub fn updateGame(self: *State) void {
         switch (self.game_state) {
             .GameOver => {
-                if (self.input.just_released(Input.ButtonB)) {
+                if (self.input.justReleased(Input.ButtonB)) {
                     self.events.nextStage();
                     self.reset();
                 }
             },
             .Menu => {
-                if (self.input.just_released(Input.ButtonB)) {
+                if (self.input.justReleased(Input.ButtonB)) {
                     self.events.nextStage();
                     self.reset();
                 }
             },
             .Play => {
                 var snake_head = self.snakeHead();
-                if (self.input.just_pressed(Input.Left)) {
+                if (self.input.justPressed(Input.Left)) {
                     if (snake_head.direction.opposite() != .Left) {
                         self.maybe_next_direction = .Left;
                     }
                 }
-                if (self.input.just_pressed(Input.Right)) {
+                if (self.input.justPressed(Input.Right)) {
                     if (snake_head.direction.opposite() != .Right) {
                         self.maybe_next_direction = .Right;
                     }
                 }
-                if (self.input.just_pressed(Input.Up)) {
+                if (self.input.justPressed(Input.Up)) {
                     if (snake_head.direction.opposite() != .Up) {
                         self.maybe_next_direction = .Up;
                     }
                 }
-                if (self.input.just_pressed(Input.Down)) {
+                if (self.input.justPressed(Input.Down)) {
                     if (snake_head.direction.opposite() != .Down) {
                         self.maybe_next_direction = .Down;
                     }
@@ -395,3 +402,23 @@ pub const State = struct {
         return false;
     }
 };
+
+test "Input" {
+    var input: Input = .{};
+    try std.testing.expect(input.frame == 0);
+    input.setDown(Input.Left);
+    input.setDown(Input.ButtonA);
+    input.setDown(Input.ButtonB);
+    try std.testing.expect(input.down(Input.Left) == true);
+    try std.testing.expect(input.down(Input.ButtonA) == true);
+    try std.testing.expect(input.justPressed(Input.Left));
+
+    input.setUp(Input.ButtonA);
+    try std.testing.expect(input.up(Input.ButtonA) == true);
+    try std.testing.expect(input.down(Input.Left) == true);
+
+    input.swap();
+    input.setUp(Input.Left);
+    try std.testing.expect(input.justReleased(Input.Left) == true);
+    try std.testing.expect(input.up(Input.Left) == true);
+}
