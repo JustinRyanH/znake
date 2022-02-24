@@ -24,6 +24,9 @@ const ColorPallete = [_]Color{
 };
 
 pub const Renderer = struct {
+    width: usize,
+    height: usize,
+    pallete: Color,
     allocator: std.mem.Allocator,
     frame_buffer: []u8,
     pass_action: sg.PassAction = .{},
@@ -33,12 +36,39 @@ pub const Renderer = struct {
         errdefer allocator.destroy(out);
         var frame_buffer = try allocator.alloc(u8, size * size);
         out.frame_buffer = frame_buffer;
+        out.width = size;
+        out.height = size;
         out.allocator = allocator;
         return out;
     }
 
     pub fn deinit(self: *Renderer) !void {
         return self.allocator.free(self.frame_buffer);
+    }
+
+    pub fn set_pallete(self: *Renderer, color: u2) void {
+        self.pallete = ColorPallete[color];
+    }
+
+    pub fn draw_rect(self: *Renderer, x: u8, y: u8, width: u16, height: u16) void {
+        const realX = std.math.clamp(x, 0, self.width);
+        const realY = std.math.clamp(y, 0, self.height);
+        const x2 = std.math.clamp(x + width, 0, self.width);
+        const y2 = std.math.clamp(y + height, 0, self.height);
+
+        var i = realX;
+        while (i < x2) : (i += 1) {
+            var j = realY;
+            while (j < y2) : (j += 1) {
+                self.pixel(i, j);
+            }
+        }
+    }
+
+    fn pixel(self: *Renderer, x: usize, y: usize) void {
+        _ = self;
+        _ = x;
+        _ = y;
     }
 };
 
@@ -75,6 +105,8 @@ export fn init() void {
 export fn frame() void {
     game.frame += 1;
     drawGame(game, renderer);
+    renderer.set_pallete(1);
+    renderer.draw_rect(0, 0, 40, 40);
     input.swap();
 }
 
