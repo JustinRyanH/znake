@@ -24,11 +24,25 @@ const ColorPallete = [_]Color{
 };
 
 pub const Renderer = struct {
+    allocator: std.mem.Allocator,
+    frame_buffer: []u8,
     pass_action: sg.PassAction = .{},
+
+    pub fn init(allocator: std.mem.Allocator, size: usize) !*Renderer {
+        var out = try allocator.create(Renderer);
+        errdefer allocator.destroy(out);
+        var frame_buffer = try allocator.alloc(u8, size * size);
+        out.frame_buffer = frame_buffer;
+        out.allocator = allocator;
+        return out;
+    }
+
+    pub fn deinit(self: *Renderer) !void {
+        return self.allocator.free(self.frame_buffer);
+    }
 };
 
-var renderer: Renderer = .{};
-
+var renderer: *Renderer = undefined;
 var game: *Game.State = undefined;
 var input: GameInput = .{};
 
@@ -40,12 +54,12 @@ fn drawGame(gm: *Game.State, rdr: *Renderer) void {
 }
 
 export fn init() void {
+    renderer = Renderer.init(gpa, 160) catch @panic("Failed to Create Renderer");
     sg.setup(.{
         .context = sgapp.context(),
     });
 
     var color = ColorPallete[0];
-    std.debug.print("r: {}, b: {}, g: {}, a: {}", .{ color.r, color.b, color.g, color.a });
     renderer.pass_action.colors[0] = .{ .action = .CLEAR, .value = color };
 
     game = Game.State.allocAndInit(gpa, .{
@@ -60,7 +74,7 @@ export fn init() void {
 
 export fn frame() void {
     game.frame += 1;
-    drawGame(game, &renderer);
+    drawGame(game, renderer);
     input.swap();
 }
 
@@ -84,6 +98,7 @@ export fn sokol_input(event: ?*const sapp.Event) void {
 }
 
 export fn cleanup() void {
+    renderer.deinit() catch @panic("Failed to clean up renderer");
     std.debug.assert(!general_purpose_allocator.deinit());
 }
 
