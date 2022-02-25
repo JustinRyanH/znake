@@ -62,7 +62,37 @@ pub const Renderer = struct {
         out.width = size;
         out.height = size;
         out.allocator = allocator;
+        out.setupGfx();
         return out;
+    }
+
+    fn setupGfx(self: *Renderer) void {
+        self.bind.vertex_buffers[0] = sg.makeBuffer(.{
+            .data = sg.asRange([_]Vertex{
+                .{ .x = 1.0, .y = 1.0, .u = 1.0, .v = 0.0 },
+                .{ .x = 1.0, .y = -1.0, .u = 1.0, .v = 1.0 },
+                .{ .x = -1.0, .y = -1.0, .u = 0.0, .v = 1.0 },
+                .{ .x = -1.0, .y = 1.0, .u = 0.0, .v = 0.0 },
+            }),
+        });
+        self.bind.index_buffer = sg.makeBuffer(.{ .type = .INDEXBUFFER, .data = sg.asRange([_]u16{ 0, 1, 3, 1, 2, 3 }) });
+        var img_desc = sg.ImageDesc{
+            .width = @intCast(i32, self.width),
+            .height = @intCast(i32, self.height),
+            .pixel_format = .RGBA8,
+        };
+        img_desc.data.subimage[0][0] = sg.asRange(self.frame_buffer);
+
+        self.bind.fs_images[shd.SLOT_tex] = sg.makeImage(img_desc);
+
+        var pip_desc: sg.PipelineDesc = .{
+            .index_type = .UINT16,
+            .shader = sg.makeShader(shd.texcubeShaderDesc(sg.queryBackend())),
+        };
+        pip_desc.layout.attrs[shd.ATTR_vs_pos].format = .FLOAT2;
+        pip_desc.layout.attrs[shd.ATTR_vs_texcoord0].format = .FLOAT2;
+        self.pip = sg.makePipeline(pip_desc);
+        self.pass_action.colors[0] = .{ .action = .CLEAR, .value = ColorPallete[0] };
     }
 
     pub fn deinit(self: *Renderer) !void {
@@ -126,39 +156,11 @@ var game: *Game.State = undefined;
 var input: GameInput = .{};
 
 export fn init() void {
-    renderer = Renderer.init(gpa, 160) catch @panic("Failed to Create Renderer");
     sg.setup(.{
         .context = sgapp.context(),
     });
 
-    renderer.bind.vertex_buffers[0] = sg.makeBuffer(.{
-        .data = sg.asRange([_]Vertex{
-            .{ .x = 1.0, .y = 1.0, .u = 1.0, .v = 0.0 },
-            .{ .x = 1.0, .y = -1.0, .u = 1.0, .v = 1.0 },
-            .{ .x = -1.0, .y = -1.0, .u = 0.0, .v = 1.0 },
-            .{ .x = -1.0, .y = 1.0, .u = 0.0, .v = 0.0 },
-        }),
-    });
-    renderer.bind.index_buffer = sg.makeBuffer(.{ .type = .INDEXBUFFER, .data = sg.asRange([_]u16{ 0, 1, 3, 1, 2, 3 }) });
-    var img_desc = sg.ImageDesc{
-        .width = @intCast(i32, renderer.width),
-        .height = @intCast(i32, renderer.height),
-        .pixel_format = .RGBA8,
-    };
-    img_desc.data.subimage[0][0] = sg.asRange(renderer.frame_buffer);
-
-    renderer.bind.fs_images[shd.SLOT_tex] = sg.makeImage(img_desc);
-
-    var pip_desc: sg.PipelineDesc = .{
-        .index_type = .UINT16,
-        .shader = sg.makeShader(shd.texcubeShaderDesc(sg.queryBackend())),
-    };
-    pip_desc.layout.attrs[shd.ATTR_vs_pos].format = .FLOAT2;
-    pip_desc.layout.attrs[shd.ATTR_vs_texcoord0].format = .FLOAT2;
-    renderer.pip = sg.makePipeline(pip_desc);
-
-    var color = ColorPallete[0];
-    renderer.pass_action.colors[0] = .{ .action = .CLEAR, .value = color };
+    renderer = Renderer.init(gpa, 160) catch @panic("Failed to Create Renderer");
 
     game = Game.State.allocAndInit(gpa, .{
         .y_min = 0,
