@@ -25,10 +25,10 @@ const Pixel = packed struct {
 
     pub fn from_sokol_colg(color: sg.Color) Pixel {
         return Pixel{
-            .r = @floatToInt(u8, self.pallete.r * 255.0),
-            .g = @floatToInt(u8, self.pallete.g * 255.0),
-            .b = @floatToInt(u8, self.pallete.b * 255.0),
-            .a = @floatToInt(u8, self.pallete.a * 255.0),
+            .r = @floatToInt(u8, color.r * 255.0),
+            .g = @floatToInt(u8, color.g * 255.0),
+            .b = @floatToInt(u8, color.b * 255.0),
+            .a = @floatToInt(u8, color.a * 255.0),
         };
     }
 };
@@ -88,7 +88,7 @@ pub const Renderer = struct {
 
     fn reset_frame_buffer(self: *Renderer) void {
         var x: usize = 0;
-        self.setPallete(1);
+        self.setPallete(0);
         while (x < self.width) : (x += 1) {
             var y: usize = 0;
             while (y < self.height) : (y += 1) {
@@ -133,10 +133,10 @@ export fn init() void {
 
     renderer.bind.vertex_buffers[0] = sg.makeBuffer(.{
         .data = sg.asRange([_]Vertex{
-            .{ .x = 0.5, .y = 0.5, .u = 1.0, .v = 0.0 },
-            .{ .x = 0.5, .y = -0.5, .u = 1.0, .v = 1.0 },
-            .{ .x = -0.5, .y = -0.5, .u = 0.0, .v = 1.0 },
-            .{ .x = -0.5, .y = 0.5, .u = 0.0, .v = 0.0 },
+            .{ .x = 1.0, .y = 1.0, .u = 1.0, .v = 0.0 },
+            .{ .x = 1.0, .y = -1.0, .u = 1.0, .v = 1.0 },
+            .{ .x = -1.0, .y = -1.0, .u = 0.0, .v = 1.0 },
+            .{ .x = -1.0, .y = 1.0, .u = 0.0, .v = 0.0 },
         }),
     });
     renderer.bind.index_buffer = sg.makeBuffer(.{ .type = .INDEXBUFFER, .data = sg.asRange([_]u16{ 0, 1, 3, 1, 2, 3 }) });
