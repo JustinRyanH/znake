@@ -22,6 +22,15 @@ const Pixel = packed struct {
     g: u8,
     b: u8,
     a: u8,
+
+    pub fn from_sokol_colg(color: sg.Color) Pixel {
+        return Pixel{
+            .r = @floatToInt(u8, self.pallete.r * 255.0),
+            .g = @floatToInt(u8, self.pallete.g * 255.0),
+            .b = @floatToInt(u8, self.pallete.b * 255.0),
+            .a = @floatToInt(u8, self.pallete.a * 255.0),
+        };
+    }
 };
 
 const Vertex = packed struct { x: f32, y: f32, u: f32, v: f32 };
@@ -108,12 +117,7 @@ pub const Renderer = struct {
     }
 
     fn setPixel(self: *Renderer, x: usize, y: usize) void {
-        self.frame_buffer[self.width * y + x] = .{
-            .r = @floatToInt(u8, self.pallete.r * 255.0),
-            .g = @floatToInt(u8, self.pallete.g * 255.0),
-            .b = @floatToInt(u8, self.pallete.b * 255.0),
-            .a = @floatToInt(u8, self.pallete.a * 255.0),
-        };
+        self.frame_buffer[self.width * y + x] = Pixel.from_sokol_colg(self.pallete);
     }
 };
 
