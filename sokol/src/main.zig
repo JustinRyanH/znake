@@ -28,13 +28,13 @@ pub const Renderer = struct {
     height: usize,
     pallete: Color,
     allocator: std.mem.Allocator,
-    frame_buffer: []u8,
+    frame_buffer: []f32,
     pass_action: sg.PassAction = .{},
 
     pub fn init(allocator: std.mem.Allocator, size: usize) !*Renderer {
         var out = try allocator.create(Renderer);
         errdefer allocator.destroy(out);
-        var frame_buffer = try allocator.alloc(u8, size * size);
+        var frame_buffer = try allocator.alloc(f32, size * size * 4);
         out.frame_buffer = frame_buffer;
         out.width = size;
         out.height = size;
@@ -44,6 +44,24 @@ pub const Renderer = struct {
 
     pub fn deinit(self: *Renderer) !void {
         return self.allocator.free(self.frame_buffer);
+    }
+
+    fn drawGame(
+        self: *Renderer,
+        gm: *Game.State,
+    ) void {
+        _ = gm;
+        sg.beginDefaultPass(self.pass_action, sapp.width(), sapp.height());
+        sg.endPass();
+        sg.commit();
+        self.reset_frame_buffer();
+    }
+
+    fn reset_frame_buffer(self: *Renderer) void {
+        var i: usize = 0;
+        while (i < self.frame_buffer.len) : (i += 1) {
+            self.frame_buffer[i] = 0;
+        }
     }
 
     pub fn set_pallete(self: *Renderer, color: u2) void {
@@ -76,13 +94,6 @@ var renderer: *Renderer = undefined;
 var game: *Game.State = undefined;
 var input: GameInput = .{};
 
-fn drawGame(gm: *Game.State, rdr: *Renderer) void {
-    _ = gm;
-    sg.beginDefaultPass(rdr.pass_action, sapp.width(), sapp.height());
-    sg.endPass();
-    sg.commit();
-}
-
 export fn init() void {
     renderer = Renderer.init(gpa, 160) catch @panic("Failed to Create Renderer");
     sg.setup(.{
@@ -104,9 +115,9 @@ export fn init() void {
 
 export fn frame() void {
     game.frame += 1;
-    drawGame(game, renderer);
     renderer.set_pallete(1);
     renderer.draw_rect(0, 0, 40, 40);
+    renderer.drawGame(game);
     input.swap();
 }
 
