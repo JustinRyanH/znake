@@ -17,6 +17,13 @@ const GameInput = Game.Input;
 
 pub const Color = sg.Color;
 
+const Pixel = packed struct {
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8,
+};
+
 const Vertex = packed struct { x: f32, y: f32, u: f32, v: f32 };
 
 const ColorPallete = [_]Color{
@@ -31,7 +38,7 @@ pub const Renderer = struct {
     height: usize,
     pallete: Color,
     allocator: std.mem.Allocator,
-    frame_buffer: []u8,
+    frame_buffer: []Pixel,
 
     // Sokol GFX
     pass_action: sg.PassAction = .{},
@@ -41,7 +48,7 @@ pub const Renderer = struct {
     pub fn init(allocator: std.mem.Allocator, size: usize) !*Renderer {
         var out = try allocator.create(Renderer);
         errdefer allocator.destroy(out);
-        var frame_buffer = try allocator.alloc(u8, size * size * 4);
+        var frame_buffer = try allocator.alloc(Pixel, size * size);
         out.frame_buffer = frame_buffer;
         out.width = size;
         out.height = size;
@@ -57,6 +64,9 @@ pub const Renderer = struct {
         self: *Renderer,
         gm: *Game.State,
     ) void {
+        var img_data: sg.ImageData = .{};
+        img_data.subimage[0][0] = sg.asRange(self.frame_buffer);
+        sg.updateImage(self.bind.fs_images[shd.SLOT_tex], img_data);
         _ = gm;
         sg.beginDefaultPass(self.pass_action, sapp.width(), sapp.height());
         sg.applyPipeline(self.pip);
@@ -68,13 +78,17 @@ pub const Renderer = struct {
     }
 
     fn reset_frame_buffer(self: *Renderer) void {
-        var i: usize = 0;
-        while (i < self.frame_buffer.len) : (i += 1) {
-            self.frame_buffer[i] = 0;
+        var x: usize = 0;
+        self.setPallete(1);
+        while (x < self.width) : (x += 1) {
+            var y: usize = 0;
+            while (y < self.height) : (y += 1) {
+                self.setPixel(x, y);
+            }
         }
     }
 
-    pub fn set_pallete(self: *Renderer, color: u2) void {
+    pub fn setPallete(self: *Renderer, color: u2) void {
         self.pallete = ColorPallete[color];
     }
 
@@ -88,15 +102,18 @@ pub const Renderer = struct {
         while (i < x2) : (i += 1) {
             var j = realY;
             while (j < y2) : (j += 1) {
-                self.pixel(i, j);
+                self.setPixel(i, j);
             }
         }
     }
 
-    fn pixel(self: *Renderer, x: usize, y: usize) void {
-        _ = self;
-        _ = x;
-        _ = y;
+    fn setPixel(self: *Renderer, x: usize, y: usize) void {
+        self.frame_buffer[self.width * y + x] = .{
+            .r = @floatToInt(u8, self.pallete.r * 255.0),
+            .g = @floatToInt(u8, self.pallete.g * 255.0),
+            .b = @floatToInt(u8, self.pallete.b * 255.0),
+            .a = @floatToInt(u8, self.pallete.a * 255.0),
+        };
     }
 };
 
@@ -112,13 +129,21 @@ export fn init() void {
 
     renderer.bind.vertex_buffers[0] = sg.makeBuffer(.{
         .data = sg.asRange([_]Vertex{
-            .{ .x = 0.5, .y = 0.5, .u = 1.0, .v = 1.0 },
-            .{ .x = 0.5, .y = -0.5, .u = 1.0, .v = 0.0 },
-            .{ .x = -0.5, .y = -0.5, .u = 0.0, .v = 0.0 },
-            .{ .x = -0.5, .y = 0.5, .u = 0.0, .v = 1.0 },
+            .{ .x = 0.5, .y = 0.5, .u = 1.0, .v = 0.0 },
+            .{ .x = 0.5, .y = -0.5, .u = 1.0, .v = 1.0 },
+            .{ .x = -0.5, .y = -0.5, .u = 0.0, .v = 1.0 },
+            .{ .x = -0.5, .y = 0.5, .u = 0.0, .v = 0.0 },
         }),
     });
     renderer.bind.index_buffer = sg.makeBuffer(.{ .type = .INDEXBUFFER, .data = sg.asRange([_]u16{ 0, 1, 3, 1, 2, 3 }) });
+    var img_desc = sg.ImageDesc{
+        .width = @intCast(i32, renderer.width),
+        .height = @intCast(i32, renderer.height),
+        .pixel_format = .RGBA8,
+    };
+    img_desc.data.subimage[0][0] = sg.asRange(renderer.frame_buffer);
+
+    renderer.bind.fs_images[shd.SLOT_tex] = sg.makeImage(img_desc);
 
     var pip_desc: sg.PipelineDesc = .{
         .index_type = .UINT16,
@@ -143,7 +168,7 @@ export fn init() void {
 
 export fn frame() void {
     game.frame += 1;
-    renderer.set_pallete(1);
+    renderer.setPallete(3);
     renderer.draw_rect(0, 0, 40, 40);
     renderer.drawGame(game);
     input.swap();
