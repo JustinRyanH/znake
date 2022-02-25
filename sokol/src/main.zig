@@ -3,6 +3,7 @@ const std = @import("std");
 const sg = @import("sokol").gfx;
 const sapp = @import("sokol").app;
 const sgapp = @import("sokol").app_gfx_glue;
+const shd = @import("shaders/tex.glsl.zig");
 
 const Game = @import("game.zig");
 
@@ -16,6 +17,8 @@ const GameInput = Game.Input;
 
 pub const Color = sg.Color;
 
+const Vertex = packed struct { x: f32, y: f32, u: f32, v: f32 };
+
 const ColorPallete = [_]Color{
     .{ .r = 225.0 / 255.0, .g = 248.0 / 255.0, .b = 207.0 / 255.0, .a = 1 },
     .{ .r = 108.0 / 255.0, .g = 192.0 / 255.0, .b = 108.0 / 255.0, .a = 1 },
@@ -28,13 +31,17 @@ pub const Renderer = struct {
     height: usize,
     pallete: Color,
     allocator: std.mem.Allocator,
-    frame_buffer: []f32,
+    frame_buffer: []u8,
+
+    // Sokol GFX
     pass_action: sg.PassAction = .{},
+    pip: sg.Pipeline = .{},
+    bind: sg.Bindings = .{},
 
     pub fn init(allocator: std.mem.Allocator, size: usize) !*Renderer {
         var out = try allocator.create(Renderer);
         errdefer allocator.destroy(out);
-        var frame_buffer = try allocator.alloc(f32, size * size * 4);
+        var frame_buffer = try allocator.alloc(u8, size * size * 4);
         out.frame_buffer = frame_buffer;
         out.width = size;
         out.height = size;
@@ -52,6 +59,9 @@ pub const Renderer = struct {
     ) void {
         _ = gm;
         sg.beginDefaultPass(self.pass_action, sapp.width(), sapp.height());
+        sg.applyPipeline(self.pip);
+        sg.applyBindings(self.bind);
+        sg.draw(0, 6, 1);
         sg.endPass();
         sg.commit();
         self.reset_frame_buffer();
@@ -99,6 +109,24 @@ export fn init() void {
     sg.setup(.{
         .context = sgapp.context(),
     });
+
+    renderer.bind.vertex_buffers[0] = sg.makeBuffer(.{
+        .data = sg.asRange([_]Vertex{
+            .{ .x = 0.5, .y = 0.5, .u = 1.0, .v = 1.0 },
+            .{ .x = 0.5, .y = -0.5, .u = 1.0, .v = 0.0 },
+            .{ .x = -0.5, .y = -0.5, .u = 0.0, .v = 0.0 },
+            .{ .x = -0.5, .y = 0.5, .u = 0.0, .v = 1.0 },
+        }),
+    });
+    renderer.bind.index_buffer = sg.makeBuffer(.{ .type = .INDEXBUFFER, .data = sg.asRange([_]u16{ 0, 1, 3, 1, 2, 3 }) });
+
+    var pip_desc: sg.PipelineDesc = .{
+        .index_type = .UINT16,
+        .shader = sg.makeShader(shd.texcubeShaderDesc(sg.queryBackend())),
+    };
+    pip_desc.layout.attrs[shd.ATTR_vs_pos].format = .FLOAT2;
+    pip_desc.layout.attrs[shd.ATTR_vs_texcoord0].format = .FLOAT2;
+    renderer.pip = sg.makePipeline(pip_desc);
 
     var color = ColorPallete[0];
     renderer.pass_action.colors[0] = .{ .action = .CLEAR, .value = color };
