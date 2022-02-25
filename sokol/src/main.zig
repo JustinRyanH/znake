@@ -69,7 +69,7 @@ pub const Renderer = struct {
         return self.allocator.free(self.frame_buffer);
     }
 
-    fn drawGame(
+    fn renderGame(
         self: *Renderer,
         gm: *Game.State,
     ) void {
@@ -174,7 +174,7 @@ export fn frame() void {
     game.frame += 1;
     renderer.setPallete(3);
     renderer.draw_rect(0, 0, 40, 40);
-    renderer.drawGame(game);
+    renderer.renderGame(game);
     input.swap();
 }
 
