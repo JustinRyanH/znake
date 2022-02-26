@@ -131,7 +131,7 @@ pub const Renderer = struct {
         self.pallete = ColorPallete[color];
     }
 
-    pub fn draw_rect(self: *Renderer, x: u8, y: u8, width: u16, height: u16) void {
+    pub fn drawRect(self: *Renderer, x: u8, y: u8, width: u16, height: u16) void {
         const realX = std.math.clamp(x, 0, self.width);
         const realY = std.math.clamp(y, 0, self.height);
         const x2 = std.math.clamp(x + width, 0, self.width);
@@ -175,7 +175,7 @@ export fn init() void {
 export fn frame() void {
     game.frame += 1;
     renderer.setPallete(3);
-    renderer.draw_rect(0, 0, 40, 40);
+    renderer.drawRect(0, 0, 40, 40);
     renderer.renderGame(game);
     input.swap();
 }
