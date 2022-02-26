@@ -58,11 +58,17 @@ pub const Renderer = struct {
         var out = try allocator.create(Renderer);
         errdefer allocator.destroy(out);
         var frame_buffer = try allocator.alloc(Pixel, size * size);
-        out.frame_buffer = frame_buffer;
-        out.width = size;
-        out.height = size;
-        out.allocator = allocator;
+
+        out.* = Renderer{
+            .frame_buffer = frame_buffer,
+            .width = size,
+            .height = size,
+            .allocator = allocator,
+            .pallete = ColorPallete[0],
+        };
+        out.resetFrameBuffer();
         out.setupGfx();
+
         return out;
     }
 
@@ -103,9 +109,9 @@ pub const Renderer = struct {
         self: *Renderer,
         gm: *Game.State,
     ) void {
-        var img_data: sg.ImageData = .{};
-        img_data.subimage[0][0] = sg.asRange(self.frame_buffer);
-        sg.updateImage(self.bind.fs_images[shd.SLOT_tex], img_data);
+        // var img_data: sg.ImageData = .{};
+        // img_data.subimage[0][0] = sg.asRange(self.frame_buffer);
+        // sg.updateImage(self.bind.fs_images[shd.SLOT_tex], img_data);
         _ = gm;
         sg.beginDefaultPass(self.pass_action, sapp.width(), sapp.height());
         sg.applyPipeline(self.pip);
@@ -113,10 +119,10 @@ pub const Renderer = struct {
         sg.draw(0, 6, 1);
         sg.endPass();
         sg.commit();
-        self.reset_frame_buffer();
+        self.resetFrameBuffer();
     }
 
-    fn reset_frame_buffer(self: *Renderer) void {
+    fn resetFrameBuffer(self: *Renderer) void {
         var x: usize = 0;
         self.setPallete(0);
         while (x < self.width) : (x += 1) {
