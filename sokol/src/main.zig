@@ -23,7 +23,7 @@ const Pixel = packed struct {
     b: u8,
     a: u8,
 
-    pub fn from_sokol_colg(color: sg.Color) Pixel {
+    pub fn from_sokol_color(color: sg.Color) Pixel {
         return Pixel{
             .r = @floatToInt(u8, color.r * 255.0),
             .g = @floatToInt(u8, color.g * 255.0),
@@ -147,7 +147,7 @@ pub const Renderer = struct {
     }
 
     fn setPixel(self: *Renderer, x: usize, y: usize) void {
-        self.frame_buffer[self.width * y + x] = Pixel.from_sokol_colg(self.pallete);
+        self.frame_buffer[self.width * y + x] = Pixel.from_sokol_color(self.pallete);
     }
 };
 
