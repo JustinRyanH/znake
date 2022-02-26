@@ -83,12 +83,11 @@ pub const Renderer = struct {
         });
         self.bind.index_buffer = sg.makeBuffer(.{ .type = .INDEXBUFFER, .data = sg.asRange([_]u16{ 0, 1, 3, 1, 2, 3 }) });
         var img_desc = sg.ImageDesc{
+            .usage = .STREAM,
             .width = @intCast(i32, self.width),
             .height = @intCast(i32, self.height),
             .pixel_format = .RGBA8,
         };
-        img_desc.data.subimage[0][0] = sg.asRange(self.frame_buffer);
-
         self.bind.fs_images[shd.SLOT_tex] = sg.makeImage(img_desc);
 
         var pip_desc: sg.PipelineDesc = .{
@@ -109,9 +108,9 @@ pub const Renderer = struct {
         self: *Renderer,
         gm: *Game.State,
     ) void {
-        // var img_data: sg.ImageData = .{};
-        // img_data.subimage[0][0] = sg.asRange(self.frame_buffer);
-        // sg.updateImage(self.bind.fs_images[shd.SLOT_tex], img_data);
+        var img_data: sg.ImageData = .{};
+        img_data.subimage[0][0] = sg.asRange(self.frame_buffer);
+        sg.updateImage(self.bind.fs_images[shd.SLOT_tex], img_data);
         _ = gm;
         sg.beginDefaultPass(self.pass_action, sapp.width(), sapp.height());
         sg.applyPipeline(self.pip);
