@@ -6,6 +6,7 @@ const sgapp = @import("sokol").app_gfx_glue;
 const shd = @import("shaders/tex.glsl.zig");
 
 const Game = @import("game.zig");
+const RendererVals = @import("renderer.zig");
 
 var general_purpose_allocator = std.heap.GeneralPurposeAllocator(.{}){};
 var prng = std.rand.DefaultPrng.init(0);
@@ -17,21 +18,15 @@ const GameInput = Game.Input;
 
 pub const Color = sg.Color;
 
-const Pixel = packed struct {
-    r: u8,
-    g: u8,
-    b: u8,
-    a: u8,
-
-    pub fn from_sokol_color(color: sg.Color) Pixel {
-        return Pixel{
-            .r = @floatToInt(u8, color.r * 255.0),
-            .g = @floatToInt(u8, color.g * 255.0),
-            .b = @floatToInt(u8, color.b * 255.0),
-            .a = @floatToInt(u8, color.a * 255.0),
-        };
-    }
-};
+const Pixel = RendererVals.Pixel;
+fn pixelFromSokolColor(color: sg.Color) Pixel {
+    return Pixel{
+        .r = @floatToInt(u8, color.r * 255.0),
+        .g = @floatToInt(u8, color.g * 255.0),
+        .b = @floatToInt(u8, color.b * 255.0),
+        .a = @floatToInt(u8, color.a * 255.0),
+    };
+}
 
 const Vertex = packed struct { x: f32, y: f32, u: f32, v: f32 };
 
@@ -152,7 +147,7 @@ pub const Renderer = struct {
     }
 
     fn setPixel(self: *Renderer, x: usize, y: usize) void {
-        self.frame_buffer[self.width * y + x] = Pixel.from_sokol_color(self.pallete);
+        self.frame_buffer[self.width * y + x] = pixelFromSokolColor(self.pallete);
     }
 };
 
