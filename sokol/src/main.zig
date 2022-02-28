@@ -18,6 +18,17 @@ const GameInput = Game.Input;
 
 pub const Color = sg.Color;
 
+const smiley = [8]u8{
+    0b11000011,
+    0b10000001,
+    0b00100100,
+    0b00100100,
+    0b00000000,
+    0b00100100,
+    0b10011001,
+    0b11000011,
+};
+
 const Pixel = RendererVals.Pixel;
 fn pixelFromSokolColor(color: sg.Color) Pixel {
     return Pixel{
@@ -146,7 +157,34 @@ pub const Renderer = struct {
         }
     }
 
-    fn setPixel(self: *Renderer, x: usize, y: usize) void {
+    pub fn blitBytes(self: *Renderer, source: []const u8, dstX: u8, dstY: u8, width: u8, height: u8) void {
+        const min_x = std.math.clamp(dstX, 0, self.width);
+        const max_x = std.math.clamp(dstX + width - 1, 0, self.width);
+        const min_y = std.math.clamp(dstY, 0, self.height);
+        const max_y = std.math.clamp(dstY + height - 1, 0, self.height);
+        var x: usize = min_x;
+        var y: usize = min_y;
+        for (source) |byte| {
+            const commands = RendererVals.bytemaskToDraws(byte);
+            for (commands) |cmd| {
+                switch (cmd) {
+                    .skip => {},
+                    .draw => self.setPixel(x, y),
+                }
+                if (x >= max_x) {
+                    y += 1;
+                    x = min_x;
+                } else {
+                    x += 1;
+                }
+                if (y > max_y) {
+                    return;
+                }
+            }
+        }
+    }
+
+    pub fn setPixel(self: *Renderer, x: usize, y: usize) void {
         self.frame_buffer[self.width * y + x] = pixelFromSokolColor(self.pallete);
     }
 };
@@ -176,6 +214,7 @@ export fn frame() void {
     game.frame += 1;
     renderer.setPallete(3);
     renderer.drawRect(0, 0, 40, 40);
+    renderer.blitBytes(&smiley, 70, 70, 8, 8);
     renderer.renderGame(game);
     input.swap();
 }

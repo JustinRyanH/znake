@@ -7,35 +7,31 @@ pub const Pixel = packed struct {
     a: u8 = 255,
 };
 
-pub const DrawPixelEnum = enum {
+pub const DrawPixel = enum {
     skip,
     draw,
 };
 
-const DrawPixel = union(DrawPixelEnum) {
-    draw: Pixel,
-    skip: void,
-};
-
-pub fn bytemaskToDraws(byte: u8, pallete: Pixel) [8]DrawPixel {
-    _ = byte;
-    return [_]DrawPixel{
-        DrawPixel.skip,
-        DrawPixel.skip,
-        DrawPixel{ .draw = pallete },
-        DrawPixel{ .draw = pallete },
-        DrawPixel.skip,
-        DrawPixel.skip,
-        DrawPixel{ .draw = pallete },
-        DrawPixel{ .draw = pallete },
-    };
+pub fn bytemaskToDraws(byte: u8) [8]DrawPixel {
+    var result: [8]DrawPixel = undefined;
+    var byte_copy = byte;
+    var i: usize = 0;
+    while (i < 8) : (i += 1) {
+        const value = byte_copy & 0b10000000;
+        byte_copy = byte_copy << 1;
+        if (value > 0) {
+            result[i] = DrawPixel.skip;
+        } else {
+            result[i] = DrawPixel.draw;
+        }
+    }
+    return result;
 }
 
 test "bytemask to Pixels" {
-    const incoming_pixel = Pixel{ .r = 255, .b = 255 };
     const byte: u8 = 0b11001100;
     const skip = DrawPixel.skip;
-    const incoming_cmd = DrawPixel{ .draw = incoming_pixel };
+    const incoming_cmd = DrawPixel.draw;
     const expected: [8]DrawPixel = [_]DrawPixel{
         skip,
         skip,
@@ -46,6 +42,6 @@ test "bytemask to Pixels" {
         incoming_cmd,
         incoming_cmd,
     };
-    const result = bytemaskToDraws(byte, incoming_pixel);
+    const result = bytemaskToDraws(byte);
     try std.testing.expectEqual(expected, result);
 }
