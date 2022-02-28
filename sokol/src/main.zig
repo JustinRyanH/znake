@@ -455,9 +455,7 @@ export fn init() void {
 export fn frame() void {
     game.frame += 1;
     renderer.setPallete(3);
-    // renderer.drawRect(0, 0, 40, 40);
-    renderer.blitBytes(&smiley, 70, 70, 8, 8, 0, 0);
-    renderer.blitBytes(&FONT, 79, 70, 8, 8, ('c' - 32) << 3, 0);
+    renderer.drawRect(0, 0, 40, 40);
     renderer.drawText("abcefgABCEFGH", 0, 30);
     renderer.renderGame(game);
     input.swap();
