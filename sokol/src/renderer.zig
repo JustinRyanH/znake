@@ -8,8 +8,8 @@ pub const Pixel = packed struct {
 };
 
 pub const DrawPixel = enum {
-    skip,
-    draw,
+    background,
+    foreground,
 };
 
 pub fn bytemaskToDraws(byte: u8) [8]DrawPixel {
@@ -20,9 +20,9 @@ pub fn bytemaskToDraws(byte: u8) [8]DrawPixel {
         const value = byte_copy & 0b10000000;
         byte_copy = byte_copy << 1;
         if (value > 0) {
-            result[i] = DrawPixel.skip;
+            result[i] = DrawPixel.background;
         } else {
-            result[i] = DrawPixel.draw;
+            result[i] = DrawPixel.foreground;
         }
     }
     return result;
@@ -30,15 +30,15 @@ pub fn bytemaskToDraws(byte: u8) [8]DrawPixel {
 
 test "bytemask to Pixels" {
     const byte: u8 = 0b11001100;
-    const skip = DrawPixel.skip;
-    const incoming_cmd = DrawPixel.draw;
+    const background = DrawPixel.background;
+    const incoming_cmd = DrawPixel.foreground;
     const expected: [8]DrawPixel = [_]DrawPixel{
-        skip,
-        skip,
+        background,
+        background,
         incoming_cmd,
         incoming_cmd,
-        skip,
-        skip,
+        background,
+        background,
         incoming_cmd,
         incoming_cmd,
     };

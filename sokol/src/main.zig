@@ -410,8 +410,8 @@ pub const Renderer = struct {
             const commands = RendererVals.bytemaskToDraws(byte);
             for (commands) |cmd| {
                 switch (cmd) {
-                    .skip => {},
-                    .draw => self.setPixel(x, y),
+                    .background => {},
+                    .foreground => self.setPixel(x, y),
                 }
                 if (x >= max_x) {
                     y += 1;
