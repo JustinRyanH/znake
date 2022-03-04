@@ -14,6 +14,7 @@ var prng = std.rand.DefaultPrng.init(0);
 const gpa = general_purpose_allocator.allocator();
 const global_random = prng.random();
 
+const CANVAS_SIZE = 160;
 const GameInput = Game.Input;
 
 pub const Color = sg.Color;
@@ -217,7 +218,7 @@ export fn init() void {
         .context = sgapp.context(),
     });
 
-    renderer = Renderer.init(gpa, 160) catch @panic("Failed to Create Renderer");
+    renderer = Renderer.init(gpa, CANVAS_SIZE) catch @panic("Failed to Create Renderer");
 
     game = Game.State.allocAndInit(gpa, .{
         .y_min = 0,
@@ -229,13 +230,27 @@ export fn init() void {
     });
 }
 
+fn renderAll() void {
+    renderer.setFrontendPallete(3);
+    renderer.drawRect(0, 0, CANVAS_SIZE, 16);
+    renderer.setFrontendPallete(0);
+    renderer.drawText("WASM4 Znake", 34, 4);
+}
+
+fn mainMenu() void {
+    renderer.drawText("WELCOME!", 48, CANVAS_SIZE / 2);
+    if (input.down(GameInput.ButtonB)) {
+        renderer.setFrontendPallete(1);
+    } else {
+        renderer.setFrontendPallete(2);
+    }
+    renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
+}
+
 export fn frame() void {
     game.frame += 1;
-    renderer.setFrontendPallete(3);
-    renderer.drawRect(0, 0, 160, 40);
-    renderer.setFrontendPallete(1);
-    renderer.setBackgroundPallete(2);
-    renderer.drawText("abcefgABCEFGH", 0, 30);
+    renderAll();
+    mainMenu();
     renderer.renderGame(game);
     input.swap();
 }
@@ -250,8 +265,8 @@ export fn sokol_input(event: ?*const sapp.Event) void {
                 .RIGHT => if (key_down) input.setDown(GameInput.Right) else input.setUp(GameInput.Right),
                 .UP => if (key_down) input.setDown(GameInput.Up) else input.setUp(GameInput.Up),
                 .DOWN => if (key_down) input.setDown(GameInput.Down) else input.setUp(GameInput.Down),
-                .Z => if (key_down) input.setDown(GameInput.ButtonA) else input.setUp(GameInput.ButtonA),
-                .X => if (key_down) input.setDown(GameInput.ButtonB) else input.setUp(GameInput.ButtonB),
+                .Z => if (key_down) input.setDown(GameInput.ButtonB) else input.setUp(GameInput.ButtonB),
+                .X => if (key_down) input.setDown(GameInput.ButtonA) else input.setUp(GameInput.ButtonA),
                 else => {},
             }
         },
