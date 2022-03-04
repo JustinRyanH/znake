@@ -132,7 +132,7 @@ pub const Renderer = struct {
 
     fn resetFrameBuffer(self: *Renderer) void {
         var x: usize = 0;
-        self.setPallete(0);
+        self.setFrontendPallete(0);
         while (x < self.width) : (x += 1) {
             var y: usize = 0;
             while (y < self.height) : (y += 1) {
@@ -141,7 +141,7 @@ pub const Renderer = struct {
         }
     }
 
-    pub fn setPallete(self: *Renderer, color: u2) void {
+    pub fn setFrontendPallete(self: *Renderer, color: u2) void {
         self.pallete = ColorPallete[color];
     }
 
@@ -228,9 +228,9 @@ export fn init() void {
 
 export fn frame() void {
     game.frame += 1;
-    renderer.setPallete(3);
-    renderer.drawRect(0, 0, 40, 160);
-    renderer.setPallete(1);
+    renderer.setFrontendPallete(3);
+    renderer.drawRect(0, 0, 160, 40);
+    renderer.setFrontendPallete(1);
     renderer.drawText("abcefgABCEFGH", 0, 30);
     renderer.renderGame(game);
     input.swap();
