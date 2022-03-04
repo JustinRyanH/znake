@@ -55,6 +55,7 @@ pub const Renderer = struct {
     width: usize,
     height: usize,
     pallete: Color,
+    backgroundPallete: ?Color = null,
     allocator: std.mem.Allocator,
     frame_buffer: []Pixel,
 
@@ -145,6 +146,14 @@ pub const Renderer = struct {
         self.pallete = ColorPallete[color];
     }
 
+    pub fn setBackgroundPallete(self: *Renderer, color: ?u2) void {
+        if (color) |c| {
+            self.backgroundPallete = ColorPallete[c];
+        } else {
+            self.backgroundPallete = null;
+        }
+    }
+
     pub fn drawRect(self: *Renderer, x: u8, y: u8, width: u16, height: u16) void {
         const realX = std.math.clamp(x, 0, self.width);
         const realY = std.math.clamp(y, 0, self.height);
@@ -184,7 +193,7 @@ pub const Renderer = struct {
             const commands = RendererVals.bytemaskToDraws(byte);
             for (commands) |cmd| {
                 switch (cmd) {
-                    .background => {},
+                    .background => self.setBackgroundPixel(x, y),
                     .foreground => self.setPixel(x, y),
                 }
                 if (x >= max_x) {
@@ -202,6 +211,12 @@ pub const Renderer = struct {
 
     pub fn setPixel(self: *Renderer, x: usize, y: usize) void {
         self.frame_buffer[self.width * y + x] = pixelFromSokolColor(self.pallete);
+    }
+
+    pub fn setBackgroundPixel(self: *Renderer, x: usize, y: usize) void {
+        if (self.backgroundPallete) |pallete| {
+            self.frame_buffer[self.width * y + x] = pixelFromSokolColor(pallete);
+        }
     }
 };
 
@@ -231,6 +246,7 @@ export fn frame() void {
     renderer.setFrontendPallete(3);
     renderer.drawRect(0, 0, 160, 40);
     renderer.setFrontendPallete(1);
+    renderer.setBackgroundPallete(2);
     renderer.drawText("abcefgABCEFGH", 0, 30);
     renderer.renderGame(game);
     input.swap();
