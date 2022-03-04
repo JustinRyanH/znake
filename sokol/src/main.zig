@@ -18,19 +18,7 @@ const GameInput = Game.Input;
 
 pub const Color = sg.Color;
 
-// zig fmt: off
 pub const FONT = RendererVals.FONT;
-
-const smiley = [8]u8{
-    0b11000011,
-    0b10000001,
-    0b00100100,
-    0b00100100,
-    0b00000000,
-    0b00100100,
-    0b10011001,
-    0b11000011,
-};
 
 const Pixel = RendererVals.Pixel;
 fn pixelFromSokolColor(color: sg.Color) Pixel {
