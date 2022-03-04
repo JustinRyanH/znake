@@ -21,6 +21,19 @@ pub const Color = sg.Color;
 
 pub const FONT = RendererVals.FONT;
 
+const TitleBarSize = 2;
+const SnakeSize = 8;
+const WorldWidth = CANVAS_SIZE / SnakeSize;
+const WorldHeight = (CANVAS_SIZE - TitleBarSize) / SnakeSize;
+const SnakeSizeHalf = SnakeSize / 2;
+const TopBarSize = SnakeSize * TitleBarSize;
+const StepStride = 10;
+
+const SnakeYMin = TitleBarSize;
+const SnakeYMax = WorldHeight;
+const SnakeXMin = 0;
+const SnakeXMax = WorldWidth;
+
 const Pixel = RendererVals.Pixel;
 fn pixelFromSokolColor(color: sg.Color) Pixel {
     return Pixel{
@@ -143,7 +156,7 @@ pub const Renderer = struct {
         }
     }
 
-    pub fn drawRect(self: *Renderer, x: u8, y: u8, width: u16, height: u16) void {
+    pub fn drawRect(self: *Renderer, x: i32, y: i32, width: u16, height: u16) void {
         const realX = std.math.clamp(x, 0, self.width);
         const realY = std.math.clamp(y, 0, self.height);
         const x2 = std.math.clamp(x + width, 0, self.width);
@@ -153,7 +166,7 @@ pub const Renderer = struct {
         while (i < x2) : (i += 1) {
             var j = realY;
             while (j < y2) : (j += 1) {
-                self.setPixel(i, j);
+                self.setPixel(@intCast(usize, i), @intCast(usize, j));
             }
         }
     }
@@ -221,10 +234,10 @@ export fn init() void {
     renderer = Renderer.init(gpa, CANVAS_SIZE) catch @panic("Failed to Create Renderer");
 
     game = Game.State.allocAndInit(gpa, .{
-        .y_min = 0,
-        .y_max = 40,
-        .x_min = 0,
-        .x_max = 40,
+        .y_min = SnakeYMin,
+        .y_max = SnakeYMax,
+        .x_min = SnakeXMin,
+        .x_max = SnakeXMax,
         .step_stride = 5,
         .random = global_random,
     });
@@ -245,12 +258,107 @@ fn mainMenu() void {
         renderer.setFrontendPallete(2);
     }
     renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
+    if (game.events.hasNextStage()) {
+        prng.seed(game.frame);
+    }
+}
+
+pub fn drawSegment(segment: *const Game.Segment) void {
+    const x = (segment.position.x * SnakeSize);
+    const y = (segment.position.y * SnakeSize);
+    renderer.setFrontendPallete(1);
+    renderer.drawRect(x, y, SnakeSize, SnakeSize);
+}
+
+pub fn drawSegmentSmall(segment: *const Game.Segment) void {
+    const dir = segment.direction.to_vec2();
+    var x = (segment.position.x * SnakeSize);
+    var y = (segment.position.y * SnakeSize);
+
+    if (dir.x == 0) {
+        x += SnakeSizeHalf / 2;
+    }
+
+    if (dir.y > 0) {
+        y += SnakeSizeHalf;
+    }
+
+    if (dir.x > 0) {
+        x += SnakeSizeHalf;
+    }
+
+    if (dir.y == 0) {
+        y += SnakeSizeHalf / 2;
+    }
+
+    renderer.setFrontendPallete(1);
+    renderer.drawRect(x, y, SnakeSizeHalf, SnakeSizeHalf);
+}
+
+pub fn drawFruit(fruit: *const Game.Fruit) void {
+    if (fruit.pos) |pos| {
+        const x = (pos.x * SnakeSize);
+        const y = (pos.y * SnakeSize);
+        renderer.setFrontendPallete(3);
+        renderer.drawRect(x + SnakeSizeHalf / 2, y + SnakeSizeHalf / 2, SnakeSizeHalf, SnakeSizeHalf);
+    }
+}
+
+pub fn drawState(st: *const Game.State) void {
+    var i: usize = 1;
+    const segments = st.segments.items;
+    drawSegment(&segments[0]);
+    while (i < segments.len) : (i += 1) {
+        if (i == segments.len - 1) {
+            drawSegmentSmall(&segments[i]);
+        } else {
+            drawSegment(&segments[i]);
+        }
+    }
+    drawFruit(&st.fruit);
+}
+
+fn play() void {
+    const tick_happened = game.events.hasTicked();
+    const has_eaten = game.events.hasEatenFruit();
+
+    if (tick_happened) {
+        if (has_eaten) {
+            // Print Sound
+        } else {
+            // Sound
+        }
+    }
+    drawState(game);
+}
+
+fn gameOver() void {
+    renderer.setFrontendPallete(1);
+    renderer.drawText("GAME OVER", 42, CANVAS_SIZE - 15);
+
+    if (game.input.down(GameInput.ButtonB)) {
+        renderer.setFrontendPallete(2);
+        renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
+    } else {
+        renderer.setFrontendPallete(3);
+        renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
+    }
+    if (game.events.hasNextStage()) {
+        prng.seed(game.frame);
+    }
 }
 
 export fn frame() void {
     game.frame += 1;
+    game.updateInput(input);
     renderAll();
-    mainMenu();
+
+    game.updateGame();
+    switch (game.game_state) {
+        .Menu => mainMenu(),
+        .Play => play(),
+        .GameOver => gameOver(),
+    }
     renderer.renderGame(game);
     input.swap();
 }

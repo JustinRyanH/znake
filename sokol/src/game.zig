@@ -238,7 +238,7 @@ pub const State = struct {
     deadSegments: SegmentList,
     events: GameEvents,
     fruit: Fruit = .{},
-    game_state: GameState = .GameOver,
+    game_state: GameState = .Menu,
 
     pub fn updateInput(self: *State, input: Input) void {
         self.input = input;
