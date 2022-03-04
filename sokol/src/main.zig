@@ -229,7 +229,8 @@ export fn init() void {
 export fn frame() void {
     game.frame += 1;
     renderer.setPallete(3);
-    renderer.drawRect(0, 0, 40, 40);
+    renderer.drawRect(0, 0, 40, 160);
+    renderer.setPallete(1);
     renderer.drawText("abcefgABCEFGH", 0, 30);
     renderer.renderGame(game);
     input.swap();
