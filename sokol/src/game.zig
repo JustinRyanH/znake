@@ -234,6 +234,7 @@ pub const State = struct {
     frame: u32 = 0,
     input: Input = .{},
 
+    tick_frame: bool = false,
     maybe_next_direction: Direction = .Up,
     segments: SegmentList,
     deadSegments: SegmentList,
@@ -249,8 +250,13 @@ pub const State = struct {
         self.input = input;
         if (time > self.next_update_state) {
             self.frame += 1;
-            self.next_update_state = time + (1.0 / 6.0);
+            self.next_update_state = time + (1.0 / 60.0);
+            self.tick_frame = true;
+        } else {
+            self.tick_frame = false;
         }
+        self.updateGame();
+        // self.updateGame();
     }
 
     pub fn updateGame(self: *State) void {
@@ -329,6 +335,7 @@ pub const State = struct {
     }
 
     pub fn shouldTick(self: *State) bool {
+        if (!self.tick_frame) return false;
         return @mod(self.frame, self.step_stride) == 0;
     }
 

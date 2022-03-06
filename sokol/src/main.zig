@@ -355,12 +355,11 @@ export fn frame() void {
     game.update(input, stime.sec(time));
     renderAll();
 
-    // game.updateGame();
-    // switch (game.game_state) {
-    //     .Menu => mainMenu(),
-    //     .Play => play(),
-    //     .GameOver => gameOver(),
-    // }
+    switch (game.game_state) {
+        .Menu => mainMenu(),
+        .Play => play(),
+        .GameOver => gameOver(),
+    }
     renderer.renderGame(game);
     input.swap();
 }
