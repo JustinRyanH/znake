@@ -383,7 +383,9 @@ pub const State = struct {
             const segment = segments[i];
             const nextPosition = segment.nextPosition();
             segments[i].position = nextPosition;
-            segments[i + 1].direction = segments[i].direction;
+            if (i + 1 < segments.len) {
+                segments[i + 1].direction = segments[i].direction;
+            }
         }
     }
 
