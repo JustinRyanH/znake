@@ -353,9 +353,7 @@ fn gameOver() void {
 export fn frame() void {
     const time = stime.now();
     game.update(input, stime.sec(time));
-    // game.frame += 1;
-    // game.updateInput(input);
-    // renderAll();
+    renderAll();
 
     // game.updateGame();
     // switch (game.game_state) {
