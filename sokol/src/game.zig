@@ -230,6 +230,7 @@ pub const State = struct {
     x_max: u8,
     step_stride: u32,
 
+    next_update_state: f64 = 0.0,
     frame: u32 = 0,
     input: Input = .{},
 
@@ -242,6 +243,14 @@ pub const State = struct {
 
     pub fn updateInput(self: *State, input: Input) void {
         self.input = input;
+    }
+
+    pub fn update(self: *State, input: Input, time: f64) void {
+        self.input = input;
+        if (time > self.next_update_state) {
+            self.frame += 1;
+            self.next_update_state = time + (1.0 / 6.0);
+        }
     }
 
     pub fn updateGame(self: *State) void {

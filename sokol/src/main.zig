@@ -2,6 +2,7 @@ const std = @import("std");
 
 const sg = @import("sokol").gfx;
 const sapp = @import("sokol").app;
+const stime = @import("sokol").time;
 const sgapp = @import("sokol").app_gfx_glue;
 const shd = @import("shaders/tex.glsl.zig");
 
@@ -230,6 +231,7 @@ export fn init() void {
     sg.setup(.{
         .context = sgapp.context(),
     });
+    stime.setup();
 
     renderer = Renderer.init(gpa, CANVAS_SIZE) catch @panic("Failed to Create Renderer");
 
@@ -349,16 +351,18 @@ fn gameOver() void {
 }
 
 export fn frame() void {
-    game.frame += 1;
-    game.updateInput(input);
-    renderAll();
+    const time = stime.now();
+    game.update(input, stime.sec(time));
+    // game.frame += 1;
+    // game.updateInput(input);
+    // renderAll();
 
-    game.updateGame();
-    switch (game.game_state) {
-        .Menu => mainMenu(),
-        .Play => play(),
-        .GameOver => gameOver(),
-    }
+    // game.updateGame();
+    // switch (game.game_state) {
+    //     .Menu => mainMenu(),
+    //     .Play => play(),
+    //     .GameOver => gameOver(),
+    // }
     renderer.renderGame(game);
     input.swap();
 }
