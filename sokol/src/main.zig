@@ -123,11 +123,7 @@ pub const Renderer = struct {
         sg.updateImage(self.bind.fs_images[shd.SLOT_tex], img_data);
     }
 
-    fn renderGame(
-        self: *Renderer,
-        gm: *Game.State,
-    ) void {
-        _ = gm;
+    fn draw(self: *Renderer) void {
         sg.beginDefaultPass(self.pass_action, sapp.width(), sapp.height());
         sg.applyPipeline(self.pip);
         sg.applyBindings(self.bind);
@@ -364,7 +360,7 @@ export fn frame() void {
     }
     renderer.updateImage();
     renderer.resetFrameBuffer();
-    renderer.renderGame(game);
+    renderer.draw();
     input.swap();
 }
 
