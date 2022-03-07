@@ -21,6 +21,7 @@ const GameInput = Game.Input;
 pub const Color = sg.Color;
 
 pub const FONT = RendererVals.FONT;
+const FixedFrameRate = Game.FixedFrameRate;
 
 const TitleBarSize = 2;
 const SnakeSize = 8;
@@ -223,6 +224,7 @@ pub const Renderer = struct {
 
 var renderer: *Renderer = undefined;
 var game: *Game.State = undefined;
+var frame_rate: FixedFrameRate = .{};
 var input: GameInput = .{};
 
 export fn init() void {
@@ -350,6 +352,8 @@ fn gameOver() void {
 
 export fn frame() void {
     const time = stime.now();
+
+    _ = frame_rate.shouldTick(stime.sec(time));
     game.update(&input, stime.sec(time));
     renderAll();
 

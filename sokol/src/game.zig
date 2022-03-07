@@ -221,7 +221,7 @@ pub const StateSetup = struct {
     random: rand.Random,
 };
 
-const FixedFrameRate = struct {
+pub const FixedFrameRate = struct {
     next_update_state: f64 = 0.0,
     tick_frame: bool = false,
 
