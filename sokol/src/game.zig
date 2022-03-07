@@ -225,7 +225,7 @@ const FixedFrameRate = struct {
     next_update_state: f64 = 0.0,
     tick_frame: bool = false,
 
-    pub fn doSomething(self: *FixedFrameRate, time: f64) bool {
+    pub fn shouldTick(self: *FixedFrameRate, time: f64) bool {
         if (time > self.next_update_state) {
             self.next_update_state = time + (1.0 / 60.0);
             self.tick_frame = true;
@@ -262,7 +262,7 @@ pub const State = struct {
 
     pub fn update(self: *State, input: *Input, time: f64) void {
         self.input = input.*;
-        if (self.fixed_frame_rate.doSomething(time)) {
+        if (self.fixed_frame_rate.shouldTick(time)) {
             self.frame += 1;
         }
         self.updateGame();
