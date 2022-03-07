@@ -358,8 +358,10 @@ export fn frame() void {
         .Play => play(),
         .GameOver => gameOver(),
     }
-    renderer.updateImage();
-    renderer.resetFrameBuffer();
+    if (game.tick_frame) {
+        renderer.updateImage();
+        renderer.resetFrameBuffer();
+    }
     renderer.draw();
 }
 
