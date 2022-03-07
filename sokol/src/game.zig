@@ -246,8 +246,8 @@ pub const State = struct {
         self.input = input;
     }
 
-    pub fn update(self: *State, input: Input, time: f64) void {
-        self.input = input;
+    pub fn update(self: *State, input: *Input, time: f64) void {
+        self.input = input.*;
         if (time > self.next_update_state) {
             self.frame += 1;
             self.next_update_state = time + (1.0 / 60.0);
@@ -256,7 +256,7 @@ pub const State = struct {
             self.tick_frame = false;
         }
         self.updateGame();
-        // self.updateGame();
+        input.swap();
     }
 
     pub fn updateGame(self: *State) void {

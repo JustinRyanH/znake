@@ -350,7 +350,7 @@ fn gameOver() void {
 
 export fn frame() void {
     const time = stime.now();
-    game.update(input, stime.sec(time));
+    game.update(&input, stime.sec(time));
     renderAll();
 
     switch (game.game_state) {
@@ -361,7 +361,6 @@ export fn frame() void {
     renderer.updateImage();
     renderer.resetFrameBuffer();
     renderer.draw();
-    input.swap();
 }
 
 export fn sokol_input(event: ?*const sapp.Event) void {
