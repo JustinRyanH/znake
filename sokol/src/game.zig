@@ -254,17 +254,14 @@ pub const State = struct {
     events: GameEvents,
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
-    fixed_frame_rate: FixedFrameRate = .{},
 
     pub fn updateInput(self: *State, input: Input) void {
         self.input = input;
     }
 
-    pub fn update(self: *State, input: *Input, time: f64) void {
+    pub fn update(self: *State, input: *Input) void {
         self.input = input.*;
-        if (self.fixed_frame_rate.shouldTick(time)) {
-            self.frame += 1;
-        }
+        self.frame += 1;
         self.updateGame();
         input.swap();
     }
@@ -345,7 +342,6 @@ pub const State = struct {
     }
 
     pub fn shouldTick(self: *State) bool {
-        if (!self.fixed_frame_rate.tick_frame) return false;
         return @mod(self.frame, self.step_stride) == 0;
     }
 

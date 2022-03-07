@@ -353,16 +353,17 @@ fn gameOver() void {
 export fn frame() void {
     const time = stime.now();
 
-    _ = frame_rate.shouldTick(stime.sec(time));
-    game.update(&input, stime.sec(time));
-    renderAll();
+    const should_update = frame_rate.shouldTick(stime.sec(time));
+    if (should_update) {
+        game.update(&input);
+        renderAll();
 
-    switch (game.game_state) {
-        .Menu => mainMenu(),
-        .Play => play(),
-        .GameOver => gameOver(),
-    }
-    if (game.fixed_frame_rate.tick_frame) {
+        switch (game.game_state) {
+            .Menu => mainMenu(),
+            .Play => play(),
+            .GameOver => gameOver(),
+        }
+
         renderer.updateImage();
         renderer.resetFrameBuffer();
     }
