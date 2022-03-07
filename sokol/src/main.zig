@@ -22,7 +22,7 @@ pub const Color = sg.Color;
 
 pub const FONT = RendererVals.FONT;
 const FixedFrameRate = struct {
-    const FRAMES_PER_SECOND = 60.0;
+    const FRAMES_PER_SECOND = 30.0;
     next_update_state: f64 = 0.0,
     tick_frame: bool = false,
 
@@ -264,7 +264,7 @@ fn renderAll() void {
     renderer.setFrontendPallete(3);
     renderer.drawRect(0, 0, CANVAS_SIZE, 16);
     renderer.setFrontendPallete(0);
-    renderer.drawText("WASM4 Znake", 34, 4);
+    renderer.drawText("SOKOL Znake", 34, 4);
 }
 
 fn mainMenu() void {
