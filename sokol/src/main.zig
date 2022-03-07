@@ -117,13 +117,16 @@ pub const Renderer = struct {
         return self.allocator.free(self.frame_buffer);
     }
 
+    fn updateImage(self: *Renderer) void {
+        var img_data: sg.ImageData = .{};
+        img_data.subimage[0][0] = sg.asRange(self.frame_buffer);
+        sg.updateImage(self.bind.fs_images[shd.SLOT_tex], img_data);
+    }
+
     fn renderGame(
         self: *Renderer,
         gm: *Game.State,
     ) void {
-        var img_data: sg.ImageData = .{};
-        img_data.subimage[0][0] = sg.asRange(self.frame_buffer);
-        sg.updateImage(self.bind.fs_images[shd.SLOT_tex], img_data);
         _ = gm;
         sg.beginDefaultPass(self.pass_action, sapp.width(), sapp.height());
         sg.applyPipeline(self.pip);
@@ -131,7 +134,6 @@ pub const Renderer = struct {
         sg.draw(0, 6, 1);
         sg.endPass();
         sg.commit();
-        self.resetFrameBuffer();
     }
 
     fn resetFrameBuffer(self: *Renderer) void {
@@ -360,6 +362,8 @@ export fn frame() void {
         .Play => play(),
         .GameOver => gameOver(),
     }
+    renderer.updateImage();
+    renderer.resetFrameBuffer();
     renderer.renderGame(game);
     input.swap();
 }
