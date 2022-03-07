@@ -224,6 +224,17 @@ pub const StateSetup = struct {
 const FixedFrameRate = struct {
     next_update_state: f64 = 0.0,
     tick_frame: bool = false,
+
+    pub fn doSomething(self: *FixedFrameRate, time: f64) bool {
+        if (time > self.next_update_state) {
+            self.next_update_state = time + (1.0 / 60.0);
+            self.tick_frame = true;
+            return true;
+        } else {
+            self.tick_frame = false;
+            return false;
+        }
+    }
 };
 pub const State = struct {
     allocator: mem.Allocator,
@@ -251,12 +262,8 @@ pub const State = struct {
 
     pub fn update(self: *State, input: *Input, time: f64) void {
         self.input = input.*;
-        if (time > self.fixed_frame_rate.next_update_state) {
+        if (self.fixed_frame_rate.doSomething(time)) {
             self.frame += 1;
-            self.fixed_frame_rate.next_update_state = time + (1.0 / 60.0);
-            self.fixed_frame_rate.tick_frame = true;
-        } else {
-            self.fixed_frame_rate.tick_frame = false;
         }
         self.updateGame();
         input.swap();
