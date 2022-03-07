@@ -221,22 +221,6 @@ pub const StateSetup = struct {
     random: rand.Random,
 };
 
-pub const FixedFrameRate = struct {
-    const FRAMES_PER_SECOND = 60.0;
-    next_update_state: f64 = 0.0,
-    tick_frame: bool = false,
-
-    pub fn shouldTick(self: *FixedFrameRate, time: f64) bool {
-        if (time > self.next_update_state) {
-            self.next_update_state = time + (1.0 / FRAMES_PER_SECOND);
-            self.tick_frame = true;
-            return true;
-        } else {
-            self.tick_frame = false;
-            return false;
-        }
-    }
-};
 pub const State = struct {
     allocator: mem.Allocator,
     random: rand.Random,
