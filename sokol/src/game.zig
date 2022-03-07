@@ -221,6 +221,10 @@ pub const StateSetup = struct {
     random: rand.Random,
 };
 
+const FixedFrameRate = struct {
+    next_update_state: f64 = 0.0,
+    tick_frame: bool = false,
+};
 pub const State = struct {
     allocator: mem.Allocator,
     random: rand.Random,
@@ -230,17 +234,16 @@ pub const State = struct {
     x_max: u8,
     step_stride: u32,
 
-    next_update_state: f64 = 0.0,
     frame: u32 = 0,
     input: Input = .{},
 
-    tick_frame: bool = false,
     maybe_next_direction: Direction = .Up,
     segments: SegmentList,
     deadSegments: SegmentList,
     events: GameEvents,
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
+    fixed_frame_rate: FixedFrameRate = .{},
 
     pub fn updateInput(self: *State, input: Input) void {
         self.input = input;
@@ -248,12 +251,12 @@ pub const State = struct {
 
     pub fn update(self: *State, input: *Input, time: f64) void {
         self.input = input.*;
-        if (time > self.next_update_state) {
+        if (time > self.fixed_frame_rate.next_update_state) {
             self.frame += 1;
-            self.next_update_state = time + (1.0 / 60.0);
-            self.tick_frame = true;
+            self.fixed_frame_rate.next_update_state = time + (1.0 / 60.0);
+            self.fixed_frame_rate.tick_frame = true;
         } else {
-            self.tick_frame = false;
+            self.fixed_frame_rate.tick_frame = false;
         }
         self.updateGame();
         input.swap();
@@ -335,7 +338,7 @@ pub const State = struct {
     }
 
     pub fn shouldTick(self: *State) bool {
-        if (!self.tick_frame) return false;
+        if (!self.fixed_frame_rate.tick_frame) return false;
         return @mod(self.frame, self.step_stride) == 0;
     }
 

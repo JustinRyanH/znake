@@ -358,7 +358,7 @@ export fn frame() void {
         .Play => play(),
         .GameOver => gameOver(),
     }
-    if (game.tick_frame) {
+    if (game.fixed_frame_rate.tick_frame) {
         renderer.updateImage();
         renderer.resetFrameBuffer();
     }
