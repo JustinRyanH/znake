@@ -7,7 +7,7 @@ const sgapp = @import("sokol").app_gfx_glue;
 const shd = @import("shaders/tex.glsl.zig");
 
 const Game = @import("game.zig");
-const RendererVals = @import("renderer.zig");
+const RendererVals = @import("renderer_vals.zig");
 
 var general_purpose_allocator = std.heap.GeneralPurposeAllocator(.{}){};
 var prng = std.rand.DefaultPrng.init(0);
