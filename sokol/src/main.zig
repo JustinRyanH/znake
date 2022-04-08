@@ -8,6 +8,7 @@ const shd = @import("shaders/tex.glsl.zig");
 
 const Game = @import("game.zig");
 const RendererVals = @import("renderer_vals.zig");
+const SimpleRender = @import("simple_renderer.zig");
 
 var general_purpose_allocator = std.heap.GeneralPurposeAllocator(.{}){};
 var prng = std.rand.DefaultPrng.init(0);
@@ -71,6 +72,8 @@ const ColorPallete = [_]Color{
 };
 
 pub const Renderer = struct {
+    const Self = @This();
+
     width: usize,
     height: usize,
     pallete: Color,
@@ -82,6 +85,10 @@ pub const Renderer = struct {
     pass_action: sg.PassAction = .{},
     pip: sg.Pipeline = .{},
     bind: sg.Bindings = .{},
+
+    pub fn simpleRenderer(self: *Renderer) SimpleRender {
+        return SimpleRender.init(self, setPixel, setBackgroundPixel, setFrontendPallete, setBackgroundPallete);
+    }
 
     pub fn init(allocator: std.mem.Allocator, size: usize) !*Renderer {
         var out = try allocator.create(Renderer);
@@ -154,7 +161,7 @@ pub const Renderer = struct {
         while (x < self.width) : (x += 1) {
             var y: usize = 0;
             while (y < self.height) : (y += 1) {
-                self.setPixel(x, y);
+                self.setPixel(@intCast(i32, x), @intCast(i32, y));
             }
         }
     }
@@ -181,7 +188,7 @@ pub const Renderer = struct {
         while (i < x2) : (i += 1) {
             var j = realY;
             while (j < y2) : (j += 1) {
-                self.setPixel(@intCast(usize, i), @intCast(usize, j));
+                self.setPixel(@intCast(i32, i), @intCast(i32, j));
             }
         }
     }
@@ -210,8 +217,8 @@ pub const Renderer = struct {
             const commands = RendererVals.bytemaskToDraws(byte);
             for (commands) |cmd| {
                 switch (cmd) {
-                    .background => self.setBackgroundPixel(x, y),
-                    .foreground => self.setPixel(x, y),
+                    .background => self.setBackgroundPixel(@intCast(i32, x), @intCast(i32, y)),
+                    .foreground => self.setPixel(@intCast(i32, x), @intCast(i32, y)),
                 }
                 if (x >= max_x) {
                     y += 1;
@@ -226,13 +233,17 @@ pub const Renderer = struct {
         }
     }
 
-    pub fn setPixel(self: *Renderer, x: usize, y: usize) void {
-        self.frame_buffer[self.width * y + x] = pixelFromSokolColor(self.pallete);
+    pub fn setPixel(self: *Self, x: i32, y: i32) void {
+        const ux = @intCast(usize, x);
+        const uy = @intCast(usize, y);
+        self.frame_buffer[self.width * uy + ux] = pixelFromSokolColor(self.pallete);
     }
 
-    pub fn setBackgroundPixel(self: *Renderer, x: usize, y: usize) void {
+    pub fn setBackgroundPixel(self: *Renderer, x: i32, y: i32) void {
+        const ux = @intCast(usize, x);
+        const uy = @intCast(usize, y);
         if (self.backgroundPallete) |pallete| {
-            self.frame_buffer[self.width * y + x] = pixelFromSokolColor(pallete);
+            self.frame_buffer[self.width * uy + ux] = pixelFromSokolColor(pallete);
         }
     }
 };
@@ -261,9 +272,10 @@ export fn init() void {
 }
 
 fn renderAll() void {
-    renderer.setFrontendPallete(3);
+    const simple_renderer = renderer.simpleRenderer();
+    simple_renderer.setForegroundPallete(3);
     renderer.drawRect(0, 0, CANVAS_SIZE, 16);
-    renderer.setFrontendPallete(0);
+    simple_renderer.setBackgroundPallete(0);
     renderer.drawText("SOKOL Znake", 34, 4);
 }
 

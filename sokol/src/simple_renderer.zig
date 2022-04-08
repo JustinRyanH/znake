@@ -13,10 +13,10 @@ pub const VTable = struct {
 
 pub fn init(
     pointer: anytype,
-    comptime setPixelFn: fn (ptr: *anyopaque, x: i32, y: i32) void,
-    comptime setPixelAltFn: fn (ptr: *anyopaque, x: i32, y: i32) void,
-    comptime setFrontendPalleteFn: fn (ptr: *anyopaque, color: u2) void,
-    comptime setBackgroundPalleteFn: fn (ptr: *anyopaque, color: ?u2) void,
+    comptime setPixelFn: fn (ptr: @TypeOf(pointer), x: i32, y: i32) void,
+    comptime setPixelAltFn: fn (ptr: @TypeOf(pointer), x: i32, y: i32) void,
+    comptime setFrontendPalleteFn: fn (ptr: @TypeOf(pointer), color: u2) void,
+    comptime setBackgroundPalleteFn: fn (ptr: @TypeOf(pointer), color: ?u2) void,
 ) SimpleRenderer {
     const Ptr = @TypeOf(pointer);
     const ptr_info = @typeInfo(Ptr);
@@ -36,7 +36,7 @@ pub fn init(
             return @call(.{ .modifier = .always_inline }, setPixelAltFn, .{ self, x, y });
         }
         fn setFrontendPalleteImpl(ptr: *anyopaque, color: u2) void {
-            const self = @ptrCast(ptr, @alignCast(alignment, ptr));
+            const self = @ptrCast(Ptr, @alignCast(alignment, ptr));
             return @call(.{ .modifier = .always_inline }, setFrontendPalleteFn, .{ self, color });
         }
 
@@ -57,4 +57,12 @@ pub fn init(
         .ptr = pointer,
         .vtable = &gen.vtable,
     };
+}
+
+pub fn setForegroundPallete(self: SimpleRenderer, color: u2) void {
+    return self.vtable.setFrontendPallete(self.ptr, color);
+}
+
+pub fn setBackgroundPallete(self: SimpleRenderer, color: u2) void {
+    return self.vtable.setFrontendPallete(self.ptr, color);
 }
