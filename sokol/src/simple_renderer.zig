@@ -12,17 +12,19 @@ pub const VTable = struct {
 };
 
 pub fn init(
-    ptr: anytype,
+    pointer: anytype,
     comptime setPixelFn: fn (ptr: *anyopaque, x: i32, y: i32) void,
     comptime setPixelAltFn: fn (ptr: *anyopaque, x: i32, y: i32) void,
     comptime setFrontendPalleteFn: fn (ptr: *anyopaque, color: u2) void,
     comptime setBackgroundPalleteFn: fn (ptr: *anyopaque, color: ?u2) void,
 ) SimpleRenderer {
-    const Ptr = @TypeOf(point);
+    const Ptr = @TypeOf(pointer);
     const ptr_info = @typeInfo(Ptr);
 
-    assert(ptr_info == .Pointer); // Must be a pointer
-    assert(ptr_info.Pointer.size == .One); // Must be a single-item pointer
+    std.debug.assert(ptr_info == .Pointer); // Must be a pointer
+    std.debug.assert(ptr_info.Pointer.size == .One); // Must be a single-item pointer
+
+    const alignment = ptr_info.Pointer.alignment;
 
     const gen = struct {
         fn setPixelImpl(ptr: *anyopaque, x: i32, y: i32) void {
@@ -33,14 +35,14 @@ pub fn init(
             const self = @ptrCast(Ptr, @alignCast(alignment, ptr));
             return @call(.{ .modifier = .always_inline }, setPixelAltFn, .{ self, x, y });
         }
-        fn setFrontendPalleteImpl(self: *Renderer, color: u2) void {
-            const self = @ptrCast(Ptr, @alignCast(alignment, ptr));
-            return @call(.{ .modifier = .always_inline }, setFrontendPalleteFn, .{ self, x, y });
+        fn setFrontendPalleteImpl(ptr: *anyopaque, color: u2) void {
+            const self = @ptrCast(ptr, @alignCast(alignment, ptr));
+            return @call(.{ .modifier = .always_inline }, setFrontendPalleteFn, .{ self, color });
         }
 
-        fn setBackgroundPalleteImpl(self: *Renderer, color: ?u2) void {
+        fn setBackgroundPalleteImpl(ptr: *anyopaque, color: ?u2) void {
             const self = @ptrCast(Ptr, @alignCast(alignment, ptr));
-            return @call(.{ .modifier = .always_inline }, setBackgroundPalleteFn, .{ self, x, y });
+            return @call(.{ .modifier = .always_inline }, setBackgroundPalleteFn, .{ self, color });
         }
 
         const vtable = VTable{
@@ -52,7 +54,7 @@ pub fn init(
     };
 
     return .{
-        .ptr = point,
+        .ptr = pointer,
         .vtable = &gen.vtable,
     };
 }
