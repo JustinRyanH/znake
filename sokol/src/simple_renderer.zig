@@ -75,10 +75,32 @@ pub fn init(
     };
 }
 
-pub fn setForegroundPallete(self: SimpleRenderer, color: u2) void {
+pub fn setForegroundPallete(self: *SimpleRenderer, color: u2) void {
     return self.vtable.setFrontendPallete(self.ptr, color);
 }
 
-pub fn setBackgroundPallete(self: SimpleRenderer, color: u2) void {
+pub fn setBackgroundPallete(self: *SimpleRenderer, color: u2) void {
     return self.vtable.setFrontendPallete(self.ptr, color);
+}
+
+pub fn setPixel(self: *SimpleRenderer, x: i32, y: i32) void {
+    return self.vtable.setPixel(self.ptr, x, y);
+}
+
+pub fn getWidth(self: *SimpleRenderer) i32 {
+    return self.vtable.getWidth(self.ptr);
+}
+
+pub fn getHeight(self: *SimpleRenderer) i32 {
+    return self.vtable.getHeight(self.ptr);
+}
+
+pub fn reset(self: *SimpleRenderer) void {
+    var x: i32 = 0;
+    while (x < self.getWidth()) : (x += 1) {
+        var y: i32 = 0;
+        while (y < self.getHeight()) : (y += 1) {
+            self.setPixel(x, y);
+        }
+    }
 }

@@ -102,8 +102,11 @@ pub const Renderer = struct {
             .allocator = allocator,
             .pallete = ColorPallete[0],
         };
-        out.resetFrameBuffer();
+
         out.setupGfx();
+
+        var simple_renderer = out.simpleRenderer();
+        simple_renderer.reset();
 
         return out;
     }
@@ -161,17 +164,6 @@ pub const Renderer = struct {
         sg.draw(0, 6, 1);
         sg.endPass();
         sg.commit();
-    }
-
-    fn resetFrameBuffer(self: *Renderer) void {
-        var x: usize = 0;
-        self.setFrontendPallete(0);
-        while (x < self.width) : (x += 1) {
-            var y: usize = 0;
-            while (y < self.height) : (y += 1) {
-                self.setPixel(@intCast(i32, x), @intCast(i32, y));
-            }
-        }
     }
 
     pub fn setFrontendPallete(self: *Renderer, color: u2) void {
@@ -280,7 +272,7 @@ export fn init() void {
 }
 
 fn renderAll() void {
-    const simple_renderer = renderer.simpleRenderer();
+    var simple_renderer = renderer.simpleRenderer();
     simple_renderer.setForegroundPallete(3);
     renderer.drawRect(0, 0, CANVAS_SIZE, 16);
     simple_renderer.setBackgroundPallete(0);
@@ -387,6 +379,7 @@ fn gameOver() void {
 
 export fn frame() void {
     const time = stime.now();
+    var simple_renderer = renderer.simpleRenderer();
 
     const should_update = frame_rate.shouldTick(stime.sec(time));
     if (should_update) {
@@ -400,7 +393,8 @@ export fn frame() void {
         }
 
         renderer.updateImage();
-        renderer.resetFrameBuffer();
+        simple_renderer.setForegroundPallete(0);
+        simple_renderer.reset();
     }
     renderer.draw();
 }
