@@ -9,6 +9,8 @@ pub const VTable = struct {
     setPixelAlternative: fn (ptr: *anyopaque, x: i32, y: i32) void,
     setFrontendPallete: fn (ptr: *anyopaque, color: u2) void,
     setBackgroundPallete: fn (ptr: *anyopaque, color: ?u2) void,
+    getHeight: fn (ptr: *anyopaque) i32,
+    getWidth: fn (ptr: *anyopaque) i32,
 };
 
 pub fn init(
@@ -17,6 +19,8 @@ pub fn init(
     comptime setPixelAltFn: fn (ptr: @TypeOf(pointer), x: i32, y: i32) void,
     comptime setFrontendPalleteFn: fn (ptr: @TypeOf(pointer), color: u2) void,
     comptime setBackgroundPalleteFn: fn (ptr: @TypeOf(pointer), color: ?u2) void,
+    comptime widthFn: fn (ptr: @TypeOf(pointer)) i32,
+    comptime heightFn: fn (ptr: @TypeOf(pointer)) i32,
 ) SimpleRenderer {
     const Ptr = @TypeOf(pointer);
     const ptr_info = @typeInfo(Ptr);
@@ -45,11 +49,23 @@ pub fn init(
             return @call(.{ .modifier = .always_inline }, setBackgroundPalleteFn, .{ self, color });
         }
 
+        fn getHeightImpl(ptr: *anyopaque) i32 {
+            const self = @ptrCast(Ptr, @alignCast(alignment, ptr));
+            return @call(.{ .modifier = .always_inline }, heightFn, .{self});
+        }
+
+        fn getWidthImpl(ptr: *anyopaque) i32 {
+            const self = @ptrCast(Ptr, @alignCast(alignment, ptr));
+            return @call(.{ .modifier = .always_inline }, widthFn, .{self});
+        }
+
         const vtable = VTable{
             .setBackgroundPallete = setBackgroundPalleteImpl,
             .setFrontendPallete = setFrontendPalleteImpl,
             .setPixel = setPixelImpl,
             .setPixelAlternative = setPixelAlternativeImpl,
+            .getHeight = getHeightImpl,
+            .getWidth = getWidthImpl,
         };
     };
 

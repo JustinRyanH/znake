@@ -87,7 +87,7 @@ pub const Renderer = struct {
     bind: sg.Bindings = .{},
 
     pub fn simpleRenderer(self: *Renderer) SimpleRender {
-        return SimpleRender.init(self, setPixel, setBackgroundPixel, setFrontendPallete, setBackgroundPallete);
+        return SimpleRender.init(self, setPixel, setBackgroundPixel, setFrontendPallete, setBackgroundPallete, getWidth, getHeight);
     }
 
     pub fn init(allocator: std.mem.Allocator, size: usize) !*Renderer {
@@ -106,6 +106,14 @@ pub const Renderer = struct {
         out.setupGfx();
 
         return out;
+    }
+
+    pub fn getWidth(self: *Renderer) i32 {
+        return @intCast(i32, self.width);
+    }
+
+    pub fn getHeight(self: *Renderer) i32 {
+        return @intCast(i32, self.height);
     }
 
     fn setupGfx(self: *Renderer) void {
