@@ -16,7 +16,7 @@ var prng = std.rand.DefaultPrng.init(0);
 const gpa = general_purpose_allocator.allocator();
 const global_random = prng.random();
 
-const CANVAS_SIZE = 160;
+const CANVAS_SIZE = Game.CANVAS_SIZE;
 const GameInput = Game.Input;
 
 pub const Color = sg.Color;
@@ -215,14 +215,6 @@ export fn init() void {
     });
 }
 
-fn renderAll() void {
-    var simple_renderer = renderer.simpleRenderer();
-    simple_renderer.setForegroundPallete(3);
-    simple_renderer.drawRect(0, 0, CANVAS_SIZE, 16);
-    simple_renderer.setBackgroundPallete(0);
-    simple_renderer.drawText("SOKOL Znake", 34, 4);
-}
-
 fn mainMenu() void {
     var simple_renderer = renderer.simpleRenderer();
     simple_renderer.drawText("WELCOME!", 48, CANVAS_SIZE / 2);
@@ -334,7 +326,6 @@ export fn frame() void {
     const should_update = frame_rate.shouldTick(stime.sec(time));
     if (should_update) {
         game.update(&input, &simple_renderer);
-        renderAll();
 
         switch (game.game_state) {
             .Menu => mainMenu(),

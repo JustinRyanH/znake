@@ -4,6 +4,8 @@ const mem = std.mem;
 const rand = std.rand;
 const ArrayList = std.ArrayList;
 
+pub const CANVAS_SIZE = 160;
+
 pub const GameEvent = enum {
     EatFruit,
     TickHappened,
@@ -245,11 +247,19 @@ pub const State = struct {
         self.input = input;
     }
 
+    fn baseRender(renderer: *SimpleRenderer) void {
+        renderer.setForegroundPallete(3);
+        renderer.drawRect(0, 0, CANVAS_SIZE, 16);
+        renderer.setBackgroundPallete(0);
+        renderer.drawText("SOKOL Znake", 34, 4);
+    }
+
     pub fn update(self: *State, input: *Input, renderer: *SimpleRenderer) void {
         _ = renderer;
         self.input = input.*;
         self.frame += 1;
         self.updateGame();
+        State.baseRender(renderer);
         input.swap();
     }
 
