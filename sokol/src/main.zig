@@ -322,6 +322,8 @@ fn gameOver() void {
 export fn frame() void {
     const time = stime.now();
     var simple_renderer = renderer.simpleRenderer();
+    simple_renderer.setForegroundPallete(0);
+    simple_renderer.reset();
 
     const should_update = frame_rate.shouldTick(stime.sec(time));
     if (should_update) {
@@ -334,8 +336,6 @@ export fn frame() void {
         }
 
         renderer.updateImage();
-        simple_renderer.setForegroundPallete(0);
-        simple_renderer.reset();
     }
     renderer.draw();
 }
