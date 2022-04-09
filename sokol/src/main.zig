@@ -184,19 +184,15 @@ pub const Renderer = struct {
     }
 
     pub fn drawText(self: *Renderer, text: []const u8, x: u8, y: u8) void {
+        var rdr = self.simpleRenderer();
         var i: u8 = x;
         for (text) |byte| {
             var source_start: usize = (byte - 32);
             source_start = source_start << 3;
             if (i > self.width) return;
-            self.blitBytes(&FONT, i, y, 8, 8, source_start, 0);
+            rdr.blitBytes(&FONT, i, y, 8, 8, source_start, 0);
             i += 8;
         }
-    }
-
-    pub fn blitBytes(self: *Renderer, source: []const u8, dst_x: u8, dst_y: u8, width: u8, height: u8, src_x: usize, src_y: usize) void {
-        var rdr = self.simpleRenderer();
-        rdr.blitBytes(source, dst_x, dst_y, width, height, src_x, src_y);
     }
 
     pub fn setPixel(self: *Self, x: i32, y: i32) void {
