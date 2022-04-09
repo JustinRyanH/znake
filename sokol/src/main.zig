@@ -318,15 +318,17 @@ fn play() void {
 }
 
 fn gameOver() void {
-    renderer.setFrontendPallete(1);
-    renderer.drawText("GAME OVER", 42, CANVAS_SIZE - 15);
+    var simple_renderer = renderer.simpleRenderer();
+
+    simple_renderer.setForegroundPallete(1);
+    simple_renderer.drawText("GAME OVER", 42, CANVAS_SIZE - 15);
 
     if (game.input.down(GameInput.ButtonB)) {
-        renderer.setFrontendPallete(2);
-        renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
+        simple_renderer.setForegroundPallete(2);
+        simple_renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
     } else {
-        renderer.setFrontendPallete(3);
-        renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
+        simple_renderer.setForegroundPallete(3);
+        simple_renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
     }
     if (game.events.hasNextStage()) {
         prng.seed(game.frame);
