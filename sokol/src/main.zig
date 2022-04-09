@@ -195,32 +195,8 @@ pub const Renderer = struct {
     }
 
     pub fn blitBytes(self: *Renderer, source: []const u8, dst_x: u8, dst_y: u8, width: u8, height: u8, src_x: usize, src_y: usize) void {
-        const min_x = std.math.clamp(dst_x, 0, self.width);
-        const max_x = std.math.clamp(dst_x + width - 1, 0, self.width);
-        const min_y = std.math.clamp(dst_y, 0, self.height);
-        const max_y = std.math.clamp(dst_y + height - 1, 0, self.height);
-        const source_start = src_y * width + src_x;
-        var x: usize = min_x;
-        var y: usize = min_y;
-
-        for (source[source_start..]) |byte| {
-            const commands = RendererVals.bytemaskToDraws(byte);
-            for (commands) |cmd| {
-                switch (cmd) {
-                    .background => self.setBackgroundPixel(@intCast(i32, x), @intCast(i32, y)),
-                    .foreground => self.setPixel(@intCast(i32, x), @intCast(i32, y)),
-                }
-                if (x >= max_x) {
-                    y += 1;
-                    x = min_x;
-                } else {
-                    x += 1;
-                }
-                if (y > max_y) {
-                    return;
-                }
-            }
-        }
+        var rdr = self.simpleRenderer();
+        rdr.blitBytes(source, dst_x, dst_y, width, height, src_x, src_y);
     }
 
     pub fn setPixel(self: *Self, x: i32, y: i32) void {
@@ -264,7 +240,7 @@ export fn init() void {
 fn renderAll() void {
     var simple_renderer = renderer.simpleRenderer();
     simple_renderer.setForegroundPallete(3);
-    renderer.drawRect(0, 0, CANVAS_SIZE, 16);
+    simple_renderer.drawRect(0, 0, CANVAS_SIZE, 16);
     simple_renderer.setBackgroundPallete(0);
     renderer.drawText("SOKOL Znake", 34, 4);
 }

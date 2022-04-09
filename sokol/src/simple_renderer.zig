@@ -1,4 +1,5 @@
 const std = @import("std");
+const RendererVals = @import("renderer_vals.zig");
 const SimpleRenderer = @This();
 
 ptr: *anyopaque,
@@ -87,6 +88,10 @@ pub fn setPixel(self: *SimpleRenderer, x: i32, y: i32) void {
     return self.vtable.setPixel(self.ptr, x, y);
 }
 
+pub fn setAltPixel(self: *SimpleRenderer, x: i32, y: i32) void {
+    return self.vtable.setPixelAlternative(self.ptr, x, y);
+}
+
 pub fn getWidth(self: *SimpleRenderer) i32 {
     return self.vtable.getWidth(self.ptr);
 }
@@ -116,6 +121,35 @@ pub fn drawRect(self: *SimpleRenderer, x: i32, y: i32, width: u16, height: u16) 
         var j = realY;
         while (j < y2) : (j += 1) {
             self.setPixel(@intCast(i32, i), @intCast(i32, j));
+        }
+    }
+}
+
+pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: u8, dst_y: u8, width: u8, height: u8, src_x: usize, src_y: usize) void {
+    const min_x = std.math.clamp(dst_x, 0, self.getWidth());
+    const max_x = std.math.clamp(dst_x + width - 1, 0, self.getWidth());
+    const min_y = std.math.clamp(dst_y, 0, self.getHeight());
+    const max_y = std.math.clamp(dst_y + height - 1, 0, self.getHeight());
+    const source_start = src_y * width + src_x;
+    var x: i32 = min_x;
+    var y: i32 = min_y;
+
+    for (source[source_start..]) |byte| {
+        const commands = RendererVals.bytemaskToDraws(byte);
+        for (commands) |cmd| {
+            switch (cmd) {
+                .background => self.setAltPixel(x, y),
+                .foreground => self.setPixel(x, y),
+            }
+            if (x >= max_x) {
+                y += 1;
+                x = min_x;
+            } else {
+                x += 1;
+            }
+            if (y > max_y) {
+                return;
+            }
         }
     }
 }
