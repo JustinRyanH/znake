@@ -1,4 +1,5 @@
 const std = @import("std");
+const SimpleRenderer = @import("simple_renderer.zig");
 const mem = std.mem;
 const rand = std.rand;
 const ArrayList = std.ArrayList;
@@ -244,7 +245,8 @@ pub const State = struct {
         self.input = input;
     }
 
-    pub fn update(self: *State, input: *Input) void {
+    pub fn update(self: *State, input: *Input, renderer: *SimpleRenderer) void {
+        _ = renderer;
         self.input = input.*;
         self.frame += 1;
         self.updateGame();
