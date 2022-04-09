@@ -177,16 +177,6 @@ pub const Renderer = struct {
         }
     }
 
-    pub fn drawRect(self: *Renderer, x: i32, y: i32, width: u16, height: u16) void {
-        var rdr = self.simpleRenderer();
-        rdr.drawRect(x, y, width, height);
-    }
-
-    pub fn drawText(self: *Renderer, text: []const u8, x: u8, y: u8) void {
-        var rdr = self.simpleRenderer();
-        rdr.drawText(text, x, y);
-    }
-
     pub fn setPixel(self: *Self, x: i32, y: i32) void {
         const ux = @intCast(usize, x);
         const uy = @intCast(usize, y);
@@ -282,11 +272,12 @@ pub fn drawSegmentSmall(segment: *const Game.Segment) void {
 }
 
 pub fn drawFruit(fruit: *const Game.Fruit) void {
+    var simple_renderer = renderer.simpleRenderer();
     if (fruit.pos) |pos| {
         const x = (pos.x * SnakeSize);
         const y = (pos.y * SnakeSize);
-        renderer.setFrontendPallete(3);
-        renderer.drawRect(x + SnakeSizeHalf / 2, y + SnakeSizeHalf / 2, SnakeSizeHalf, SnakeSizeHalf);
+        simple_renderer.setForegroundPallete(3);
+        simple_renderer.drawRect(x + SnakeSizeHalf / 2, y + SnakeSizeHalf / 2, SnakeSizeHalf, SnakeSizeHalf);
     }
 }
 
