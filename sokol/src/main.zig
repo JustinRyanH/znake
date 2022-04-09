@@ -276,8 +276,9 @@ pub fn drawSegmentSmall(segment: *const Game.Segment) void {
         y += SnakeSizeHalf / 2;
     }
 
-    renderer.setFrontendPallete(1);
-    renderer.drawRect(x, y, SnakeSizeHalf, SnakeSizeHalf);
+    var simple_renderer = renderer.simpleRenderer();
+    simple_renderer.setForegroundPallete(1);
+    simple_renderer.drawRect(x, y, SnakeSizeHalf, SnakeSizeHalf);
 }
 
 pub fn drawFruit(fruit: *const Game.Fruit) void {
