@@ -230,27 +230,29 @@ fn renderAll() void {
     simple_renderer.setForegroundPallete(3);
     simple_renderer.drawRect(0, 0, CANVAS_SIZE, 16);
     simple_renderer.setBackgroundPallete(0);
-    renderer.drawText("SOKOL Znake", 34, 4);
+    simple_renderer.drawText("SOKOL Znake", 34, 4);
 }
 
 fn mainMenu() void {
-    renderer.drawText("WELCOME!", 48, CANVAS_SIZE / 2);
+    var simple_renderer = renderer.simpleRenderer();
+    simple_renderer.drawText("WELCOME!", 48, CANVAS_SIZE / 2);
     if (input.down(GameInput.ButtonB)) {
-        renderer.setFrontendPallete(1);
+        simple_renderer.setForegroundPallete(1);
     } else {
-        renderer.setFrontendPallete(2);
+        simple_renderer.setForegroundPallete(2);
     }
-    renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
+    simple_renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
     if (game.events.hasNextStage()) {
         prng.seed(game.frame);
     }
 }
 
 pub fn drawSegment(segment: *const Game.Segment) void {
+    var simple_renderer = renderer.simpleRenderer();
     const x = (segment.position.x * SnakeSize);
     const y = (segment.position.y * SnakeSize);
-    renderer.setFrontendPallete(1);
-    renderer.drawRect(x, y, SnakeSize, SnakeSize);
+    simple_renderer.setForegroundPallete(1);
+    simple_renderer.drawRect(x, y, SnakeSize, SnakeSize);
 }
 
 pub fn drawSegmentSmall(segment: *const Game.Segment) void {
