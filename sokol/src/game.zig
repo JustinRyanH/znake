@@ -249,6 +249,9 @@ pub const State = struct {
 
     fn render(self: *State, renderer: *SimpleRenderer) void {
         _ = self;
+        renderer.setForegroundPallete(0);
+        renderer.reset();
+
         renderer.setForegroundPallete(3);
         renderer.drawRect(0, 0, CANVAS_SIZE, 16);
         renderer.setBackgroundPallete(0);

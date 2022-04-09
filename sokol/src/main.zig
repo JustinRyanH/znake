@@ -325,8 +325,6 @@ export fn frame() void {
 
     const should_update = frame_rate.shouldTick(stime.sec(time));
     if (should_update) {
-        simple_renderer.setForegroundPallete(0);
-        simple_renderer.reset();
         game.update(&input, &simple_renderer);
 
         switch (game.game_state) {
