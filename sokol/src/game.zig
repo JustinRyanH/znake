@@ -247,7 +247,8 @@ pub const State = struct {
         self.input = input;
     }
 
-    fn baseRender(renderer: *SimpleRenderer) void {
+    fn render(self: *State, renderer: *SimpleRenderer) void {
+        _ = self;
         renderer.setForegroundPallete(3);
         renderer.drawRect(0, 0, CANVAS_SIZE, 16);
         renderer.setBackgroundPallete(0);
@@ -255,11 +256,10 @@ pub const State = struct {
     }
 
     pub fn update(self: *State, input: *Input, renderer: *SimpleRenderer) void {
-        _ = renderer;
         self.input = input.*;
         self.frame += 1;
         self.updateGame();
-        State.baseRender(renderer);
+        self.render(renderer);
         input.swap();
     }
 
