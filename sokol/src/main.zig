@@ -179,18 +179,8 @@ pub const Renderer = struct {
     }
 
     pub fn drawRect(self: *Renderer, x: i32, y: i32, width: u16, height: u16) void {
-        const realX = std.math.clamp(x, 0, self.width);
-        const realY = std.math.clamp(y, 0, self.height);
-        const x2 = std.math.clamp(x + width, 0, self.width);
-        const y2 = std.math.clamp(y + height, 0, self.height);
-
-        var i = realX;
-        while (i < x2) : (i += 1) {
-            var j = realY;
-            while (j < y2) : (j += 1) {
-                self.setPixel(@intCast(i32, i), @intCast(i32, j));
-            }
-        }
+        var rdr = self.simpleRenderer();
+        rdr.drawRect(x, y, width, height);
     }
 
     pub fn drawText(self: *Renderer, text: []const u8, x: u8, y: u8) void {

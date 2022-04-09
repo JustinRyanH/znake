@@ -104,3 +104,18 @@ pub fn reset(self: *SimpleRenderer) void {
         }
     }
 }
+
+pub fn drawRect(self: *SimpleRenderer, x: i32, y: i32, width: u16, height: u16) void {
+    const realX = std.math.clamp(x, 0, self.getWidth());
+    const realY = std.math.clamp(y, 0, self.getHeight());
+    const x2 = std.math.clamp(x + width, 0, self.getWidth());
+    const y2 = std.math.clamp(y + height, 0, self.getHeight());
+
+    var i = realX;
+    while (i < x2) : (i += 1) {
+        var j = realY;
+        while (j < y2) : (j += 1) {
+            self.setPixel(@intCast(i32, i), @intCast(i32, j));
+        }
+    }
+}
