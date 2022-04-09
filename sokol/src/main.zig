@@ -21,7 +21,6 @@ const GameInput = Game.Input;
 
 pub const Color = sg.Color;
 
-pub const FONT = RendererVals.FONT;
 const FixedFrameRate = struct {
     const FRAMES_PER_SECOND = 30.0;
     next_update_state: f64 = 0.0,
@@ -185,14 +184,7 @@ pub const Renderer = struct {
 
     pub fn drawText(self: *Renderer, text: []const u8, x: u8, y: u8) void {
         var rdr = self.simpleRenderer();
-        var i: u8 = x;
-        for (text) |byte| {
-            var source_start: usize = (byte - 32);
-            source_start = source_start << 3;
-            if (i > self.width) return;
-            rdr.blitBytes(&FONT, i, y, 8, 8, source_start, 0);
-            i += 8;
-        }
+        rdr.drawText(text, x, y);
     }
 
     pub fn setPixel(self: *Self, x: i32, y: i32) void {

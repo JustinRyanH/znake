@@ -1,5 +1,6 @@
 const std = @import("std");
 const RendererVals = @import("renderer_vals.zig");
+pub const FONT = RendererVals.FONT;
 const SimpleRenderer = @This();
 
 ptr: *anyopaque,
@@ -151,5 +152,16 @@ pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: u8, dst_y: u8
                 return;
             }
         }
+    }
+}
+
+pub fn drawText(self: *SimpleRenderer, text: []const u8, x: u8, y: u8) void {
+    var i: u8 = x;
+    for (text) |byte| {
+        var source_start: usize = (byte - 32);
+        source_start = source_start << 3;
+        if (i > self.getWidth()) return;
+        self.blitBytes(&FONT, i, y, 8, 8, source_start, 0);
+        i += 8;
     }
 }
