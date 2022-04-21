@@ -562,3 +562,16 @@ pub fn gameOver(state: *State, simple_renderer: *SimpleRenderer) void {
         state.events.reseed();
     }
 }
+
+pub fn mainMenu(state: *State, simple_renderer: *SimpleRenderer) void {
+    simple_renderer.drawText("WELCOME!", 48, CANVAS_SIZE / 2);
+    if (state.input.down(Input.ButtonB)) {
+        simple_renderer.setForegroundPallete(1);
+    } else {
+        simple_renderer.setForegroundPallete(2);
+    }
+    simple_renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
+    if (state.events.hasNextStage()) {
+        state.events.reseed();
+    }
+}

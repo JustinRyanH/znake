@@ -215,19 +215,6 @@ export fn init() void {
     });
 }
 
-fn mainMenu(state: *Game.State, simple_renderer: *SimpleRenderer) void {
-    simple_renderer.drawText("WELCOME!", 48, CANVAS_SIZE / 2);
-    if (input.down(GameInput.ButtonB)) {
-        simple_renderer.setForegroundPallete(1);
-    } else {
-        simple_renderer.setForegroundPallete(2);
-    }
-    simple_renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
-    if (state.events.hasNextStage()) {
-        state.events.reseed();
-    }
-}
-
 export fn frame() void {
     const time = stime.now();
     var simple_renderer = renderer.simpleRenderer();
@@ -237,7 +224,7 @@ export fn frame() void {
         game.update(&input, &simple_renderer);
 
         switch (game.game_state) {
-            .Menu => mainMenu(game, &simple_renderer),
+            .Menu => Game.mainMenu(game, &simple_renderer),
             .Play => Game.play(game, &simple_renderer),
             .GameOver => Game.gameOver(game, &simple_renderer),
         }
