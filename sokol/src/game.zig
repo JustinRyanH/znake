@@ -6,11 +6,25 @@ const ArrayList = std.ArrayList;
 
 pub const CANVAS_SIZE = 160;
 
+const TitleBarSize = 2;
+const SnakeSize = 8;
+const WorldWidth = CANVAS_SIZE / SnakeSize;
+const WorldHeight = (CANVAS_SIZE - TitleBarSize) / SnakeSize;
+const SnakeSizeHalf = SnakeSize / 2;
+const TopBarSize = SnakeSize * TitleBarSize;
+const StepStride = 10;
+
+const SnakeYMin = TitleBarSize;
+const SnakeYMax = WorldHeight;
+const SnakeXMin = 0;
+const SnakeXMax = WorldWidth;
+
 pub const GameEvent = enum {
     EatFruit,
     TickHappened,
     Died,
     NextStage,
+    ShouldReseed,
 };
 pub const GameEvents = struct {
     inner: ArrayList(GameEvent),
@@ -41,6 +55,10 @@ pub const GameEvents = struct {
         self.append(.NextStage);
     }
 
+    pub fn reseed(self: *GameEvents) void {
+        self.append(.ShouldReseed);
+    }
+
     pub fn hasNextStage(self: *GameEvents) bool {
         for (self.inner.items) |event| {
             if (event == .NextStage) {
@@ -62,6 +80,15 @@ pub const GameEvents = struct {
     pub fn hasEatenFruit(self: *GameEvents) bool {
         for (self.inner.items) |event| {
             if (event == .EatFruit) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn shouldReseed(self: *GameEvents) bool {
+        for (self.inner.items) |event| {
+            if (event == .ShouldReseed) {
                 return true;
             }
         }
@@ -445,4 +472,93 @@ test "Input" {
     input.setUp(Input.Left);
     try std.testing.expect(input.justReleased(Input.Left) == true);
     try std.testing.expect(input.up(Input.Left) == true);
+}
+
+pub fn drawSegment(segment: *const Segment, simple_renderer: *SimpleRenderer) void {
+    const x = (segment.position.x * SnakeSize);
+    const y = (segment.position.y * SnakeSize);
+    simple_renderer.setForegroundPallete(1);
+    simple_renderer.drawRect(x, y, SnakeSize, SnakeSize);
+}
+
+pub fn drawSegmentSmall(segment: *const Segment, simple_renderer: *SimpleRenderer) void {
+    const dir = segment.direction.to_vec2();
+    var x = (segment.position.x * SnakeSize);
+    var y = (segment.position.y * SnakeSize);
+
+    if (dir.x == 0) {
+        x += SnakeSizeHalf / 2;
+    }
+
+    if (dir.y > 0) {
+        y += SnakeSizeHalf;
+    }
+
+    if (dir.x > 0) {
+        x += SnakeSizeHalf;
+    }
+
+    if (dir.y == 0) {
+        y += SnakeSizeHalf / 2;
+    }
+
+    simple_renderer.setForegroundPallete(1);
+    simple_renderer.drawRect(x, y, SnakeSizeHalf, SnakeSizeHalf);
+}
+
+pub fn drawFruit(
+    fruit: *const Fruit,
+    simple_renderer: *SimpleRenderer,
+) void {
+    if (fruit.pos) |pos| {
+        const x = (pos.x * SnakeSize);
+        const y = (pos.y * SnakeSize);
+        simple_renderer.setForegroundPallete(3);
+        simple_renderer.drawRect(x + SnakeSizeHalf / 2, y + SnakeSizeHalf / 2, SnakeSizeHalf, SnakeSizeHalf);
+    }
+}
+
+pub fn drawState(st: *const State, simple_renderer: *SimpleRenderer) void {
+    _ = simple_renderer;
+    var i: usize = 1;
+    const segments = st.segments.items;
+    drawSegment(&segments[0], simple_renderer);
+    while (i < segments.len) : (i += 1) {
+        if (i == segments.len - 1) {
+            drawSegmentSmall(&segments[i], simple_renderer);
+        } else {
+            drawSegment(&segments[i], simple_renderer);
+        }
+    }
+    drawFruit(&st.fruit, simple_renderer);
+}
+
+pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
+    const tick_happened = state.events.hasTicked();
+    const has_eaten = state.events.hasEatenFruit();
+
+    if (tick_happened) {
+        if (has_eaten) {
+            // Print Sound
+        } else {
+            // Sound
+        }
+    }
+    drawState(state, simple_renderer);
+}
+
+pub fn gameOver(state: *State, simple_renderer: *SimpleRenderer) void {
+    simple_renderer.setForegroundPallete(1);
+    simple_renderer.drawText("GAME OVER", 42, CANVAS_SIZE - 15);
+
+    if (state.input.down(Input.ButtonB)) {
+        simple_renderer.setForegroundPallete(2);
+        simple_renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
+    } else {
+        simple_renderer.setForegroundPallete(3);
+        simple_renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
+    }
+    if (state.events.hasNextStage()) {
+        state.events.reseed();
+    }
 }

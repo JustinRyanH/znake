@@ -229,95 +229,6 @@ fn mainMenu() void {
     }
 }
 
-pub fn drawSegment(segment: *const Game.Segment, simple_renderer: *SimpleRender) void {
-    const x = (segment.position.x * SnakeSize);
-    const y = (segment.position.y * SnakeSize);
-    simple_renderer.setForegroundPallete(1);
-    simple_renderer.drawRect(x, y, SnakeSize, SnakeSize);
-}
-
-pub fn drawSegmentSmall(segment: *const Game.Segment, simple_renderer: *SimpleRender) void {
-    const dir = segment.direction.to_vec2();
-    var x = (segment.position.x * SnakeSize);
-    var y = (segment.position.y * SnakeSize);
-
-    if (dir.x == 0) {
-        x += SnakeSizeHalf / 2;
-    }
-
-    if (dir.y > 0) {
-        y += SnakeSizeHalf;
-    }
-
-    if (dir.x > 0) {
-        x += SnakeSizeHalf;
-    }
-
-    if (dir.y == 0) {
-        y += SnakeSizeHalf / 2;
-    }
-
-    simple_renderer.setForegroundPallete(1);
-    simple_renderer.drawRect(x, y, SnakeSizeHalf, SnakeSizeHalf);
-}
-
-pub fn drawFruit(
-    fruit: *const Game.Fruit,
-    simple_renderer: *SimpleRender,
-) void {
-    if (fruit.pos) |pos| {
-        const x = (pos.x * SnakeSize);
-        const y = (pos.y * SnakeSize);
-        simple_renderer.setForegroundPallete(3);
-        simple_renderer.drawRect(x + SnakeSizeHalf / 2, y + SnakeSizeHalf / 2, SnakeSizeHalf, SnakeSizeHalf);
-    }
-}
-
-pub fn drawState(st: *const Game.State, simple_renderer: *SimpleRender) void {
-    _ = simple_renderer;
-    var i: usize = 1;
-    const segments = st.segments.items;
-    drawSegment(&segments[0], simple_renderer);
-    while (i < segments.len) : (i += 1) {
-        if (i == segments.len - 1) {
-            drawSegmentSmall(&segments[i], simple_renderer);
-        } else {
-            drawSegment(&segments[i], simple_renderer);
-        }
-    }
-    drawFruit(&st.fruit, simple_renderer);
-}
-
-fn play(state: *Game.State, simple_renderer: *SimpleRender) void {
-    const tick_happened = state.events.hasTicked();
-    const has_eaten = state.events.hasEatenFruit();
-
-    if (tick_happened) {
-        if (has_eaten) {
-            // Print Sound
-        } else {
-            // Sound
-        }
-    }
-    drawState(state, simple_renderer);
-}
-
-fn gameOver(state: *Game.State, simple_renderer: *SimpleRender) void {
-    simple_renderer.setForegroundPallete(1);
-    simple_renderer.drawText("GAME OVER", 42, CANVAS_SIZE - 15);
-
-    if (state.input.down(GameInput.ButtonB)) {
-        simple_renderer.setForegroundPallete(2);
-        simple_renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
-    } else {
-        simple_renderer.setForegroundPallete(3);
-        simple_renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
-    }
-    if (state.events.hasNextStage()) {
-        prng.seed(state.frame);
-    }
-}
-
 export fn frame() void {
     const time = stime.now();
     var simple_renderer = renderer.simpleRenderer();
@@ -328,8 +239,11 @@ export fn frame() void {
 
         switch (game.game_state) {
             .Menu => mainMenu(),
-            .Play => play(game, &simple_renderer),
-            .GameOver => gameOver(game, &simple_renderer),
+            .Play => Game.play(game, &simple_renderer),
+            .GameOver => Game.gameOver(game, &simple_renderer),
+        }
+        if (game.events.shouldReseed()) {
+            prng.seed(game.frame);
         }
 
         renderer.updateImage();
