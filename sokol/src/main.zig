@@ -261,8 +261,10 @@ pub fn drawSegmentSmall(segment: *const Game.Segment, simple_renderer: *SimpleRe
     simple_renderer.drawRect(x, y, SnakeSizeHalf, SnakeSizeHalf);
 }
 
-pub fn drawFruit(fruit: *const Game.Fruit) void {
-    var simple_renderer = renderer.simpleRenderer();
+pub fn drawFruit(
+    fruit: *const Game.Fruit,
+    simple_renderer: *SimpleRender,
+) void {
     if (fruit.pos) |pos| {
         const x = (pos.x * SnakeSize);
         const y = (pos.y * SnakeSize);
@@ -283,7 +285,7 @@ pub fn drawState(st: *const Game.State, simple_renderer: *SimpleRender) void {
             drawSegment(&segments[i], simple_renderer);
         }
     }
-    drawFruit(&st.fruit);
+    drawFruit(&st.fruit, simple_renderer);
 }
 
 fn play(state: *Game.State, simple_renderer: *SimpleRender) void {
