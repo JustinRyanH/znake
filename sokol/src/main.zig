@@ -8,7 +8,7 @@ const shd = @import("shaders/tex.glsl.zig");
 
 const Game = @import("game.zig");
 const RendererVals = @import("renderer_vals.zig");
-const SimpleRender = @import("simple_renderer.zig");
+const SimpleRenderer = @import("simple_renderer.zig");
 
 var general_purpose_allocator = std.heap.GeneralPurposeAllocator(.{}){};
 var prng = std.rand.DefaultPrng.init(0);
@@ -85,8 +85,8 @@ pub const Renderer = struct {
     pip: sg.Pipeline = .{},
     bind: sg.Bindings = .{},
 
-    pub fn simpleRenderer(self: *Renderer) SimpleRender {
-        return SimpleRender.init(self, setPixel, setBackgroundPixel, setFrontendPallete, setBackgroundPallete, getWidth, getHeight);
+    pub fn simpleRenderer(self: *Renderer) SimpleRenderer {
+        return SimpleRenderer.init(self, setPixel, setBackgroundPixel, setFrontendPallete, setBackgroundPallete, getWidth, getHeight);
     }
 
     pub fn init(allocator: std.mem.Allocator, size: usize) !*Renderer {
@@ -215,8 +215,7 @@ export fn init() void {
     });
 }
 
-fn mainMenu(state: *Game.State) void {
-    var simple_renderer = renderer.simpleRenderer();
+fn mainMenu(state: *Game.State, simple_renderer: *SimpleRenderer) void {
     simple_renderer.drawText("WELCOME!", 48, CANVAS_SIZE / 2);
     if (input.down(GameInput.ButtonB)) {
         simple_renderer.setForegroundPallete(1);
@@ -238,7 +237,7 @@ export fn frame() void {
         game.update(&input, &simple_renderer);
 
         switch (game.game_state) {
-            .Menu => mainMenu(game),
+            .Menu => mainMenu(game, &simple_renderer),
             .Play => Game.play(game, &simple_renderer),
             .GameOver => Game.gameOver(game, &simple_renderer),
         }
