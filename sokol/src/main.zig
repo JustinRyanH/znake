@@ -236,7 +236,7 @@ pub fn drawSegment(segment: *const Game.Segment, simple_renderer: *SimpleRender)
     simple_renderer.drawRect(x, y, SnakeSize, SnakeSize);
 }
 
-pub fn drawSegmentSmall(segment: *const Game.Segment) void {
+pub fn drawSegmentSmall(segment: *const Game.Segment, simple_renderer: *SimpleRender) void {
     const dir = segment.direction.to_vec2();
     var x = (segment.position.x * SnakeSize);
     var y = (segment.position.y * SnakeSize);
@@ -257,7 +257,6 @@ pub fn drawSegmentSmall(segment: *const Game.Segment) void {
         y += SnakeSizeHalf / 2;
     }
 
-    var simple_renderer = renderer.simpleRenderer();
     simple_renderer.setForegroundPallete(1);
     simple_renderer.drawRect(x, y, SnakeSizeHalf, SnakeSizeHalf);
 }
@@ -279,7 +278,7 @@ pub fn drawState(st: *const Game.State, simple_renderer: *SimpleRender) void {
     drawSegment(&segments[0], simple_renderer);
     while (i < segments.len) : (i += 1) {
         if (i == segments.len - 1) {
-            drawSegmentSmall(&segments[i]);
+            drawSegmentSmall(&segments[i], simple_renderer);
         } else {
             drawSegment(&segments[i], simple_renderer);
         }
