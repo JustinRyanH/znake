@@ -273,7 +273,8 @@ pub fn drawFruit(fruit: *const Game.Fruit) void {
     }
 }
 
-pub fn drawState(st: *const Game.State) void {
+pub fn drawState(st: *const Game.State, simple_renderer: *SimpleRender) void {
+    _ = simple_renderer;
     var i: usize = 1;
     const segments = st.segments.items;
     drawSegment(&segments[0]);
@@ -287,7 +288,7 @@ pub fn drawState(st: *const Game.State) void {
     drawFruit(&st.fruit);
 }
 
-fn play(state: *Game.State) void {
+fn play(state: *Game.State, simple_renderer: *SimpleRender) void {
     const tick_happened = state.events.hasTicked();
     const has_eaten = state.events.hasEatenFruit();
 
@@ -298,7 +299,7 @@ fn play(state: *Game.State) void {
             // Sound
         }
     }
-    drawState(state);
+    drawState(state, simple_renderer);
 }
 
 fn gameOver(state: *Game.State, simple_renderer: *SimpleRender) void {
@@ -327,7 +328,7 @@ export fn frame() void {
 
         switch (game.game_state) {
             .Menu => mainMenu(),
-            .Play => play(game),
+            .Play => play(game, &simple_renderer),
             .GameOver => gameOver(game, &simple_renderer),
         }
 
