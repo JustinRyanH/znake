@@ -287,9 +287,9 @@ pub fn drawState(st: *const Game.State) void {
     drawFruit(&st.fruit);
 }
 
-fn play() void {
-    const tick_happened = game.events.hasTicked();
-    const has_eaten = game.events.hasEatenFruit();
+fn play(state: *Game.State) void {
+    const tick_happened = state.events.hasTicked();
+    const has_eaten = state.events.hasEatenFruit();
 
     if (tick_happened) {
         if (has_eaten) {
@@ -298,7 +298,7 @@ fn play() void {
             // Sound
         }
     }
-    drawState(game);
+    drawState(state);
 }
 
 fn gameOver(state: *Game.State, simple_renderer: *SimpleRender) void {
@@ -327,7 +327,7 @@ export fn frame() void {
 
         switch (game.game_state) {
             .Menu => mainMenu(),
-            .Play => play(),
+            .Play => play(game),
             .GameOver => gameOver(game, &simple_renderer),
         }
 
