@@ -229,8 +229,7 @@ fn mainMenu() void {
     }
 }
 
-pub fn drawSegment(segment: *const Game.Segment) void {
-    var simple_renderer = renderer.simpleRenderer();
+pub fn drawSegment(segment: *const Game.Segment, simple_renderer: *SimpleRender) void {
     const x = (segment.position.x * SnakeSize);
     const y = (segment.position.y * SnakeSize);
     simple_renderer.setForegroundPallete(1);
@@ -277,12 +276,12 @@ pub fn drawState(st: *const Game.State, simple_renderer: *SimpleRender) void {
     _ = simple_renderer;
     var i: usize = 1;
     const segments = st.segments.items;
-    drawSegment(&segments[0]);
+    drawSegment(&segments[0], simple_renderer);
     while (i < segments.len) : (i += 1) {
         if (i == segments.len - 1) {
             drawSegmentSmall(&segments[i]);
         } else {
-            drawSegment(&segments[i]);
+            drawSegment(&segments[i], simple_renderer);
         }
     }
     drawFruit(&st.fruit);
