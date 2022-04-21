@@ -301,21 +301,19 @@ fn play() void {
     drawState(game);
 }
 
-fn gameOver() void {
-    var simple_renderer = renderer.simpleRenderer();
-
+fn gameOver(state: *Game.State, simple_renderer: *SimpleRender) void {
     simple_renderer.setForegroundPallete(1);
     simple_renderer.drawText("GAME OVER", 42, CANVAS_SIZE - 15);
 
-    if (game.input.down(GameInput.ButtonB)) {
+    if (state.input.down(GameInput.ButtonB)) {
         simple_renderer.setForegroundPallete(2);
         simple_renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
     } else {
         simple_renderer.setForegroundPallete(3);
         simple_renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
     }
-    if (game.events.hasNextStage()) {
-        prng.seed(game.frame);
+    if (state.events.hasNextStage()) {
+        prng.seed(state.frame);
     }
 }
 
@@ -330,7 +328,7 @@ export fn frame() void {
         switch (game.game_state) {
             .Menu => mainMenu(),
             .Play => play(),
-            .GameOver => gameOver(),
+            .GameOver => gameOver(game, &simple_renderer),
         }
 
         renderer.updateImage();
