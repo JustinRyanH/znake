@@ -70,7 +70,7 @@ const ColorPallete = [_]Color{
     .{ .r = 7.0 / 255.0, .g = 24.0 / 255.0, .b = 33.0 / 255.0, .a = 1 },
 };
 
-pub const Renderer = struct {
+pub const SimpleSokolRenderer = struct {
     const Self = @This();
 
     width: usize,
@@ -85,16 +85,16 @@ pub const Renderer = struct {
     pip: sg.Pipeline = .{},
     bind: sg.Bindings = .{},
 
-    pub fn simpleRenderer(self: *Renderer) SimpleRenderer {
+    pub fn simpleRenderer(self: *SimpleSokolRenderer) SimpleRenderer {
         return SimpleRenderer.init(self, setPixel, setBackgroundPixel, setFrontendPallete, setBackgroundPallete, getWidth, getHeight);
     }
 
-    pub fn init(allocator: std.mem.Allocator, size: usize) !*Renderer {
-        var out = try allocator.create(Renderer);
+    pub fn init(allocator: std.mem.Allocator, size: usize) !*SimpleSokolRenderer {
+        var out = try allocator.create(SimpleSokolRenderer);
         errdefer allocator.destroy(out);
         var frame_buffer = try allocator.alloc(Pixel, size * size);
 
-        out.* = Renderer{
+        out.* = SimpleSokolRenderer{
             .frame_buffer = frame_buffer,
             .width = size,
             .height = size,
@@ -110,15 +110,15 @@ pub const Renderer = struct {
         return out;
     }
 
-    pub fn getWidth(self: *Renderer) i32 {
+    pub fn getWidth(self: *SimpleSokolRenderer) i32 {
         return @intCast(i32, self.width);
     }
 
-    pub fn getHeight(self: *Renderer) i32 {
+    pub fn getHeight(self: *SimpleSokolRenderer) i32 {
         return @intCast(i32, self.height);
     }
 
-    fn setupGfx(self: *Renderer) void {
+    fn setupGfx(self: *SimpleSokolRenderer) void {
         self.bind.vertex_buffers[0] = sg.makeBuffer(.{
             .data = sg.asRange([_]Vertex{
                 .{ .x = 1.0, .y = 1.0, .u = 1.0, .v = 0.0 },
@@ -146,17 +146,17 @@ pub const Renderer = struct {
         self.pass_action.colors[0] = .{ .action = .CLEAR, .value = ColorPallete[0] };
     }
 
-    pub fn deinit(self: *Renderer) !void {
+    pub fn deinit(self: *SimpleSokolRenderer) !void {
         return self.allocator.free(self.frame_buffer);
     }
 
-    fn updateImage(self: *Renderer) void {
+    fn updateImage(self: *SimpleSokolRenderer) void {
         var img_data: sg.ImageData = .{};
         img_data.subimage[0][0] = sg.asRange(self.frame_buffer);
         sg.updateImage(self.bind.fs_images[shd.SLOT_tex], img_data);
     }
 
-    fn draw(self: *Renderer) void {
+    fn draw(self: *SimpleSokolRenderer) void {
         sg.beginDefaultPass(self.pass_action, sapp.width(), sapp.height());
         sg.applyPipeline(self.pip);
         sg.applyBindings(self.bind);
@@ -165,11 +165,11 @@ pub const Renderer = struct {
         sg.commit();
     }
 
-    pub fn setFrontendPallete(self: *Renderer, color: u2) void {
+    pub fn setFrontendPallete(self: *SimpleSokolRenderer, color: u2) void {
         self.pallete = ColorPallete[color];
     }
 
-    pub fn setBackgroundPallete(self: *Renderer, color: ?u2) void {
+    pub fn setBackgroundPallete(self: *SimpleSokolRenderer, color: ?u2) void {
         if (color) |c| {
             self.backgroundPallete = ColorPallete[c];
         } else {
@@ -183,7 +183,7 @@ pub const Renderer = struct {
         self.frame_buffer[self.width * uy + ux] = pixelFromSokolColor(self.pallete);
     }
 
-    pub fn setBackgroundPixel(self: *Renderer, x: i32, y: i32) void {
+    pub fn setBackgroundPixel(self: *SimpleSokolRenderer, x: i32, y: i32) void {
         const ux = @intCast(usize, x);
         const uy = @intCast(usize, y);
         if (self.backgroundPallete) |pallete| {
@@ -192,7 +192,7 @@ pub const Renderer = struct {
     }
 };
 
-var renderer: *Renderer = undefined;
+var renderer: *SimpleSokolRenderer = undefined;
 var game: *Game.State = undefined;
 var frame_rate: FixedFrameRate = .{};
 var input: GameInput = .{};
@@ -203,7 +203,7 @@ export fn init() void {
     });
     stime.setup();
 
-    renderer = Renderer.init(gpa, CANVAS_SIZE) catch @panic("Failed to Create Renderer");
+    renderer = SimpleSokolRenderer.init(gpa, CANVAS_SIZE) catch @panic("Failed to Create Renderer");
 
     game = Game.State.allocAndInit(gpa, .{
         .y_min = SnakeYMin,
