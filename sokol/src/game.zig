@@ -291,6 +291,12 @@ pub const State = struct {
         self.updateGame();
         self.render(renderer);
         input.swap();
+
+        switch (self.game_state) {
+            .Menu => mainMenu(self, renderer),
+            .Play => play(self, renderer),
+            .GameOver => gameOver(self, renderer),
+        }
     }
 
     pub fn updateGame(self: *State) void {

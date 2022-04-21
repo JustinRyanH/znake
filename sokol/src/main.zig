@@ -222,12 +222,6 @@ export fn frame() void {
     const should_update = frame_rate.shouldTick(stime.sec(time));
     if (should_update) {
         game.update(&input, &simple_renderer);
-
-        switch (game.game_state) {
-            .Menu => Game.mainMenu(game, &simple_renderer),
-            .Play => Game.play(game, &simple_renderer),
-            .GameOver => Game.gameOver(game, &simple_renderer),
-        }
         if (game.events.shouldReseed()) {
             prng.seed(game.frame);
         }
