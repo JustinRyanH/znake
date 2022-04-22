@@ -152,11 +152,11 @@ pub const SegmentV2 = struct {
     next_entity: ?ecs.Entity = null,
     direction: Direction,
 
-    pub fn nextPosition(self: *const Segment, position: Vec2) Vec2 {
+    pub fn nextPosition(self: *const SegmentV2, position: Vec2) Vec2 {
         return position.add(self.direction.to_vec2());
     }
 
-    pub fn go(self: *Segment, direction: Direction) void {
+    pub fn go(self: *SegmentV2, direction: Direction) void {
         if (self.direction == direction.opposite()) {
             return;
         }
@@ -279,6 +279,7 @@ pub const State = struct {
     events: GameEvents,
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
+    snake_tail: ?ecs.Entity = null,
 
     pub fn updateInput(self: *State, input: Input) void {
         self.input = input;
@@ -355,6 +356,8 @@ pub const State = struct {
                         var segments = self.segments.items;
                         const last_segment = segments[segments.len - 1];
                         self.updateSegments();
+                        var tail_entity = self.addTail(self.snake_tail.?, last_segment.direction, last_segment.position);
+                        self.snake_tail = tail_entity;
                         self.addSegment(last_segment);
                         self.nextFruit();
                     } else {
@@ -392,7 +395,7 @@ pub const State = struct {
     pub fn reset(self: *State) void {
         self.frame = 0;
         {
-            var view = self.registery.view(.{ Segment, PositionComponent }, .{});
+            var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
             var iter = view.iterator();
             while (iter.next()) |entity| {
                 self.registery.destroy(entity);
@@ -408,7 +411,8 @@ pub const State = struct {
         const starting_segment = Segment{ .direction = self.maybe_next_direction, .position = StartPosition };
         const starting_tail = Segment{ .direction = self.maybe_next_direction, .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }) };
         var head_entity = self.addHead(starting_segment.direction, starting_segment.position);
-        _ = self.addTail(head_entity, starting_tail.direction, starting_segment.position);
+        var tail_entity = self.addTail(head_entity, starting_tail.direction, starting_segment.position);
+        self.snake_tail = tail_entity;
         self.addSegment(starting_segment);
         self.addSegment(starting_tail);
         self.game_state = .Play;
@@ -461,6 +465,19 @@ pub const State = struct {
             segments[i].position = nextPosition;
             if (i + 1 < segments.len) {
                 segments[i + 1].direction = segments[i].direction;
+            }
+        }
+        {
+            var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
+            var iter = view.iterator();
+            while (iter.next()) |entity| {
+                var pos = view.get(PositionComponent, entity);
+                var segment = view.get(SegmentV2, entity);
+                pos.* = segment.nextPosition(pos.*);
+                if (segment.previous_entity) |entt| {
+                    var previous_segment = view.get(SegmentV2, entt);
+                    segment.*.direction = previous_segment.direction;
+                }
             }
         }
     }
