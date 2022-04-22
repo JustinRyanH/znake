@@ -148,9 +148,16 @@ pub const Direction = enum {
 };
 
 pub const SegmentV2 = struct {
+    const SegmentType = enum {
+        Head,
+        Body,
+        Tail,
+    };
+
     previous_entity: ?ecs.Entity = null,
     next_entity: ?ecs.Entity = null,
     direction: Direction,
+    segment_type: SegmentType,
 
     pub fn nextPosition(self: *const SegmentV2, position: Vec2) Vec2 {
         return position.add(self.direction.to_vec2());
@@ -493,7 +500,7 @@ pub const State = struct {
 
     pub fn addHead(self: *State, direction: Direction, pos: PositionComponent) ecs.Entity {
         var entity = self.registery.create();
-        const segment_v2 = SegmentV2{ .direction = direction };
+        const segment_v2 = SegmentV2{ .direction = direction, .segment_type = .Head };
         self.registery.add(entity, segment_v2);
         self.registery.add(entity, pos);
         return entity;
@@ -501,13 +508,16 @@ pub const State = struct {
 
     pub fn addTail(self: *State, last: ecs.Entity, direction: Direction, pos: PositionComponent) ecs.Entity {
         var entity = self.registery.create();
-        const segment_v2 = SegmentV2{ .direction = direction, .previous_entity = last };
+        const segment_v2 = SegmentV2{ .direction = direction, .previous_entity = last, .segment_type = .Tail };
         self.registery.add(entity, segment_v2);
         self.registery.add(entity, pos);
         {
             var view = self.registery.view(.{SegmentV2}, .{});
             var segment = view.get(last);
             segment.*.next_entity = entity;
+            if (segment.*.segment_type == .Tail) {
+                segment.*.segment_type = .Body;
+            }
         }
         return entity;
     }
@@ -580,6 +590,31 @@ pub fn drawSegmentSmall(segment: *const Segment, simple_renderer: *SimpleRendere
     simple_renderer.drawRect(x, y, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
 }
 
+pub fn drawSegmentSmallV2(direction: *const Direction, position: *PositionComponent, simple_renderer: *SimpleRenderer) void {
+    const dir = direction.to_vec2();
+    var x = (position.x * SNAKE_SIZE);
+    var y = (position.y * SNAKE_SIZE);
+
+    if (dir.x == 0) {
+        x += SNAKE_HALF_SIZE / 2;
+    }
+
+    if (dir.y > 0) {
+        y += SNAKE_HALF_SIZE;
+    }
+
+    if (dir.x > 0) {
+        x += SNAKE_HALF_SIZE;
+    }
+
+    if (dir.y == 0) {
+        y += SNAKE_HALF_SIZE / 2;
+    }
+
+    simple_renderer.setForegroundPallete(1);
+    simple_renderer.drawRect(x, y, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
+}
+
 pub fn drawFruit(
     fruit: *const Fruit,
     simple_renderer: *SimpleRenderer,
@@ -593,26 +628,23 @@ pub fn drawFruit(
 }
 
 pub fn drawState(self: *State, simple_renderer: *SimpleRenderer) void {
-    // var i: usize = 1;
-    // const segments = st.segments.items;
-    // drawSegment(&segments[0], simple_renderer);
-    // while (i < segments.len) : (i += 1) {
-    //     if (i == segments.len - 1) {
-    //         drawSegmentSmall(&segments[i], simple_renderer);
-    //     } else {
-    //         drawSegment(&segments[i], simple_renderer);
-    //     }
-    // }
     {
         var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
         var iter = view.iterator();
         while (iter.next()) |entity| {
             var pos = view.get(PositionComponent, entity);
+            const segment = view.get(SegmentV2, entity);
 
-            const x = (pos.x * SNAKE_SIZE);
-            const y = (pos.y * SNAKE_SIZE);
-            simple_renderer.setForegroundPallete(1);
-            simple_renderer.drawRect(x, y, SNAKE_SIZE, SNAKE_SIZE);
+            switch (segment.segment_type) {
+                .Tail => drawSegmentSmallV2(&segment.direction, pos, simple_renderer),
+                else => {
+                    const x = (pos.x * SNAKE_SIZE);
+                    const y = (pos.y * SNAKE_SIZE);
+
+                    simple_renderer.setForegroundPallete(1);
+                    simple_renderer.drawRect(x, y, SNAKE_SIZE, SNAKE_SIZE);
+                },
+            }
         }
     }
 
