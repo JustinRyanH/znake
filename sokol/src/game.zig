@@ -406,17 +406,10 @@ pub const State = struct {
 
         const x = (self.x_max - self.x_min) / 2 - 1;
         const y = (self.y_max - self.y_min) / 2 - 1;
-        const StartPosition = Vec2{ .x = x, .y = y };
         const head_direction = self.maybe_next_direction;
-        const head_position = StartPosition;
+        const head_position = Vec2{ .x = x, .y = y };
 
-        var head_entity = createHead(&self.registery, head_direction, head_position);
-        var tail_entity = appendTail(&self.registery, head_entity);
-        // var tail_entity = self.addTail(head_entity, tail_direction, tail_position);
-        self.registery.singletons().add(SnakeEdges{
-            .head = head_entity,
-            .tail = tail_entity,
-        });
+        createSnake(&self.registery, head_direction, head_position);
         self.game_state = .Play;
         self.nextFruit();
     }
@@ -667,4 +660,13 @@ fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
     registery.add(entity, tail_segment);
     registery.add(entity, tail_position);
     return entity;
+}
+
+fn createSnake(registery: *ecs.Registry, direction: Direction, pos: Vec2) void {
+    var head_entity = createHead(registery, direction, pos);
+    var tail_entity = appendTail(registery, head_entity);
+    registery.singletons().add(SnakeEdges{
+        .head = head_entity,
+        .tail = tail_entity,
+    });
 }
