@@ -352,12 +352,13 @@ pub const State = struct {
                     } else if (self.getFruit().missing()) {
                         {
                             var edges = self.registery.singletons().get(SnakeEdges);
-                            var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
-                            var tail_segment = view.getConst(SegmentComponent, edges.tail);
-                            var tail_pos = view.getConst(PositionComponent, edges.tail);
+                            var new_tail = appendTail(&self.registery, edges.tail);
+                            edges.tail = new_tail;
+                            // var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
+                            // var tail_segment = view.getConst(SegmentComponent, edges.tail);
+                            // var tail_pos = view.getConst(PositionComponent, edges.tail);
                             updateSegmentPositionSystem(&self.registery);
-                            var tail_entity = self.addTail(edges.tail, tail_segment.direction, tail_pos);
-                            edges.tail = tail_entity;
+                            // var tail_entity = self.addTail(edges.tail, tail_segment.direction, tail_pos);
                         }
                         self.nextFruit();
                     } else {
@@ -651,7 +652,8 @@ fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ec
 
 fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
     var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
-    var parent_segment = view.getConst(SegmentComponent, parent);
+    var parent_segment = view.get(SegmentComponent, parent);
+    parent_segment.segment_type = .Body;
     var parent_position = view.getConst(PositionComponent, parent);
     var entity = registery.create();
 
