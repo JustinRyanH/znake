@@ -409,11 +409,10 @@ pub const State = struct {
         const StartPosition = Vec2{ .x = x, .y = y };
         const head_direction = self.maybe_next_direction;
         const head_position = StartPosition;
-        const tail_direction = self.maybe_next_direction;
-        const tail_position = head_position.add(Vec2{ .x = 0, .y = 1 });
 
         var head_entity = createHead(&self.registery, head_direction, head_position);
-        var tail_entity = self.addTail(head_entity, tail_direction, tail_position);
+        var tail_entity = appendTail(&self.registery, head_entity);
+        // var tail_entity = self.addTail(head_entity, tail_direction, tail_position);
         self.registery.singletons().add(SnakeEdges{
             .head = head_entity,
             .tail = tail_entity,
@@ -654,5 +653,18 @@ fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ec
     const segment = SegmentComponent{ .direction = direction, .segment_type = .Head };
     registery.add(entity, segment);
     registery.add(entity, position);
+    return entity;
+}
+
+fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
+    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
+    var parent_segment = view.getConst(SegmentComponent, parent);
+    var parent_position = view.getConst(PositionComponent, parent);
+    var entity = registery.create();
+
+    const tail_segment = SegmentComponent{ .direction = parent_segment.direction, .previous_entity = parent, .segment_type = .Tail };
+    const tail_position: PositionComponent = parent_position.add(parent_segment.direction.opposite().to_vec2());
+    registery.add(entity, tail_segment);
+    registery.add(entity, tail_position);
     return entity;
 }
