@@ -362,7 +362,7 @@ pub const State = struct {
                         var head = view.get(self.snake_head.?);
                         head.*.direction = self.maybe_next_direction;
                     }
-                    if (self.willBeOutOfBounds(snake_head) or self.willCollideWithSelf()) {
+                    if (self.willBeOutOfBounds() or self.willCollideWithSelf()) {
                         self.events.died();
                         self.game_state = .GameOver;
                     } else if (self.fruit.missing()) {
@@ -526,23 +526,20 @@ pub const State = struct {
         self.segments.append(segment) catch @panic("Cannot Grow Snake");
     }
 
-    pub fn willBeOutOfBounds(self: *State, segment: *Segment) bool {
-        _ = segment;
-        {
-            var head = self.snake_head.?;
-            var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
-            var ecs_segment = view.get(SegmentV2, head);
-            var current_position = view.get(PositionComponent, head);
+    pub fn willBeOutOfBounds(self: *State) bool {
+        var head = self.snake_head.?;
+        var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
+        var ecs_segment = view.get(SegmentV2, head);
+        var current_position = view.get(PositionComponent, head);
 
-            const position = current_position.add(ecs_segment.direction.to_vec2());
-            if (position.y < self.y_min or position.y > self.y_max) {
-                return true;
-            }
-            if (position.x < self.x_min or position.x > self.x_max) {
-                return true;
-            }
-            return false;
+        const position = current_position.add(ecs_segment.direction.to_vec2());
+        if (position.y < self.y_min or position.y > self.y_max) {
+            return true;
         }
+        if (position.x < self.x_min or position.x > self.x_max) {
+            return true;
+        }
+        return false;
     }
 };
 
