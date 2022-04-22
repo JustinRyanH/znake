@@ -332,30 +332,29 @@ pub const State = struct {
                 }
             },
             .Play => {
-                var snake_head = self.snakeHead();
+                var snake_head_segment = self.snakeHeadSegment();
                 if (self.input.justPressed(Input.Left)) {
-                    if (snake_head.direction.opposite() != .Left) {
+                    if (snake_head_segment.direction.opposite() != .Left) {
                         self.maybe_next_direction = .Left;
                     }
                 }
                 if (self.input.justPressed(Input.Right)) {
-                    if (snake_head.direction.opposite() != .Right) {
+                    if (snake_head_segment.direction.opposite() != .Right) {
                         self.maybe_next_direction = .Right;
                     }
                 }
                 if (self.input.justPressed(Input.Up)) {
-                    if (snake_head.direction.opposite() != .Up) {
+                    if (snake_head_segment.direction.opposite() != .Up) {
                         self.maybe_next_direction = .Up;
                     }
                 }
                 if (self.input.justPressed(Input.Down)) {
-                    if (snake_head.direction.opposite() != .Down) {
+                    if (snake_head_segment.direction.opposite() != .Down) {
                         self.maybe_next_direction = .Down;
                     }
                 }
                 if (self.shouldTick()) {
                     self.events.ticked();
-                    snake_head.direction = self.maybe_next_direction;
                     {
                         var view = self.registery.view(.{SegmentV2}, .{});
                         var head = view.get(self.snake_head.?);
@@ -365,12 +364,15 @@ pub const State = struct {
                         self.events.died();
                         self.game_state = .GameOver;
                     } else if (self.fruit.missing()) {
-                        var segments = self.segments.items;
-                        const last_segment = segments[segments.len - 1];
-                        self.updateSegments();
-                        var tail_entity = self.addTail(self.snake_tail.?, last_segment.direction, last_segment.position);
-                        self.snake_tail = tail_entity;
-                        self.addSegment(last_segment);
+                        {
+                            var tail = self.snake_tail.?;
+                            var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
+                            var tail_segment = view.get(SegmentV2, tail).*;
+                            var tail_pos = view.get(PositionComponent, tail).*;
+                            self.updateSegments();
+                            var tail_entity = self.addTail(self.snake_tail.?, tail_segment.direction, tail_pos);
+                            self.snake_tail = tail_entity;
+                        }
                         self.nextFruit();
                     } else {
                         self.updateSegments();
@@ -427,8 +429,6 @@ pub const State = struct {
         var tail_entity = self.addTail(head_entity, starting_tail.direction, starting_tail.position);
         self.snake_head = head_entity;
         self.snake_tail = tail_entity;
-        self.addSegment(starting_segment);
-        self.addSegment(starting_tail);
         self.game_state = .Play;
         self.nextFruit();
     }
@@ -464,13 +464,21 @@ pub const State = struct {
         };
     }
 
-    pub fn snakeHead(self: *State) *Segment {
-        return &self.segments.items[0];
+    pub fn snakeHeadPosition(self: *State) *PositionComponent {
+        var head = self.snake_head.?;
+        var view = self.registery.view(.{PositionComponent}, .{});
+        return view.get(head);
+    }
+
+    pub fn snakeHeadSegment(self: *State) *SegmentV2 {
+        var head = self.snake_head.?;
+        var view = self.registery.view(.{SegmentV2}, .{});
+        return view.get(head);
     }
 
     pub fn maybEat(self: *State) void {
-        const snake_head = self.snakeHead();
-        if (!self.fruit.overlaps(snake_head.position)) {
+        var snake_head_position = self.snakeHeadPosition();
+        if (!self.fruit.overlaps(snake_head_position.*)) {
             return;
         }
         self.events.eatFruit();
@@ -478,28 +486,15 @@ pub const State = struct {
     }
 
     pub fn updateSegments(self: *State) void {
-        const segments = self.segments.items;
-        var i: usize = segments.len;
-        while (i > 0) {
-            i -= 1;
-            const segment = segments[i];
-            const nextPosition = segment.nextPosition();
-            segments[i].position = nextPosition;
-            if (i + 1 < segments.len) {
-                segments[i + 1].direction = segments[i].direction;
-            }
-        }
-        {
-            var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
-            var iter = view.iterator();
-            while (iter.next()) |entity| {
-                var pos = view.get(PositionComponent, entity);
-                var segment = view.get(SegmentV2, entity);
-                pos.* = segment.nextPosition(pos.*);
-                if (segment.previous_entity) |entt| {
-                    var previous_segment = view.get(SegmentV2, entt);
-                    segment.*.direction = previous_segment.direction;
-                }
+        var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
+        var iter = view.iterator();
+        while (iter.next()) |entity| {
+            var pos = view.get(PositionComponent, entity);
+            var segment = view.get(SegmentV2, entity);
+            pos.* = segment.nextPosition(pos.*);
+            if (segment.previous_entity) |entt| {
+                var previous_segment = view.get(SegmentV2, entt);
+                segment.*.direction = previous_segment.direction;
             }
         }
     }
@@ -526,10 +521,6 @@ pub const State = struct {
             }
         }
         return entity;
-    }
-
-    pub fn addSegment(self: *State, segment: Segment) void {
-        self.segments.append(segment) catch @panic("Cannot Grow Snake");
     }
 
     pub fn willBeOutOfBounds(self: *State) bool {
