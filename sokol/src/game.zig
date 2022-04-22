@@ -383,6 +383,7 @@ pub const State = struct {
             .random = config.random,
             .events = GameEvents.init(allocator),
         };
+        state.registery.singletons().add(Fruit{});
         return state;
     }
 
@@ -445,7 +446,7 @@ pub const State = struct {
     }
 
     pub fn getFruit(self: *State) *Fruit {
-        return &self.fruit;
+        return self.registery.singletons().get(Fruit);
     }
 
     pub fn nextFruit(self: *State) void {
