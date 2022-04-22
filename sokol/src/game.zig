@@ -447,6 +447,9 @@ pub const State = struct {
     }
 
     pub fn addSegment(self: *State, segment: Segment) void {
+        var entity = self.registery.create();
+        self.registery.add(entity, segment);
+        self.registery.add(entity, @bitCast(PositionComponent, segment.position));
         self.segments.append(segment) catch @panic("Cannot Grow Snake");
     }
 
