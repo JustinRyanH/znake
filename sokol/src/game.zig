@@ -352,13 +352,11 @@ pub const State = struct {
                     } else if (self.fruit.missing()) {
                         {
                             var edges = self.registery.singletons().get(SnakeEdges);
-                            var tail = self.snake_edges.?.tail;
                             var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
-                            var tail_segment = view.get(SegmentComponent, tail).*;
-                            var tail_pos = view.get(PositionComponent, tail).*;
+                            var tail_segment = view.getConst(SegmentComponent, edges.tail);
+                            var tail_pos = view.getConst(PositionComponent, edges.tail);
                             updateSegmentPositionSystem(&self.registery);
-                            var tail_entity = self.addTail(tail, tail_segment.direction, tail_pos);
-                            self.snake_edges.?.tail = tail_entity;
+                            var tail_entity = self.addTail(edges.tail, tail_segment.direction, tail_pos);
                             edges.tail = tail_entity;
                         }
                         self.nextFruit();
