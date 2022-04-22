@@ -38,24 +38,18 @@ const FixedFrameRate = struct {
 };
 
 const TitleBarSize = 2;
-const SnakeSize = 8;
+const StepStride = 10;
+
+const SnakeSize = Game.SNAKE_SIZE;
 const WorldWidth = CANVAS_SIZE / SnakeSize;
 const WorldHeight = (CANVAS_SIZE - TitleBarSize) / SnakeSize;
 const SnakeSizeHalf = SnakeSize / 2;
 const TopBarSize = SnakeSize * TitleBarSize;
-const StepStride = 10;
 
 const SnakeYMin = TitleBarSize;
 const SnakeYMax = WorldHeight;
 const SnakeXMin = 0;
 const SnakeXMax = WorldWidth;
-
-const ColorPallete = [_]Color{
-    .{ .r = 225.0 / 255.0, .g = 248.0 / 255.0, .b = 207.0 / 255.0, .a = 1 },
-    .{ .r = 108.0 / 255.0, .g = 192.0 / 255.0, .b = 108.0 / 255.0, .a = 1 },
-    .{ .r = 80.0 / 255.0, .g = 104.0 / 255.0, .b = 80.0 / 255.0, .a = 1 },
-    .{ .r = 7.0 / 255.0, .g = 24.0 / 255.0, .b = 33.0 / 255.0, .a = 1 },
-};
 
 pub const SimpleSokolRenderer = @import("./simple_sokol_renderer.zig");
 

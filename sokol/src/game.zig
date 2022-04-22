@@ -5,19 +5,9 @@ const rand = std.rand;
 const ArrayList = std.ArrayList;
 
 pub const CANVAS_SIZE = 160;
+pub const SNAKE_SIZE = 8;
 
-const TitleBarSize = 2;
-const SnakeSize = 8;
-const WorldWidth = CANVAS_SIZE / SnakeSize;
-const WorldHeight = (CANVAS_SIZE - TitleBarSize) / SnakeSize;
-const SnakeSizeHalf = SnakeSize / 2;
-const TopBarSize = SnakeSize * TitleBarSize;
-const StepStride = 10;
-
-const SnakeYMin = TitleBarSize;
-const SnakeYMax = WorldHeight;
-const SnakeXMin = 0;
-const SnakeXMax = WorldWidth;
+const SNAKE_HALF_SIZE = SNAKE_SIZE / 2;
 
 pub const GameEvent = enum {
     EatFruit,
@@ -481,35 +471,35 @@ test "Input" {
 }
 
 pub fn drawSegment(segment: *const Segment, simple_renderer: *SimpleRenderer) void {
-    const x = (segment.position.x * SnakeSize);
-    const y = (segment.position.y * SnakeSize);
+    const x = (segment.position.x * SNAKE_SIZE);
+    const y = (segment.position.y * SNAKE_SIZE);
     simple_renderer.setForegroundPallete(1);
-    simple_renderer.drawRect(x, y, SnakeSize, SnakeSize);
+    simple_renderer.drawRect(x, y, SNAKE_SIZE, SNAKE_SIZE);
 }
 
 pub fn drawSegmentSmall(segment: *const Segment, simple_renderer: *SimpleRenderer) void {
     const dir = segment.direction.to_vec2();
-    var x = (segment.position.x * SnakeSize);
-    var y = (segment.position.y * SnakeSize);
+    var x = (segment.position.x * SNAKE_SIZE);
+    var y = (segment.position.y * SNAKE_SIZE);
 
     if (dir.x == 0) {
-        x += SnakeSizeHalf / 2;
+        x += SNAKE_HALF_SIZE / 2;
     }
 
     if (dir.y > 0) {
-        y += SnakeSizeHalf;
+        y += SNAKE_HALF_SIZE;
     }
 
     if (dir.x > 0) {
-        x += SnakeSizeHalf;
+        x += SNAKE_HALF_SIZE;
     }
 
     if (dir.y == 0) {
-        y += SnakeSizeHalf / 2;
+        y += SNAKE_HALF_SIZE / 2;
     }
 
     simple_renderer.setForegroundPallete(1);
-    simple_renderer.drawRect(x, y, SnakeSizeHalf, SnakeSizeHalf);
+    simple_renderer.drawRect(x, y, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
 }
 
 pub fn drawFruit(
@@ -517,10 +507,10 @@ pub fn drawFruit(
     simple_renderer: *SimpleRenderer,
 ) void {
     if (fruit.pos) |pos| {
-        const x = (pos.x * SnakeSize);
-        const y = (pos.y * SnakeSize);
+        const x = (pos.x * SNAKE_SIZE);
+        const y = (pos.y * SNAKE_SIZE);
         simple_renderer.setForegroundPallete(3);
-        simple_renderer.drawRect(x + SnakeSizeHalf / 2, y + SnakeSizeHalf / 2, SnakeSizeHalf, SnakeSizeHalf);
+        simple_renderer.drawRect(x + SNAKE_HALF_SIZE / 2, y + SNAKE_HALF_SIZE / 2, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
     }
 }
 
