@@ -279,6 +279,7 @@ pub const State = struct {
     events: GameEvents,
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
+    snake_head: ?ecs.Entity = null,
     snake_tail: ?ecs.Entity = null,
 
     pub fn updateInput(self: *State, input: Input) void {
@@ -349,6 +350,11 @@ pub const State = struct {
                 if (self.shouldTick()) {
                     self.events.ticked();
                     snake_head.direction = self.maybe_next_direction;
+                    {
+                        var view = self.registery.view(.{SegmentV2}, .{});
+                        var head = view.get(self.snake_head.?);
+                        head.*.direction = self.maybe_next_direction;
+                    }
                     if (self.willBeOutOfBounds(snake_head) or self.willCollideWithSelf()) {
                         self.events.died();
                         self.game_state = .GameOver;
@@ -400,6 +406,8 @@ pub const State = struct {
             while (iter.next()) |entity| {
                 self.registery.destroy(entity);
             }
+            self.snake_head = null;
+            self.snake_tail = null;
         }
 
         self.segments.clearAndFree();
@@ -412,6 +420,7 @@ pub const State = struct {
         const starting_tail = Segment{ .direction = self.maybe_next_direction, .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }) };
         var head_entity = self.addHead(starting_segment.direction, starting_segment.position);
         var tail_entity = self.addTail(head_entity, starting_tail.direction, starting_tail.position);
+        self.snake_head = head_entity;
         self.snake_tail = tail_entity;
         self.addSegment(starting_segment);
         self.addSegment(starting_tail);
