@@ -253,7 +253,9 @@ pub const Input = packed struct {
     }
 };
 
-pub const FruitRandom = rand.Random;
+pub const RandomGenerators = struct {
+    fruit_random: rand.Random,
+};
 pub const StateSetup = struct {
     y_min: u8,
     y_max: u8,
@@ -266,7 +268,7 @@ pub const StateSetup = struct {
 pub const State = struct {
     allocator: mem.Allocator,
     registery: ecs.Registry,
-    random: FruitRandom,
+    randoms: RandomGenerators,
     bounds: Bounds,
     step_stride: u32,
 
@@ -378,16 +380,20 @@ pub const State = struct {
             .x_min = config.x_min,
             .x_max = config.x_max,
         };
+        const randoms: RandomGenerators = .{
+            .fruit_random = config.random,
+        };
 
         state.* = .{
             .registery = ecs.Registry.init(allocator),
             .bounds = bounds,
             .step_stride = config.step_stride,
             .allocator = allocator,
-            .random = config.random,
+            .randoms = randoms,
             .events = GameEvents.init(allocator),
         };
         state.registery.singletons().add(Fruit{});
+        state.registery.singletons().add(state.randoms);
         return state;
     }
 
@@ -451,9 +457,10 @@ pub const State = struct {
     }
 
     pub fn nextFruit(self: *State) void {
+        const fruit_random = self.randoms.fruit_random;
         self.getFruit().pos = Vec2{
-            .x = self.random.intRangeLessThan(i32, self.getBounds().x_min, self.getBounds().x_max),
-            .y = self.random.intRangeLessThan(i32, self.getBounds().y_min + 1, self.getBounds().y_max),
+            .x = fruit_random.intRangeLessThan(i32, self.getBounds().x_min, self.getBounds().x_max),
+            .y = fruit_random.intRangeLessThan(i32, self.getBounds().y_min + 1, self.getBounds().y_max),
         };
     }
 
