@@ -9,6 +9,7 @@ pub const CANVAS_SIZE = 160;
 pub const SNAKE_SIZE = 8;
 
 const SNAKE_HALF_SIZE = SNAKE_SIZE / 2;
+const PositionComponent = Vec2;
 
 pub const GameEvent = enum {
     EatFruit,
@@ -373,6 +374,14 @@ pub const State = struct {
 
     pub fn reset(self: *State) void {
         self.frame = 0;
+        {
+            var view = self.registery.view(.{ Segment, PositionComponent }, .{});
+            var iter = view.iterator();
+            while (iter.next()) |entity| {
+                self.registery.destroy(entity);
+            }
+        }
+
         self.segments.clearAndFree();
         self.maybe_next_direction = .Up;
 
