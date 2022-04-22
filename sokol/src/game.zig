@@ -558,38 +558,6 @@ test "Input" {
     try std.testing.expect(input.up(Input.Left) == true);
 }
 
-pub fn drawSegment(segment: *const Segment, simple_renderer: *SimpleRenderer) void {
-    const x = (segment.position.x * SNAKE_SIZE);
-    const y = (segment.position.y * SNAKE_SIZE);
-    simple_renderer.setForegroundPallete(1);
-    simple_renderer.drawRect(x, y, SNAKE_SIZE, SNAKE_SIZE);
-}
-
-pub fn drawSegmentSmall(segment: *const Segment, simple_renderer: *SimpleRenderer) void {
-    const dir = segment.direction.to_vec2();
-    var x = (segment.position.x * SNAKE_SIZE);
-    var y = (segment.position.y * SNAKE_SIZE);
-
-    if (dir.x == 0) {
-        x += SNAKE_HALF_SIZE / 2;
-    }
-
-    if (dir.y > 0) {
-        y += SNAKE_HALF_SIZE;
-    }
-
-    if (dir.x > 0) {
-        x += SNAKE_HALF_SIZE;
-    }
-
-    if (dir.y == 0) {
-        y += SNAKE_HALF_SIZE / 2;
-    }
-
-    simple_renderer.setForegroundPallete(1);
-    simple_renderer.drawRect(x, y, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
-}
-
 pub fn drawSegmentSmallV2(direction: *const Direction, position: *PositionComponent, simple_renderer: *SimpleRenderer) void {
     const dir = direction.to_vec2();
     var x = (position.x * SNAKE_SIZE);
