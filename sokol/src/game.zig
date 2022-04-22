@@ -349,7 +349,7 @@ pub const State = struct {
                     if (self.willBeOutOfBounds() or self.willCollideWithSelf()) {
                         self.events.died();
                         self.game_state = .GameOver;
-                    } else if (self.fruit.missing()) {
+                    } else if (self.getFruit().missing()) {
                         {
                             var edges = self.registery.singletons().get(SnakeEdges);
                             var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
@@ -444,8 +444,12 @@ pub const State = struct {
         return false;
     }
 
+    pub fn getFruit(self: *State) *Fruit {
+        return &self.fruit;
+    }
+
     pub fn nextFruit(self: *State) void {
-        self.fruit.pos = Vec2{
+        self.getFruit().pos = Vec2{
             .x = self.random.intRangeLessThan(i32, self.x_min, self.x_max),
             .y = self.random.intRangeLessThan(i32, self.y_min + 1, self.y_max),
         };
@@ -465,11 +469,11 @@ pub const State = struct {
 
     pub fn maybEat(self: *State) void {
         var snake_head_position = self.snakeHeadPosition();
-        if (!self.fruit.overlaps(snake_head_position.*)) {
+        if (!self.getFruit().overlaps(snake_head_position.*)) {
             return;
         }
         self.events.eatFruit();
-        self.fruit.pos = null;
+        self.getFruit().pos = null;
     }
 
     pub fn addHead(self: *State, direction: Direction, pos: PositionComponent) ecs.Entity {
@@ -591,7 +595,7 @@ pub fn drawState(self: *State, simple_renderer: *SimpleRenderer) void {
         }
     }
 
-    drawFruit(&self.fruit, simple_renderer);
+    drawFruit(self.getFruit(), simple_renderer);
 }
 
 pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
