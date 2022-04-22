@@ -1,5 +1,6 @@
 const std = @import("std");
 const sokol = @import("lib/sokol-zig/build.zig");
+const zigEcs = @import("lib/zig-ecs/build.zig");
 
 pub fn build(b: *std.build.Builder) void {
     const target = b.standardTargetOptions(.{});
@@ -11,6 +12,7 @@ pub fn build(b: *std.build.Builder) void {
     exe.setTarget(target);
     exe.setBuildMode(mode);
     exe.addPackagePath("sokol", "lib/sokol-zig/src/sokol/sokol.zig");
+    exe.addPackage(zigEcs.getPackage("lib/zig-ecs/"));
     exe.linkLibrary(sokol_build);
     exe.install();
 

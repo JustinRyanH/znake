@@ -1,5 +1,6 @@
 const std = @import("std");
 const SimpleRenderer = @import("simple_renderer.zig");
+const ecs = @import("ecs");
 const mem = std.mem;
 const rand = std.rand;
 const ArrayList = std.ArrayList;
@@ -243,6 +244,7 @@ pub const StateSetup = struct {
 
 pub const State = struct {
     allocator: mem.Allocator,
+    registery: ecs.Registry,
     random: rand.Random,
     y_min: u8,
     y_max: u8,
@@ -350,6 +352,7 @@ pub const State = struct {
     pub fn allocAndInit(allocator: mem.Allocator, config: StateSetup) *State {
         var state = allocator.create(State) catch @panic("Could not Allocate Game Data");
         state.* = .{
+            .registery = ecs.Registry.init(allocator),
             .y_min = config.y_min,
             .y_max = config.y_max,
             .x_min = config.x_min,
