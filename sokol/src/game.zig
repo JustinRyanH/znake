@@ -147,6 +147,22 @@ pub const Direction = enum {
     }
 };
 
+pub const SegmentV2 = struct {
+    previous_entity: ?ecs.Entity = null,
+    direction: Direction,
+
+    pub fn nextPosition(self: *const Segment, position: Vec2) Vec2 {
+        return position.add(self.direction.to_vec2());
+    }
+
+    pub fn go(self: *Segment, direction: Direction) void {
+        if (self.direction == direction.opposite()) {
+            return;
+        }
+        self.direction = direction;
+    }
+};
+
 pub const Segment = struct {
     position: Vec2,
     direction: Direction,
@@ -448,7 +464,8 @@ pub const State = struct {
 
     pub fn addSegment(self: *State, segment: Segment) void {
         var entity = self.registery.create();
-        self.registery.add(entity, segment);
+        const segment_v2 = SegmentV2{ .direction = segment.direction };
+        self.registery.add(entity, segment_v2);
         self.registery.add(entity, @bitCast(PositionComponent, segment.position));
         self.segments.append(segment) catch @panic("Cannot Grow Snake");
     }
