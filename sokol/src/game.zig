@@ -351,13 +351,13 @@ pub const State = struct {
                             var view = self.registery.view(.{ Segment, PositionComponent }, .{});
                             var tail_segment = view.get(Segment, tail).*;
                             var tail_pos = view.get(PositionComponent, tail).*;
-                            self.updateSegments();
+                            updateSegmentPositionSystem(&self.registery);
                             var tail_entity = self.addTail(self.snake_tail.?, tail_segment.direction, tail_pos);
                             self.snake_tail = tail_entity;
                         }
                         self.nextFruit();
                     } else {
-                        self.updateSegments();
+                        updateSegmentPositionSystem(&self.registery);
                     }
 
                     self.maybEat();
@@ -465,20 +465,6 @@ pub const State = struct {
         }
         self.events.eatFruit();
         self.fruit.pos = null;
-    }
-
-    pub fn updateSegments(self: *State) void {
-        var view = self.registery.view(.{ Segment, PositionComponent }, .{});
-        var iter = view.iterator();
-        while (iter.next()) |entity| {
-            var pos = view.get(PositionComponent, entity);
-            var segment = view.get(Segment, entity);
-            pos.* = segment.nextPosition(pos.*);
-            if (segment.previous_entity) |entt| {
-                var previous_segment = view.get(Segment, entt);
-                segment.*.direction = previous_segment.direction;
-            }
-        }
     }
 
     pub fn addHead(self: *State, direction: Direction, pos: PositionComponent) ecs.Entity {
@@ -643,5 +629,19 @@ pub fn mainMenu(state: *State, simple_renderer: *SimpleRenderer) void {
     simple_renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
     if (state.events.hasNextStage()) {
         state.events.reseed();
+    }
+}
+
+fn updateSegmentPositionSystem(registery: *ecs.Registry) void {
+    var view = registery.view(.{ Segment, PositionComponent }, .{});
+    var iter = view.iterator();
+    while (iter.next()) |entity| {
+        var pos = view.get(PositionComponent, entity);
+        var segment = view.get(Segment, entity);
+        pos.* = segment.nextPosition(pos.*);
+        if (segment.previous_entity) |entt| {
+            var previous_segment = view.get(Segment, entt);
+            segment.*.direction = previous_segment.direction;
+        }
     }
 }
