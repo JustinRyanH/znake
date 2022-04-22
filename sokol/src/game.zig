@@ -371,14 +371,16 @@ pub const State = struct {
 
     pub fn allocAndInit(allocator: mem.Allocator, config: StateSetup) *State {
         var state = allocator.create(State) catch @panic("Could not Allocate Game Data");
+        const bounds: Bounds = .{
+            .y_min = config.y_min,
+            .y_max = config.y_max,
+            .x_min = config.x_min,
+            .x_max = config.x_max,
+        };
+
         state.* = .{
             .registery = ecs.Registry.init(allocator),
-            .bounds = .{
-                .y_min = config.y_min,
-                .y_max = config.y_max,
-                .x_min = config.x_min,
-                .x_max = config.x_max,
-            },
+            .bounds = bounds,
             .step_stride = config.step_stride,
             .allocator = allocator,
             .random = config.random,
