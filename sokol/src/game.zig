@@ -407,8 +407,8 @@ pub const State = struct {
 
         self.maybe_next_direction = .Up;
 
-        const x = @divTrunc((self.bounds.x_max - self.bounds.x_min), 2) - 1;
-        const y = @divTrunc((self.bounds.y_max - self.bounds.y_min), 2) - 1;
+        const x = @divTrunc((self.getBounds().x_max - self.getBounds().x_min), 2) - 1;
+        const y = @divTrunc((self.getBounds().y_max - self.getBounds().y_min), 2) - 1;
         const head_direction = self.maybe_next_direction;
         const head_position = Vec2{ .x = x, .y = y };
 
@@ -445,10 +445,14 @@ pub const State = struct {
         return self.registery.singletons().get(Fruit);
     }
 
+    pub fn getBounds(self: *State) *Bounds {
+        return &self.bounds;
+    }
+
     pub fn nextFruit(self: *State) void {
         self.getFruit().pos = Vec2{
-            .x = self.random.intRangeLessThan(i32, self.bounds.x_min, self.bounds.x_max),
-            .y = self.random.intRangeLessThan(i32, self.bounds.y_min + 1, self.bounds.y_max),
+            .x = self.random.intRangeLessThan(i32, self.getBounds().x_min, self.getBounds().x_max),
+            .y = self.random.intRangeLessThan(i32, self.getBounds().y_min + 1, self.getBounds().y_max),
         };
     }
 
@@ -496,10 +500,10 @@ pub const State = struct {
         var current_position = view.get(PositionComponent, head);
 
         const position = current_position.add(ecs_segment.direction.to_vec2());
-        if (position.y < self.bounds.y_min or position.y > self.bounds.y_max) {
+        if (position.y < self.getBounds().y_min or position.y > self.getBounds().y_max) {
             return true;
         }
-        if (position.x < self.bounds.x_min or position.x > self.bounds.x_max) {
+        if (position.x < self.getBounds().x_min or position.x > self.getBounds().x_max) {
             return true;
         }
         return false;
