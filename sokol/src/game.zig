@@ -253,6 +253,7 @@ pub const Input = packed struct {
     }
 };
 
+pub const FruitRandom = rand.Random;
 pub const StateSetup = struct {
     y_min: u8,
     y_max: u8,
@@ -265,7 +266,7 @@ pub const StateSetup = struct {
 pub const State = struct {
     allocator: mem.Allocator,
     registery: ecs.Registry,
-    random: rand.Random,
+    random: FruitRandom,
     bounds: Bounds,
     step_stride: u32,
 
