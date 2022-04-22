@@ -411,7 +411,7 @@ pub const State = struct {
         const starting_segment = Segment{ .direction = self.maybe_next_direction, .position = StartPosition };
         const starting_tail = Segment{ .direction = self.maybe_next_direction, .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }) };
         var head_entity = self.addHead(starting_segment.direction, starting_segment.position);
-        var tail_entity = self.addTail(head_entity, starting_tail.direction, starting_segment.position);
+        var tail_entity = self.addTail(head_entity, starting_tail.direction, starting_tail.position);
         self.snake_tail = tail_entity;
         self.addSegment(starting_segment);
         self.addSegment(starting_tail);
@@ -583,19 +583,31 @@ pub fn drawFruit(
     }
 }
 
-pub fn drawState(st: *const State, simple_renderer: *SimpleRenderer) void {
-    _ = simple_renderer;
-    var i: usize = 1;
-    const segments = st.segments.items;
-    drawSegment(&segments[0], simple_renderer);
-    while (i < segments.len) : (i += 1) {
-        if (i == segments.len - 1) {
-            drawSegmentSmall(&segments[i], simple_renderer);
-        } else {
-            drawSegment(&segments[i], simple_renderer);
+pub fn drawState(self: *State, simple_renderer: *SimpleRenderer) void {
+    // var i: usize = 1;
+    // const segments = st.segments.items;
+    // drawSegment(&segments[0], simple_renderer);
+    // while (i < segments.len) : (i += 1) {
+    //     if (i == segments.len - 1) {
+    //         drawSegmentSmall(&segments[i], simple_renderer);
+    //     } else {
+    //         drawSegment(&segments[i], simple_renderer);
+    //     }
+    // }
+    {
+        var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
+        var iter = view.iterator();
+        while (iter.next()) |entity| {
+            var pos = view.get(PositionComponent, entity);
+
+            const x = (pos.x * SNAKE_SIZE);
+            const y = (pos.y * SNAKE_SIZE);
+            simple_renderer.setForegroundPallete(1);
+            simple_renderer.drawRect(x, y, SNAKE_SIZE, SNAKE_SIZE);
         }
     }
-    drawFruit(&st.fruit, simple_renderer);
+
+    drawFruit(&self.fruit, simple_renderer);
 }
 
 pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
