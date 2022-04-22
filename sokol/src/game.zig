@@ -149,6 +149,7 @@ pub const Direction = enum {
 
 pub const SegmentV2 = struct {
     previous_entity: ?ecs.Entity = null,
+    next_entity: ?ecs.Entity = null,
     direction: Direction,
 
     pub fn nextPosition(self: *const Segment, position: Vec2) Vec2 {
@@ -406,6 +407,8 @@ pub const State = struct {
         const StartPosition = Vec2{ .x = x, .y = y };
         const starting_segment = Segment{ .direction = self.maybe_next_direction, .position = StartPosition };
         const starting_tail = Segment{ .direction = self.maybe_next_direction, .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }) };
+        var head_entity = self.addHead(starting_segment.direction, starting_segment.position);
+        _ = self.addTail(head_entity, starting_tail.direction, starting_segment.position);
         self.addSegment(starting_segment);
         self.addSegment(starting_tail);
         self.game_state = .Play;
@@ -462,11 +465,28 @@ pub const State = struct {
         }
     }
 
-    pub fn addSegment(self: *State, segment: Segment) void {
+    pub fn addHead(self: *State, direction: Direction, pos: PositionComponent) ecs.Entity {
         var entity = self.registery.create();
-        const segment_v2 = SegmentV2{ .direction = segment.direction };
+        const segment_v2 = SegmentV2{ .direction = direction };
         self.registery.add(entity, segment_v2);
-        self.registery.add(entity, @bitCast(PositionComponent, segment.position));
+        self.registery.add(entity, pos);
+        return entity;
+    }
+
+    pub fn addTail(self: *State, last: ecs.Entity, direction: Direction, pos: PositionComponent) ecs.Entity {
+        var entity = self.registery.create();
+        const segment_v2 = SegmentV2{ .direction = direction, .previous_entity = last };
+        self.registery.add(entity, segment_v2);
+        self.registery.add(entity, pos);
+        {
+            var view = self.registery.view(.{SegmentV2}, .{});
+            var segment = view.get(last);
+            segment.*.next_entity = entity;
+        }
+        return entity;
+    }
+
+    pub fn addSegment(self: *State, segment: Segment) void {
         self.segments.append(segment) catch @panic("Cannot Grow Snake");
     }
 
