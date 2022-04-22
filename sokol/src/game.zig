@@ -498,26 +498,6 @@ pub const State = struct {
     }
 };
 
-test "Input" {
-    var input: Input = .{};
-    try std.testing.expect(input.frame == 0);
-    input.setDown(Input.Left);
-    input.setDown(Input.ButtonA);
-    input.setDown(Input.ButtonB);
-    try std.testing.expect(input.down(Input.Left) == true);
-    try std.testing.expect(input.down(Input.ButtonA) == true);
-    try std.testing.expect(input.justPressed(Input.Left));
-
-    input.setUp(Input.ButtonA);
-    try std.testing.expect(input.up(Input.ButtonA) == true);
-    try std.testing.expect(input.down(Input.Left) == true);
-
-    input.swap();
-    input.setUp(Input.Left);
-    try std.testing.expect(input.justReleased(Input.Left) == true);
-    try std.testing.expect(input.up(Input.Left) == true);
-}
-
 pub fn drawSegmentSmallV2(direction: *const Direction, position: *PositionComponent, simple_renderer: *SimpleRenderer) void {
     const dir = direction.to_vec2();
     var x = (position.x * SNAKE_SIZE);
@@ -675,4 +655,24 @@ fn createSnake(registery: *ecs.Registry, direction: Direction, pos: Vec2) void {
         .head = head_entity,
         .tail = tail_entity,
     });
+}
+
+test "Input" {
+    var input: Input = .{};
+    try std.testing.expect(input.frame == 0);
+    input.setDown(Input.Left);
+    input.setDown(Input.ButtonA);
+    input.setDown(Input.ButtonB);
+    try std.testing.expect(input.down(Input.Left) == true);
+    try std.testing.expect(input.down(Input.ButtonA) == true);
+    try std.testing.expect(input.justPressed(Input.Left));
+
+    input.setUp(Input.ButtonA);
+    try std.testing.expect(input.up(Input.ButtonA) == true);
+    try std.testing.expect(input.down(Input.Left) == true);
+
+    input.swap();
+    input.setUp(Input.Left);
+    try std.testing.expect(input.justReleased(Input.Left) == true);
+    try std.testing.expect(input.up(Input.Left) == true);
 }
