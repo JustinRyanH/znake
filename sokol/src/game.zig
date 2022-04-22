@@ -411,7 +411,8 @@ pub const State = struct {
         const head_position = StartPosition;
         const tail_direction = self.maybe_next_direction;
         const tail_position = head_position.add(Vec2{ .x = 0, .y = 1 });
-        var head_entity = self.addHead(head_direction, head_position);
+
+        var head_entity = createHead(&self.registery, head_direction, head_position);
         var tail_entity = self.addTail(head_entity, tail_direction, tail_position);
         self.registery.singletons().add(SnakeEdges{
             .head = head_entity,
@@ -475,14 +476,6 @@ pub const State = struct {
         }
         self.events.eatFruit();
         self.getFruit().pos = null;
-    }
-
-    pub fn addHead(self: *State, direction: Direction, pos: PositionComponent) ecs.Entity {
-        var entity = self.registery.create();
-        const segment_v2 = SegmentComponent{ .direction = direction, .segment_type = .Head };
-        self.registery.add(entity, segment_v2);
-        self.registery.add(entity, pos);
-        return entity;
     }
 
     pub fn addTail(self: *State, last: ecs.Entity, direction: Direction, pos: PositionComponent) ecs.Entity {
@@ -654,4 +647,12 @@ fn updateSegmentPositionSystem(registery: *ecs.Registry) void {
             segment.*.direction = previous_segment.direction;
         }
     }
+}
+
+fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ecs.Entity {
+    var entity = registery.create();
+    const segment = SegmentComponent{ .direction = direction, .segment_type = .Head };
+    registery.add(entity, segment);
+    registery.add(entity, position);
+    return entity;
 }
