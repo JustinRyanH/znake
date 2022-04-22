@@ -351,7 +351,7 @@ pub const State = struct {
                         self.game_state = .GameOver;
                     } else if (self.fruit.missing()) {
                         {
-                            var tail_edges = self.registery.singletons().get(SnakeEdges);
+                            var edges = self.registery.singletons().get(SnakeEdges);
                             var tail = self.snake_edges.?.tail;
                             var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
                             var tail_segment = view.get(SegmentComponent, tail).*;
@@ -359,7 +359,7 @@ pub const State = struct {
                             updateSegmentPositionSystem(&self.registery);
                             var tail_entity = self.addTail(tail, tail_segment.direction, tail_pos);
                             self.snake_edges.?.tail = tail_entity;
-                            tail_edges.tail = tail_entity;
+                            edges.tail = tail_entity;
                         }
                         self.nextFruit();
                     } else {
