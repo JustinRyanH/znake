@@ -440,14 +440,22 @@ pub const State = struct {
     }
 
     pub fn willCollideWithSelf(self: *State) bool {
-        const snake_head = self.snakeHead();
-        const next_pos = snake_head.nextPosition();
-        for (self.segments.items[1..]) |segment| {
-            if (segment.nextPosition().equals(next_pos)) {
+        var head = self.snake_head.?;
+        var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
+        var head_segment = view.get(SegmentV2, head);
+        var head_pos = view.get(PositionComponent, head);
+        var next_pos = head_segment.nextPosition(head_pos.*);
+
+        var iter = view.iterator();
+        while (iter.next()) |entity| {
+            if (head == entity) continue;
+            var body_segment = view.get(SegmentV2, entity);
+            var body_pos = view.get(PositionComponent, entity);
+            var body_next_pos = body_segment.nextPosition(body_pos.*);
+            if (body_next_pos.equals(next_pos)) {
                 return true;
             }
         }
-
         return false;
     }
 
