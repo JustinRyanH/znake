@@ -526,15 +526,23 @@ pub const State = struct {
         self.segments.append(segment) catch @panic("Cannot Grow Snake");
     }
 
-    pub fn willBeOutOfBounds(self: *const State, segment: *Segment) bool {
-        const position = segment.position.add(segment.direction.to_vec2());
-        if (position.y < self.y_min or position.y > self.y_max) {
-            return true;
+    pub fn willBeOutOfBounds(self: *State, segment: *Segment) bool {
+        _ = segment;
+        {
+            var head = self.snake_head.?;
+            var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
+            var ecs_segment = view.get(SegmentV2, head);
+            var current_position = view.get(PositionComponent, head);
+
+            const position = current_position.add(ecs_segment.direction.to_vec2());
+            if (position.y < self.y_min or position.y > self.y_max) {
+                return true;
+            }
+            if (position.x < self.x_min or position.x > self.x_max) {
+                return true;
+            }
+            return false;
         }
-        if (position.x < self.x_min or position.x > self.x_max) {
-            return true;
-        }
-        return false;
     }
 };
 
