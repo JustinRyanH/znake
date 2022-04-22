@@ -147,6 +147,13 @@ pub const Direction = enum {
     }
 };
 
+pub const Bounds = struct {
+    x_min: i32,
+    x_max: i32,
+    y_min: i32,
+    y_max: i32,
+};
+
 pub const SnakeEdges = struct {
     tail: ecs.Entity,
     head: ecs.Entity,
@@ -259,10 +266,7 @@ pub const State = struct {
     allocator: mem.Allocator,
     registery: ecs.Registry,
     random: rand.Random,
-    y_min: u8,
-    y_max: u8,
-    x_min: u8,
-    x_max: u8,
+    bounds: Bounds,
     step_stride: u32,
 
     frame: u32 = 0,
@@ -369,10 +373,12 @@ pub const State = struct {
         var state = allocator.create(State) catch @panic("Could not Allocate Game Data");
         state.* = .{
             .registery = ecs.Registry.init(allocator),
-            .y_min = config.y_min,
-            .y_max = config.y_max,
-            .x_min = config.x_min,
-            .x_max = config.x_max,
+            .bounds = .{
+                .y_min = config.y_min,
+                .y_max = config.y_max,
+                .x_min = config.x_min,
+                .x_max = config.x_max,
+            },
             .step_stride = config.step_stride,
             .allocator = allocator,
             .random = config.random,
@@ -399,8 +405,8 @@ pub const State = struct {
 
         self.maybe_next_direction = .Up;
 
-        const x = (self.x_max - self.x_min) / 2 - 1;
-        const y = (self.y_max - self.y_min) / 2 - 1;
+        const x = @divTrunc((self.bounds.x_max - self.bounds.x_min), 2) - 1;
+        const y = @divTrunc((self.bounds.y_max - self.bounds.y_min), 2) - 1;
         const head_direction = self.maybe_next_direction;
         const head_position = Vec2{ .x = x, .y = y };
 
@@ -439,8 +445,8 @@ pub const State = struct {
 
     pub fn nextFruit(self: *State) void {
         self.getFruit().pos = Vec2{
-            .x = self.random.intRangeLessThan(i32, self.x_min, self.x_max),
-            .y = self.random.intRangeLessThan(i32, self.y_min + 1, self.y_max),
+            .x = self.random.intRangeLessThan(i32, self.bounds.x_min, self.bounds.x_max),
+            .y = self.random.intRangeLessThan(i32, self.bounds.y_min + 1, self.bounds.y_max),
         };
     }
 
@@ -488,10 +494,10 @@ pub const State = struct {
         var current_position = view.get(PositionComponent, head);
 
         const position = current_position.add(ecs_segment.direction.to_vec2());
-        if (position.y < self.y_min or position.y > self.y_max) {
+        if (position.y < self.bounds.y_min or position.y > self.bounds.y_max) {
             return true;
         }
-        if (position.x < self.x_min or position.x > self.x_max) {
+        if (position.x < self.bounds.x_min or position.x > self.bounds.x_max) {
             return true;
         }
         return false;
