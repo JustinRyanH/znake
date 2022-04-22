@@ -147,7 +147,7 @@ pub const Direction = enum {
     }
 };
 
-pub const SegmentV2 = struct {
+pub const Segment = struct {
     const SegmentType = enum {
         Head,
         Body,
@@ -159,11 +159,11 @@ pub const SegmentV2 = struct {
     direction: Direction,
     segment_type: SegmentType,
 
-    pub fn nextPosition(self: *const SegmentV2, position: Vec2) Vec2 {
+    pub fn nextPosition(self: *const Segment, position: Vec2) Vec2 {
         return position.add(self.direction.to_vec2());
     }
 
-    pub fn go(self: *SegmentV2, direction: Direction) void {
+    pub fn go(self: *Segment, direction: Direction) void {
         if (self.direction == direction.opposite()) {
             return;
         }
@@ -355,7 +355,7 @@ pub const State = struct {
                 if (self.shouldTick()) {
                     self.events.ticked();
                     {
-                        var view = self.registery.view(.{SegmentV2}, .{});
+                        var view = self.registery.view(.{Segment}, .{});
                         var head = view.get(self.snake_head.?);
                         head.*.direction = self.maybe_next_direction;
                     }
@@ -365,8 +365,8 @@ pub const State = struct {
                     } else if (self.fruit.missing()) {
                         {
                             var tail = self.snake_tail.?;
-                            var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
-                            var tail_segment = view.get(SegmentV2, tail).*;
+                            var view = self.registery.view(.{ Segment, PositionComponent }, .{});
+                            var tail_segment = view.get(Segment, tail).*;
                             var tail_pos = view.get(PositionComponent, tail).*;
                             self.updateSegments();
                             var tail_entity = self.addTail(self.snake_tail.?, tail_segment.direction, tail_pos);
@@ -406,7 +406,7 @@ pub const State = struct {
     pub fn reset(self: *State) void {
         self.frame = 0;
         {
-            var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
+            var view = self.registery.view(.{ Segment, PositionComponent }, .{});
             var iter = view.iterator();
             while (iter.next()) |entity| {
                 self.registery.destroy(entity);
@@ -436,15 +436,15 @@ pub const State = struct {
 
     pub fn willCollideWithSelf(self: *State) bool {
         var head = self.snake_head.?;
-        var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
-        var head_segment = view.get(SegmentV2, head);
+        var view = self.registery.view(.{ Segment, PositionComponent }, .{});
+        var head_segment = view.get(Segment, head);
         var head_pos = view.get(PositionComponent, head);
         var next_pos = head_segment.nextPosition(head_pos.*);
 
         var iter = view.iterator();
         while (iter.next()) |entity| {
             if (head == entity) continue;
-            var body_segment = view.get(SegmentV2, entity);
+            var body_segment = view.get(Segment, entity);
             var body_pos = view.get(PositionComponent, entity);
             var body_next_pos = body_segment.nextPosition(body_pos.*);
             if (body_next_pos.equals(next_pos)) {
@@ -467,9 +467,9 @@ pub const State = struct {
         return view.get(head);
     }
 
-    pub fn snakeHeadSegment(self: *State) *SegmentV2 {
+    pub fn snakeHeadSegment(self: *State) *Segment {
         var head = self.snake_head.?;
-        var view = self.registery.view(.{SegmentV2}, .{});
+        var view = self.registery.view(.{Segment}, .{});
         return view.get(head);
     }
 
@@ -483,14 +483,14 @@ pub const State = struct {
     }
 
     pub fn updateSegments(self: *State) void {
-        var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
+        var view = self.registery.view(.{ Segment, PositionComponent }, .{});
         var iter = view.iterator();
         while (iter.next()) |entity| {
             var pos = view.get(PositionComponent, entity);
-            var segment = view.get(SegmentV2, entity);
+            var segment = view.get(Segment, entity);
             pos.* = segment.nextPosition(pos.*);
             if (segment.previous_entity) |entt| {
-                var previous_segment = view.get(SegmentV2, entt);
+                var previous_segment = view.get(Segment, entt);
                 segment.*.direction = previous_segment.direction;
             }
         }
@@ -498,7 +498,7 @@ pub const State = struct {
 
     pub fn addHead(self: *State, direction: Direction, pos: PositionComponent) ecs.Entity {
         var entity = self.registery.create();
-        const segment_v2 = SegmentV2{ .direction = direction, .segment_type = .Head };
+        const segment_v2 = Segment{ .direction = direction, .segment_type = .Head };
         self.registery.add(entity, segment_v2);
         self.registery.add(entity, pos);
         return entity;
@@ -506,11 +506,11 @@ pub const State = struct {
 
     pub fn addTail(self: *State, last: ecs.Entity, direction: Direction, pos: PositionComponent) ecs.Entity {
         var entity = self.registery.create();
-        const segment_v2 = SegmentV2{ .direction = direction, .previous_entity = last, .segment_type = .Tail };
+        const segment_v2 = Segment{ .direction = direction, .previous_entity = last, .segment_type = .Tail };
         self.registery.add(entity, segment_v2);
         self.registery.add(entity, pos);
         {
-            var view = self.registery.view(.{SegmentV2}, .{});
+            var view = self.registery.view(.{Segment}, .{});
             var segment = view.get(last);
             segment.*.next_entity = entity;
             if (segment.*.segment_type == .Tail) {
@@ -522,8 +522,8 @@ pub const State = struct {
 
     pub fn willBeOutOfBounds(self: *State) bool {
         var head = self.snake_head.?;
-        var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
-        var ecs_segment = view.get(SegmentV2, head);
+        var view = self.registery.view(.{ Segment, PositionComponent }, .{});
+        var ecs_segment = view.get(Segment, head);
         var current_position = view.get(PositionComponent, head);
 
         const position = current_position.add(ecs_segment.direction.to_vec2());
@@ -596,11 +596,11 @@ pub fn drawFruit(
 
 pub fn drawState(self: *State, simple_renderer: *SimpleRenderer) void {
     {
-        var view = self.registery.view(.{ SegmentV2, PositionComponent }, .{});
+        var view = self.registery.view(.{ Segment, PositionComponent }, .{});
         var iter = view.iterator();
         while (iter.next()) |entity| {
             var pos = view.get(PositionComponent, entity);
-            const segment = view.get(SegmentV2, entity);
+            const segment = view.get(Segment, entity);
 
             switch (segment.segment_type) {
                 .Tail => drawSegmentSmallV2(&segment.direction, pos, simple_renderer),
