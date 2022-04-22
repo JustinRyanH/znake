@@ -272,7 +272,6 @@ pub const State = struct {
     events: GameEvents,
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
-    snake_edges: ?SnakeEdges = null,
 
     pub fn updateInput(self: *State, input: Input) void {
         self.input = input;
@@ -342,8 +341,9 @@ pub const State = struct {
                 if (self.shouldTick()) {
                     self.events.ticked();
                     {
+                        var edges = self.registery.singletons().get(SnakeEdges);
                         var view = self.registery.view(.{SegmentComponent}, .{});
-                        var head = view.get(self.snake_edges.?.head);
+                        var head = view.get(edges.head);
                         head.*.direction = self.maybe_next_direction;
                     }
                     if (self.willBeOutOfBounds() or self.willCollideWithSelf()) {
@@ -398,7 +398,6 @@ pub const State = struct {
             while (iter.next()) |entity| {
                 self.registery.destroy(entity);
             }
-            self.snake_edges = null;
             self.registery.singletons().remove(SnakeEdges);
         }
 
@@ -413,10 +412,6 @@ pub const State = struct {
         const tail_position = head_position.add(Vec2{ .x = 0, .y = 1 });
         var head_entity = self.addHead(head_direction, head_position);
         var tail_entity = self.addTail(head_entity, tail_direction, tail_position);
-        self.snake_edges = .{
-            .head = head_entity,
-            .tail = tail_entity,
-        };
         self.registery.singletons().add(SnakeEdges{
             .head = head_entity,
             .tail = tail_entity,
@@ -430,7 +425,7 @@ pub const State = struct {
     }
 
     pub fn willCollideWithSelf(self: *State) bool {
-        var head = self.snake_edges.?.head;
+        var head = self.registery.singletons().getConst(SnakeEdges).head;
         var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
         var head_segment = view.get(SegmentComponent, head);
         var head_pos = view.get(PositionComponent, head);
@@ -457,13 +452,13 @@ pub const State = struct {
     }
 
     pub fn snakeHeadPosition(self: *State) *PositionComponent {
-        var head = self.snake_edges.?.head;
+        var head = self.registery.singletons().getConst(SnakeEdges).head;
         var view = self.registery.view(.{PositionComponent}, .{});
         return view.get(head);
     }
 
     pub fn snakeHeadSegment(self: *State) *SegmentComponent {
-        var head = self.snake_edges.?.head;
+        var head = self.registery.singletons().getConst(SnakeEdges).head;
         var view = self.registery.view(.{SegmentComponent}, .{});
         return view.get(head);
     }
@@ -502,7 +497,7 @@ pub const State = struct {
     }
 
     pub fn willBeOutOfBounds(self: *State) bool {
-        var head = self.snake_edges.?.head;
+        var head = self.registery.singletons().getConst(SnakeEdges).head;
         var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
         var ecs_segment = view.get(SegmentComponent, head);
         var current_position = view.get(PositionComponent, head);
