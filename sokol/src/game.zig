@@ -281,7 +281,6 @@ pub const State = struct {
     input: Input = .{},
 
     maybe_next_direction: Direction = .Up,
-    segments: SegmentList,
     events: GameEvents,
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
@@ -395,7 +394,6 @@ pub const State = struct {
             .step_stride = config.step_stride,
             .allocator = allocator,
             .random = config.random,
-            .segments = SegmentList.init(allocator),
             .events = GameEvents.init(allocator),
         };
         return state;
@@ -417,7 +415,6 @@ pub const State = struct {
             self.snake_tail = null;
         }
 
-        self.segments.clearAndFree();
         self.maybe_next_direction = .Up;
 
         const x = (self.x_max - self.x_min) / 2 - 1;
