@@ -179,7 +179,7 @@ pub const SegmentComponent = struct {
 pub const Fruit = struct {
     pos: ?Vec2 = null,
 
-    pub fn missing(self: *Fruit) bool {
+    pub fn missing(self: *const Fruit) bool {
         return self.pos == null;
     }
 
@@ -351,14 +351,8 @@ pub const State = struct {
                         self.game_state = .GameOver;
                     } else if (self.getFruit().missing()) {
                         {
-                            var edges = self.registery.singletons().get(SnakeEdges);
-                            var new_tail = appendTail(&self.registery, edges.tail);
-                            edges.tail = new_tail;
-                            // var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
-                            // var tail_segment = view.getConst(SegmentComponent, edges.tail);
-                            // var tail_pos = view.getConst(PositionComponent, edges.tail);
+                            growTailSystem(&self.registery);
                             updateSegmentPositionSystem(&self.registery);
-                            // var tail_entity = self.addTail(edges.tail, tail_segment.direction, tail_pos);
                         }
                         self.nextFruit();
                     } else {
@@ -640,6 +634,16 @@ fn updateSegmentPositionSystem(registery: *ecs.Registry) void {
             segment.*.direction = previous_segment.direction;
         }
     }
+}
+
+fn growTailSystem(registery: *ecs.Registry) void {
+    const fruit = registery.singletons().getConst(Fruit);
+    if (!fruit.missing()) {
+        return;
+    }
+    var edges = registery.singletons().get(SnakeEdges);
+    var new_tail = appendTail(registery, edges.tail);
+    edges.tail = new_tail;
 }
 
 fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ecs.Entity {
