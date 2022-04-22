@@ -171,23 +171,6 @@ pub const Segment = struct {
     }
 };
 
-pub const Segment = struct {
-    position: Vec2,
-    direction: Direction,
-
-    pub fn nextPosition(self: *const Segment) Vec2 {
-        return self.position.add(self.direction.to_vec2());
-    }
-
-    pub fn go(self: *Segment, direction: Direction) void {
-        if (self.direction == direction.opposite()) {
-            return;
-        }
-        self.direction = direction;
-    }
-};
-pub const SegmentList = ArrayList(Segment);
-
 pub const Fruit = struct {
     pos: ?Vec2 = null,
 
@@ -420,10 +403,12 @@ pub const State = struct {
         const x = (self.x_max - self.x_min) / 2 - 1;
         const y = (self.y_max - self.y_min) / 2 - 1;
         const StartPosition = Vec2{ .x = x, .y = y };
-        const starting_segment = Segment{ .direction = self.maybe_next_direction, .position = StartPosition };
-        const starting_tail = Segment{ .direction = self.maybe_next_direction, .position = starting_segment.position.add(Vec2{ .x = 0, .y = 1 }) };
-        var head_entity = self.addHead(starting_segment.direction, starting_segment.position);
-        var tail_entity = self.addTail(head_entity, starting_tail.direction, starting_tail.position);
+        const head_direction = self.maybe_next_direction;
+        const head_position = StartPosition;
+        const tail_direction = self.maybe_next_direction;
+        const tail_position = head_position.add(Vec2{ .x = 0, .y = 1 });
+        var head_entity = self.addHead(head_direction, head_position);
+        var tail_entity = self.addTail(head_entity, tail_direction, tail_position);
         self.snake_head = head_entity;
         self.snake_tail = tail_entity;
         self.game_state = .Play;
