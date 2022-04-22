@@ -282,7 +282,6 @@ pub const State = struct {
 
     maybe_next_direction: Direction = .Up,
     segments: SegmentList,
-    deadSegments: SegmentList,
     events: GameEvents,
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
@@ -395,7 +394,6 @@ pub const State = struct {
             .allocator = allocator,
             .random = config.random,
             .segments = SegmentList.init(allocator),
-            .deadSegments = SegmentList.init(allocator),
             .events = GameEvents.init(allocator),
         };
         return state;
