@@ -341,17 +341,18 @@ pub const State = struct {
                 }
             },
             .Play => {
+                var next_direction = self.registery.singletons().get(HeadDirection);
                 if (self.input.justPressed(Input.Left)) {
-                    self.next_head_direction.go(.Left);
+                    next_direction.go(.Left);
                 }
                 if (self.input.justPressed(Input.Right)) {
-                    self.next_head_direction.go(.Right);
+                    next_direction.go(.Right);
                 }
                 if (self.input.justPressed(Input.Up)) {
-                    self.next_head_direction.go(.Up);
+                    next_direction.go(.Up);
                 }
                 if (self.input.justPressed(Input.Down)) {
-                    self.next_head_direction.go(.Down);
+                    next_direction.go(.Down);
                 }
                 if (self.shouldTick()) {
                     self.registery.singletons().get(GameEvents).ticked();
@@ -359,8 +360,8 @@ pub const State = struct {
                         var edges = self.registery.singletons().get(SnakeEdges);
                         var view = self.registery.view(.{SegmentComponent}, .{});
                         var head = view.get(edges.head);
-                        head.*.direction = self.next_head_direction.direction;
-                        self.next_head_direction.swap();
+                        head.go(next_direction.direction);
+                        next_direction.swap();
                     }
                     if (self.willBeOutOfBounds() or self.willCollideWithSelf()) {
                         self.registery.singletons().get(GameEvents).died();
@@ -397,6 +398,7 @@ pub const State = struct {
             .allocator = allocator,
             .randoms = randoms,
         };
+        state.registery.singletons().add(HeadDirection{});
         state.registery.singletons().add(Fruit{});
         state.registery.singletons().add(bounds);
         state.registery.singletons().add(state.randoms);
