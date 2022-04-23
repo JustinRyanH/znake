@@ -1,6 +1,6 @@
 const testing = @import("std").testing;
 
-const Input = @This();
+const Self = @This();
 pub const ButtonA = 1;
 pub const ButtonB = 2;
 pub const Left = 16;
@@ -11,44 +11,45 @@ pub const Down = 128;
 frame: u8 = 0,
 last_frame: u8 = 0,
 
-pub fn down(self: *const Input, button: u8) bool {
+pub fn down(self: *const Self, button: u8) bool {
     return self.frame & button != 0;
 }
 
-pub fn up(self: *const Input, button: u8) bool {
+pub fn up(self: *const Self, button: u8) bool {
     return !self.down(button);
 }
 
-pub fn justReleased(self: *const Input, button: u8) bool {
+pub fn justReleased(self: *const Self, button: u8) bool {
     const last_down = self.last_frame_down(button);
     return last_down and self.up(button);
 }
 
-pub fn justPressed(self: *const Input, button: u8) bool {
+pub fn justPressed(self: *const Self, button: u8) bool {
     const last_up = !self.last_frame_down(button);
     return last_up and self.down(button);
 }
 
-pub fn setDown(self: *Input, button: u8) void {
+pub fn setDown(self: *Self, button: u8) void {
     self.frame = self.frame | button;
 }
-pub fn setUp(self: *Input, button: u8) void {
+pub fn setUp(self: *Self, button: u8) void {
     self.frame = self.frame & ~button;
 }
 
-pub fn process(self: *Input, current: u8) void {
+pub fn process(self: *Self, current: u8) void {
     self.frame = current;
 }
 
-pub fn swap(self: *Input) void {
+pub fn swap(self: *Self) void {
     self.last_frame = self.frame;
 }
 
-fn last_frame_down(self: *const Input, button: u8) bool {
+fn last_frame_down(self: *const Self, button: u8) bool {
     return self.last_frame & button != 0;
 }
 
 test "Input" {
+    const Input = Self;
     var input: Input = .{};
     try testing.expect(input.frame == 0);
     input.setDown(Input.Left);
