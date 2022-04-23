@@ -505,7 +505,9 @@ pub fn drawState(self: *State, simple_renderer: *SimpleRenderer) void {
         }
     }
 
-    drawFruit(self.getFruit(), simple_renderer);
+    var fruit_v2 = &self.registery.singletons().get(SnakeGame).fruit;
+    drawFruit(fruit_v2, simple_renderer);
+    // drawFruit(self.getFruit(), simple_renderer);
 }
 
 pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
@@ -572,7 +574,7 @@ fn headDirectionChangeSystem(registery: *ecs.Registry) void {
 
 fn growTailSystem(registery: *ecs.Registry) void {
     if (willCollide(registery)) return;
-    const fruit = registery.singletons().getConst(Fruit);
+    const fruit = registery.singletons().getConst(SnakeGame).fruit;
     if (!fruit.missing()) {
         return;
     }
@@ -581,7 +583,22 @@ fn growTailSystem(registery: *ecs.Registry) void {
     edges.tail = new_tail;
 }
 
+pub fn fruitGenerationSystemV2(registery: *ecs.Registry) void {
+    if (willCollide(registery)) return;
+    var fruit = &registery.singletons().get(SnakeGame).fruit;
+    if (!fruit.missing()) {
+        return;
+    }
+    const fruit_random = registery.singletons().getConst(RandomGenerators).fruit_random;
+    const bounds = registery.singletons().getConst(Bounds);
+    fruit.pos = Vec2{
+        .x = fruit_random.intRangeLessThan(i32, bounds.x_min, bounds.x_max),
+        .y = fruit_random.intRangeLessThan(i32, bounds.y_min + 1, bounds.y_max),
+    };
+}
+
 pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
+    fruitGenerationSystemV2(registery);
     if (willCollide(registery)) return;
     var fruit = registery.singletons().get(Fruit);
     if (!fruit.missing()) {
@@ -639,7 +656,22 @@ fn createSnake(registery: *ecs.Registry, direction: Direction, pos: Vec2) void {
     });
 }
 
+pub fn maybEatV2(registery: *ecs.Registry) void {
+    var fruit = &registery.singletons().get(SnakeGame).fruit;
+    if (fruit.pos == null) {
+        return;
+    }
+
+    var snake_head_position = getHeadPosition(registery);
+    if (!fruit.*.overlaps(snake_head_position)) {
+        return;
+    }
+    registery.singletons().get(GameEvents).eatFruit();
+    fruit.pos = null;
+}
+
 pub fn maybEat(registery: *ecs.Registry) void {
+    maybEatV2(registery);
     var fruit = registery.singletons().get(Fruit);
     if (fruit.pos == null) {
         return;
