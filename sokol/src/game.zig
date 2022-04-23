@@ -634,9 +634,12 @@ fn growTailSystem(registery: *ecs.Registry) void {
 }
 
 pub fn nextFruit(registery: *ecs.Registry) void {
+    var fruit = registery.singletons().get(Fruit);
+    if (!fruit.missing()) {
+        return;
+    }
     const fruit_random = registery.singletons().getConst(RandomGenerators).fruit_random;
     const bounds = registery.singletons().getConst(Bounds);
-    var fruit = registery.singletons().get(Fruit);
     fruit.pos = Vec2{
         .x = fruit_random.intRangeLessThan(i32, bounds.x_min, bounds.x_max),
         .y = fruit_random.intRangeLessThan(i32, bounds.y_min + 1, bounds.y_max),
