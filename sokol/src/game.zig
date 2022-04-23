@@ -358,14 +358,7 @@ pub const State = struct {
                 }
                 if (self.shouldTick()) {
                     self.registery.singletons().get(GameEvents).ticked();
-                    {
-                        var next_direction = self.registery.singletons().get(HeadDirection);
-                        var edges = self.registery.singletons().get(SnakeEdges);
-                        var view = self.registery.view(.{SegmentComponent}, .{});
-                        var head = view.get(edges.head);
-                        head.go(next_direction.direction);
-                        next_direction.swap();
-                    }
+                    headDirectionChangeSystem(&self.registery);
                     if (self.willBeOutOfBounds() or self.willCollideWithSelf()) {
                         self.registery.singletons().get(GameEvents).died();
                         self.game_state = .GameOver;
@@ -461,7 +454,7 @@ pub const State = struct {
     }
 
     pub fn getBounds(self: *State) *Bounds {
-        return &self.bounds;
+        return self.registery.singletons().get(Bounds);
     }
 
     pub fn snakeHeadPosition(self: *State) *PositionComponent {
@@ -619,6 +612,14 @@ fn updateSegmentPositionSystem(registery: *ecs.Registry) void {
             segment.*.direction = previous_segment.direction;
         }
     }
+}
+
+fn headDirectionChangeSystem(registery: *ecs.Registry) void {
+    var next_direction = registery.singletons().get(HeadDirection);
+    var head = registery.singletons().getConst(SnakeEdges).head;
+    var view = registery.view(.{SegmentComponent}, .{});
+    view.get(head).go(next_direction.direction);
+    next_direction.swap();
 }
 
 fn growTailSystem(registery: *ecs.Registry) void {
