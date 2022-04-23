@@ -247,10 +247,13 @@ pub const StateSetup = struct {
     random: rand.Random,
 };
 
+pub const SnakeGame = struct {
+    step_stride: u32,
+};
+
 pub const State = struct {
     allocator: mem.Allocator,
     registery: ecs.Registry,
-    randoms: RandomGenerators,
     bounds: Bounds,
     step_stride: u32,
 
@@ -359,12 +362,11 @@ pub const State = struct {
             .bounds = bounds,
             .step_stride = config.step_stride,
             .allocator = allocator,
-            .randoms = randoms,
         };
         state.registery.singletons().add(HeadDirection{});
         state.registery.singletons().add(Fruit{});
         state.registery.singletons().add(bounds);
-        state.registery.singletons().add(state.randoms);
+        state.registery.singletons().add(randoms);
         state.registery.singletons().add(events);
         return state;
     }
