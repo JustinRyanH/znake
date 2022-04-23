@@ -262,8 +262,6 @@ pub const State = struct {
     step_stride: u32,
 
     frame: u32 = 0,
-
-    fruit: Fruit = .{},
     game_state: GameState = .Menu,
 
     fn render(self: *State, renderer: *SimpleRenderer) void {
@@ -396,18 +394,15 @@ pub const State = struct {
         var snake_game = self.registery.singletons().get(SnakeGame);
         snake_game.head_direction.direction = .Up;
 
-        const x = @divTrunc((self.getBounds().x_max - self.getBounds().x_min), 2) - 1;
-        const y = @divTrunc((self.getBounds().y_max - self.getBounds().y_min), 2) - 1;
+        const bounds = snake_game.bounds;
+        const x = @divTrunc((bounds.x_max - bounds.x_min), 2) - 1;
+        const y = @divTrunc((bounds.y_max - bounds.y_min), 2) - 1;
         const head_direction = snake_game.head_direction.direction;
         const head_position = Vec2{ .x = x, .y = y };
 
         createSnake(&self.registery, head_direction, head_position);
         self.game_state = .Play;
         fruitGenerationSystem(&self.registery);
-    }
-
-    pub fn getBounds(self: *State) Bounds {
-        return self.registery.singletons().getConst(SnakeGame).bounds;
     }
 
     pub fn snakeHeadPosition(self: *State) *PositionComponent {
