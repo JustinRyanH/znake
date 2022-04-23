@@ -365,7 +365,7 @@ pub const State = struct {
                             growTailSystem(&self.registery);
                             updateSegmentPositionSystem(&self.registery);
                         }
-                        self.nextFruit();
+                        nextFruit(&self.registery);
                     } else {
                         updateSegmentPositionSystem(&self.registery);
                     }
@@ -397,6 +397,7 @@ pub const State = struct {
             .events = GameEvents.init(allocator),
         };
         state.registery.singletons().add(Fruit{});
+        state.registery.singletons().add(bounds);
         state.registery.singletons().add(state.randoms);
         return state;
     }
@@ -425,7 +426,7 @@ pub const State = struct {
 
         createSnake(&self.registery, head_direction, head_position);
         self.game_state = .Play;
-        self.nextFruit();
+        nextFruit(&self.registery);
     }
 
     pub fn willCollideWithSelf(self: *State) bool {
@@ -454,15 +455,6 @@ pub const State = struct {
 
     pub fn getBounds(self: *State) *Bounds {
         return &self.bounds;
-    }
-
-    pub fn nextFruit(self: *State) void {
-        const fruit_random = self.registery.singletons().getConst(RandomGenerators).fruit_random;
-        const fruit = self.registery.singletons().get(Fruit);
-        fruit.pos = Vec2{
-            .x = fruit_random.intRangeLessThan(i32, self.getBounds().x_min, self.getBounds().x_max),
-            .y = fruit_random.intRangeLessThan(i32, self.getBounds().y_min + 1, self.getBounds().y_max),
-        };
     }
 
     pub fn snakeHeadPosition(self: *State) *PositionComponent {
@@ -639,6 +631,16 @@ fn growTailSystem(registery: *ecs.Registry) void {
     var edges = registery.singletons().get(SnakeEdges);
     var new_tail = appendTail(registery, edges.tail);
     edges.tail = new_tail;
+}
+
+pub fn nextFruit(registery: *ecs.Registry) void {
+    const fruit_random = registery.singletons().getConst(RandomGenerators).fruit_random;
+    const bounds = registery.singletons().getConst(Bounds);
+    var fruit = registery.singletons().get(Fruit);
+    fruit.pos = Vec2{
+        .x = fruit_random.intRangeLessThan(i32, bounds.x_min, bounds.x_max),
+        .y = fruit_random.intRangeLessThan(i32, bounds.y_min + 1, bounds.y_max),
+    };
 }
 
 fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ecs.Entity {
