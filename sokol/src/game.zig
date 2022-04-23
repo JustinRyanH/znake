@@ -259,7 +259,6 @@ pub const SnakeGame = struct {
 pub const State = struct {
     allocator: mem.Allocator,
     registery: ecs.Registry,
-    step_stride: u32,
 
     frame: u32 = 0,
     game_state: GameState = .Menu,
@@ -360,7 +359,6 @@ pub const State = struct {
 
         state.* = .{
             .registery = ecs.Registry.init(allocator),
-            .step_stride = config.step_stride,
             .allocator = allocator,
         };
         const snake_game = SnakeGame{
@@ -378,7 +376,8 @@ pub const State = struct {
 
     pub fn shouldTick(self: *State) bool {
         const frame_data = self.registery.singletons().getConst(FrameInput);
-        return @mod(frame_data.frame, self.step_stride) == 0;
+        const snake_game = self.registery.singletons().getConst(SnakeGame);
+        return @mod(frame_data.frame, snake_game.step_stride) == 0;
     }
 
     pub fn reset(self: *State) void {
