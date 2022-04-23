@@ -83,7 +83,7 @@ export fn frame() void {
     const should_update = frame_rate.shouldTick(stime.sec(time));
     if (should_update) {
         game.update(&input, &simple_renderer);
-        if (game.registery.singletons().getConst(Game.GameEvents).shouldReseed()) {
+        if (game.registery.singletons().getConst(Game.SnakeGame).events.shouldReseed()) {
             prng.seed(game.registery.singletons().getConst(Game.FrameInput).frame);
         }
 

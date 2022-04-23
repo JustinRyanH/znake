@@ -372,7 +372,6 @@ pub const State = struct {
             .head_direction = HeadDirection{},
         };
         state.registery.singletons().add(snake_game);
-        state.registery.singletons().add(events);
         return state;
     }
 
