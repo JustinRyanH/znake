@@ -408,8 +408,8 @@ pub const State = struct {
         fruitGenerationSystem(&self.registery);
     }
 
-    pub fn getBounds(self: *State) *Bounds {
-        return self.registery.singletons().get(Bounds);
+    pub fn getBounds(self: *State) Bounds {
+        return self.registery.singletons().getConst(Bounds);
     }
 
     pub fn snakeHeadPosition(self: *State) *PositionComponent {
