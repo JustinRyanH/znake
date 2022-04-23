@@ -376,7 +376,6 @@ pub const State = struct {
         };
         state.registery.singletons().add(snake_game);
         state.registery.singletons().add(HeadDirection{});
-        state.registery.singletons().add(Fruit{});
         state.registery.singletons().add(bounds);
         state.registery.singletons().add(randoms);
         state.registery.singletons().add(events);
@@ -408,10 +407,6 @@ pub const State = struct {
         createSnake(&self.registery, head_direction, head_position);
         self.game_state = .Play;
         fruitGenerationSystem(&self.registery);
-    }
-
-    pub fn getFruit(self: *State) *Fruit {
-        return self.registery.singletons().get(Fruit);
     }
 
     pub fn getBounds(self: *State) *Bounds {
@@ -507,7 +502,6 @@ pub fn drawState(self: *State, simple_renderer: *SimpleRenderer) void {
 
     var fruit_v2 = &self.registery.singletons().get(SnakeGame).fruit;
     drawFruit(fruit_v2, simple_renderer);
-    // drawFruit(self.getFruit(), simple_renderer);
 }
 
 pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
@@ -583,24 +577,9 @@ fn growTailSystem(registery: *ecs.Registry) void {
     edges.tail = new_tail;
 }
 
-pub fn fruitGenerationSystemV2(registery: *ecs.Registry) void {
+pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
     if (willCollide(registery)) return;
     var fruit = &registery.singletons().get(SnakeGame).fruit;
-    if (!fruit.missing()) {
-        return;
-    }
-    const fruit_random = registery.singletons().getConst(RandomGenerators).fruit_random;
-    const bounds = registery.singletons().getConst(Bounds);
-    fruit.pos = Vec2{
-        .x = fruit_random.intRangeLessThan(i32, bounds.x_min, bounds.x_max),
-        .y = fruit_random.intRangeLessThan(i32, bounds.y_min + 1, bounds.y_max),
-    };
-}
-
-pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
-    fruitGenerationSystemV2(registery);
-    if (willCollide(registery)) return;
-    var fruit = registery.singletons().get(Fruit);
     if (!fruit.missing()) {
         return;
     }
@@ -656,23 +635,8 @@ fn createSnake(registery: *ecs.Registry, direction: Direction, pos: Vec2) void {
     });
 }
 
-pub fn maybEatV2(registery: *ecs.Registry) void {
-    var fruit = &registery.singletons().get(SnakeGame).fruit;
-    if (fruit.pos == null) {
-        return;
-    }
-
-    var snake_head_position = getHeadPosition(registery);
-    if (!fruit.*.overlaps(snake_head_position)) {
-        return;
-    }
-    registery.singletons().get(GameEvents).eatFruit();
-    fruit.pos = null;
-}
-
 pub fn maybEat(registery: *ecs.Registry) void {
-    maybEatV2(registery);
-    var fruit = registery.singletons().get(Fruit);
+    var fruit = &registery.singletons().get(SnakeGame).fruit;
     if (fruit.pos == null) {
         return;
     }
