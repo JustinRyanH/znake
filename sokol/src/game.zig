@@ -225,20 +225,20 @@ pub const Input = packed struct {
     frame: u8 = 0,
     last_frame: u8 = 0,
 
-    pub fn down(self: *Input, button: u8) bool {
+    pub fn down(self: *const Input, button: u8) bool {
         return self.frame & button != 0;
     }
 
-    pub fn up(self: *Input, button: u8) bool {
+    pub fn up(self: *const Input, button: u8) bool {
         return !self.down(button);
     }
 
-    pub fn justReleased(self: *Input, button: u8) bool {
+    pub fn justReleased(self: *const Input, button: u8) bool {
         const last_down = self.last_frame_down(button);
         return last_down and self.up(button);
     }
 
-    pub fn justPressed(self: *Input, button: u8) bool {
+    pub fn justPressed(self: *const Input, button: u8) bool {
         const last_up = !self.last_frame_down(button);
         return last_up and self.down(button);
     }
@@ -258,7 +258,7 @@ pub const Input = packed struct {
         self.last_frame = self.frame;
     }
 
-    fn last_frame_down(self: *Input, button: u8) bool {
+    fn last_frame_down(self: *const Input, button: u8) bool {
         return self.last_frame & button != 0;
     }
 };
@@ -297,15 +297,10 @@ pub const State = struct {
     step_stride: u32,
 
     frame: u32 = 0,
-    input: Input = .{},
 
     next_head_direction: HeadDirection = .{},
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
-
-    pub fn updateInput(self: *State, input: Input) void {
-        self.input = input;
-    }
 
     fn render(self: *State, renderer: *SimpleRenderer) void {
         _ = self;
@@ -319,7 +314,8 @@ pub const State = struct {
     }
 
     pub fn update(self: *State, input: *Input, renderer: *SimpleRenderer) void {
-        self.input = input.*;
+        var existing_input = self.registery.singletons().getOrAdd(Input);
+        existing_input.* = input.*;
         self.frame += 1;
         self.registery.singletons().get(GameEvents).clear();
         self.updateGame();
@@ -334,16 +330,17 @@ pub const State = struct {
     }
 
     pub fn updateGame(self: *State) void {
+        const input = self.registery.singletons().getConst(Input);
         switch (self.game_state) {
             .GameOver => {
-                if (self.input.justReleased(Input.ButtonB)) {
+                if (input.justReleased(Input.ButtonB)) {
                     self.registery.singletons().get(GameEvents).nextStage();
                     self.registery.singletons().get(GameEvents).reseed();
                     self.reset();
                 }
             },
             .Menu => {
-                if (self.input.justReleased(Input.ButtonB)) {
+                if (input.justReleased(Input.ButtonB)) {
                     self.registery.singletons().get(GameEvents).nextStage();
                     self.registery.singletons().get(GameEvents).reseed();
                     self.reset();
@@ -352,16 +349,16 @@ pub const State = struct {
             .Play => {
                 {
                     var next_direction = self.registery.singletons().get(HeadDirection);
-                    if (self.input.justPressed(Input.Left)) {
+                    if (input.justPressed(Input.Left)) {
                         next_direction.go(.Left);
                     }
-                    if (self.input.justPressed(Input.Right)) {
+                    if (input.justPressed(Input.Right)) {
                         next_direction.go(.Right);
                     }
-                    if (self.input.justPressed(Input.Up)) {
+                    if (input.justPressed(Input.Up)) {
                         next_direction.go(.Up);
                     }
-                    if (self.input.justPressed(Input.Down)) {
+                    if (input.justPressed(Input.Down)) {
                         next_direction.go(.Down);
                     }
                 }
@@ -377,7 +374,6 @@ pub const State = struct {
                     growTailSystem(&self.registery);
                     updateSegmentPositionSystem(&self.registery);
                     fruitGenerationSystem(&self.registery);
-
                     maybEat(&self.registery);
                 }
             },
