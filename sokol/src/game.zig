@@ -254,7 +254,6 @@ pub const SnakeGame = struct {
 pub const State = struct {
     allocator: mem.Allocator,
     registery: ecs.Registry,
-    bounds: Bounds,
     step_stride: u32,
 
     frame: u32 = 0,
@@ -359,7 +358,6 @@ pub const State = struct {
 
         state.* = .{
             .registery = ecs.Registry.init(allocator),
-            .bounds = bounds,
             .step_stride = config.step_stride,
             .allocator = allocator,
         };
