@@ -256,11 +256,16 @@ pub const Input = packed struct {
 
 pub const HeadDirection = struct {
     direction: Direction = .Up,
+    current_direction: Direction = .Up,
+
     pub fn go(self: *HeadDirection, direction: Direction) void {
-        if (self.direction == direction.opposite()) {
-            return;
+        if (self.current_direction.opposite() != direction) {
+            self.direction = direction;
         }
-        self.direction = direction;
+    }
+
+    pub fn swap(self: *HeadDirection) void {
+        self.current_direction = self.direction;
     }
 };
 pub const RandomGenerators = struct {
@@ -286,7 +291,6 @@ pub const State = struct {
     input: Input = .{},
 
     next_head_direction: HeadDirection = .{},
-    maybe_next_direction: Direction = .Up,
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
 
@@ -337,30 +341,17 @@ pub const State = struct {
                 }
             },
             .Play => {
-                var snake_head_segment = self.snakeHeadSegment();
                 if (self.input.justPressed(Input.Left)) {
                     self.next_head_direction.go(.Left);
-                    if (snake_head_segment.direction.opposite() != .Left) {
-                        self.maybe_next_direction = .Left;
-                    }
                 }
                 if (self.input.justPressed(Input.Right)) {
                     self.next_head_direction.go(.Right);
-                    if (snake_head_segment.direction.opposite() != .Right) {
-                        self.maybe_next_direction = .Right;
-                    }
                 }
                 if (self.input.justPressed(Input.Up)) {
                     self.next_head_direction.go(.Up);
-                    if (snake_head_segment.direction.opposite() != .Up) {
-                        self.maybe_next_direction = .Up;
-                    }
                 }
                 if (self.input.justPressed(Input.Down)) {
                     self.next_head_direction.go(.Down);
-                    if (snake_head_segment.direction.opposite() != .Down) {
-                        self.maybe_next_direction = .Down;
-                    }
                 }
                 if (self.shouldTick()) {
                     self.registery.singletons().get(GameEvents).ticked();
@@ -369,6 +360,7 @@ pub const State = struct {
                         var view = self.registery.view(.{SegmentComponent}, .{});
                         var head = view.get(edges.head);
                         head.*.direction = self.next_head_direction.direction;
+                        self.next_head_direction.swap();
                     }
                     if (self.willBeOutOfBounds() or self.willCollideWithSelf()) {
                         self.registery.singletons().get(GameEvents).died();
@@ -427,7 +419,6 @@ pub const State = struct {
             self.registery.singletons().remove(SnakeEdges);
         }
 
-        self.maybe_next_direction = .Up;
         self.next_head_direction.direction = .Up;
 
         const x = @divTrunc((self.getBounds().x_max - self.getBounds().x_min), 2) - 1;
