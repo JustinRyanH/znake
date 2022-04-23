@@ -365,7 +365,7 @@ pub const State = struct {
                             growTailSystem(&self.registery);
                             updateSegmentPositionSystem(&self.registery);
                         }
-                        nextFruit(&self.registery);
+                        fruitGenerationSystem(&self.registery);
                     } else {
                         updateSegmentPositionSystem(&self.registery);
                     }
@@ -426,7 +426,7 @@ pub const State = struct {
 
         createSnake(&self.registery, head_direction, head_position);
         self.game_state = .Play;
-        nextFruit(&self.registery);
+        fruitGenerationSystem(&self.registery);
     }
 
     pub fn willCollideWithSelf(self: *State) bool {
@@ -633,7 +633,7 @@ fn growTailSystem(registery: *ecs.Registry) void {
     edges.tail = new_tail;
 }
 
-pub fn nextFruit(registery: *ecs.Registry) void {
+pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
     var fruit = registery.singletons().get(Fruit);
     if (!fruit.missing()) {
         return;
