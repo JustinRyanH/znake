@@ -18,6 +18,7 @@ pub const GameEvent = enum {
     NextStage,
     ShouldReseed,
 };
+
 pub const GameEvents = struct {
     inner: ArrayList(GameEvent),
 
@@ -298,6 +299,7 @@ pub const State = struct {
     pub fn update(self: *State, input: *Input, renderer: *SimpleRenderer) void {
         self.input = input.*;
         self.frame += 1;
+        self.events.clear();
         self.updateGame();
         self.render(renderer);
         input.swap();
@@ -314,12 +316,14 @@ pub const State = struct {
             .GameOver => {
                 if (self.input.justReleased(Input.ButtonB)) {
                     self.events.nextStage();
+                    self.events.reseed();
                     self.reset();
                 }
             },
             .Menu => {
                 if (self.input.justReleased(Input.ButtonB)) {
                     self.events.nextStage();
+                    self.events.reseed();
                     self.reset();
                 }
             },
@@ -424,10 +428,6 @@ pub const State = struct {
         self.nextFruit();
     }
 
-    pub fn clearEvents(self: *State) void {
-        self.events.clear();
-    }
-
     pub fn willCollideWithSelf(self: *State) bool {
         var head = self.registery.singletons().getConst(SnakeEdges).head;
         var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
@@ -457,7 +457,7 @@ pub const State = struct {
     }
 
     pub fn nextFruit(self: *State) void {
-        const fruit_random = self.randoms.fruit_random;
+        const fruit_random = self.registery.singletons().getConst(RandomGenerators).fruit_random;
         self.getFruit().pos = Vec2{
             .x = fruit_random.intRangeLessThan(i32, self.getBounds().x_min, self.getBounds().x_max),
             .y = fruit_random.intRangeLessThan(i32, self.getBounds().y_min + 1, self.getBounds().y_max),
@@ -604,9 +604,6 @@ pub fn gameOver(state: *State, simple_renderer: *SimpleRenderer) void {
         simple_renderer.setForegroundPallete(3);
         simple_renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
     }
-    if (state.events.hasNextStage()) {
-        state.events.reseed();
-    }
 }
 
 pub fn mainMenu(state: *State, simple_renderer: *SimpleRenderer) void {
@@ -617,9 +614,6 @@ pub fn mainMenu(state: *State, simple_renderer: *SimpleRenderer) void {
         simple_renderer.setForegroundPallete(2);
     }
     simple_renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
-    if (state.events.hasNextStage()) {
-        state.events.reseed();
-    }
 }
 
 fn updateSegmentPositionSystem(registery: *ecs.Registry) void {
