@@ -374,7 +374,6 @@ pub const State = struct {
             .head_direction = HeadDirection{},
         };
         state.registery.singletons().add(snake_game);
-        state.registery.singletons().add(bounds);
         state.registery.singletons().add(randoms);
         state.registery.singletons().add(events);
         return state;
@@ -409,7 +408,7 @@ pub const State = struct {
     }
 
     pub fn getBounds(self: *State) Bounds {
-        return self.registery.singletons().getConst(Bounds);
+        return self.registery.singletons().getConst(SnakeGame).bounds;
     }
 
     pub fn snakeHeadPosition(self: *State) *PositionComponent {
@@ -583,7 +582,7 @@ pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
         return;
     }
     const fruit_random = registery.singletons().getConst(RandomGenerators).fruit_random;
-    const bounds = registery.singletons().getConst(Bounds);
+    const bounds = registery.singletons().getConst(SnakeGame).bounds;
     fruit.pos = Vec2{
         .x = fruit_random.intRangeLessThan(i32, bounds.x_min, bounds.x_max),
         .y = fruit_random.intRangeLessThan(i32, bounds.y_min + 1, bounds.y_max),
@@ -673,7 +672,7 @@ pub fn willCollideWithSelf(registery: *ecs.Registry) bool {
 }
 
 pub fn willBeOutOfBounds(registery: *ecs.Registry) bool {
-    const bounds = registery.singletons().getConst(Bounds);
+    const bounds = registery.singletons().getConst(SnakeGame).bounds;
     var head = registery.singletons().getConst(SnakeEdges).head;
     var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
     var ecs_segment = view.get(SegmentComponent, head);
