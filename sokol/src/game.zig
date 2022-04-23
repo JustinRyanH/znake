@@ -374,7 +374,6 @@ pub const State = struct {
             .head_direction = HeadDirection{},
         };
         state.registery.singletons().add(snake_game);
-        state.registery.singletons().add(randoms);
         state.registery.singletons().add(events);
         return state;
     }
@@ -581,7 +580,7 @@ pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
     if (!fruit.missing()) {
         return;
     }
-    const fruit_random = registery.singletons().getConst(RandomGenerators).fruit_random;
+    const fruit_random = registery.singletons().getConst(SnakeGame).randoms.fruit_random;
     const bounds = registery.singletons().getConst(SnakeGame).bounds;
     fruit.pos = Vec2{
         .x = fruit_random.intRangeLessThan(i32, bounds.x_min, bounds.x_max),
