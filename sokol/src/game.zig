@@ -361,10 +361,8 @@ pub const State = struct {
                         self.events.died();
                         self.game_state = .GameOver;
                     } else if (self.getFruit().missing()) {
-                        {
-                            growTailSystem(&self.registery);
-                            updateSegmentPositionSystem(&self.registery);
-                        }
+                        growTailSystem(&self.registery);
+                        updateSegmentPositionSystem(&self.registery);
                         fruitGenerationSystem(&self.registery);
                     } else {
                         updateSegmentPositionSystem(&self.registery);
