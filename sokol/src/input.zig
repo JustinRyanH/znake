@@ -20,12 +20,12 @@ pub fn up(self: *const Self, button: u8) bool {
 }
 
 pub fn justReleased(self: *const Self, button: u8) bool {
-    const last_down = self.last_frame_down(button);
+    const last_down = self.lastFrameDown(button);
     return last_down and self.up(button);
 }
 
 pub fn justPressed(self: *const Self, button: u8) bool {
-    const last_up = !self.last_frame_down(button);
+    const last_up = !self.lastFrameDown(button);
     return last_up and self.down(button);
 }
 
@@ -44,7 +44,7 @@ pub fn swap(self: *Self) void {
     self.last_frame = self.frame;
 }
 
-fn last_frame_down(self: *const Self, button: u8) bool {
+fn lastFrameDown(self: *const Self, button: u8) bool {
     return self.last_frame & button != 0;
 }
 
