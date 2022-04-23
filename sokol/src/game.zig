@@ -11,6 +11,11 @@ pub const SNAKE_SIZE = 8;
 const SNAKE_HALF_SIZE = SNAKE_SIZE / 2;
 const PositionComponent = Vec2;
 
+pub const FrameInput = struct {
+    frame: usize = 0,
+    input: Input = .{},
+};
+
 pub const GameEvent = enum {
     EatFruit,
     TickHappened,
@@ -314,8 +319,12 @@ pub const State = struct {
     }
 
     pub fn update(self: *State, input: *Input, renderer: *SimpleRenderer) void {
-        var existing_input = self.registery.singletons().getOrAdd(Input);
-        existing_input.* = input.*;
+        var existing_input = self.registery.singletons().getOrAdd(FrameInput);
+        const old_input = existing_input.*;
+        existing_input.* = FrameInput{
+            .frame = old_input.frame + 1,
+            .input = input.*,
+        };
         self.frame += 1;
         self.registery.singletons().get(GameEvents).clear();
         self.updateGame();
@@ -330,17 +339,17 @@ pub const State = struct {
     }
 
     pub fn updateGame(self: *State) void {
-        const input = self.registery.singletons().getConst(Input);
+        const frame_data = self.registery.singletons().getConst(FrameInput);
         switch (self.game_state) {
             .GameOver => {
-                if (input.justReleased(Input.ButtonB)) {
+                if (frame_data.input.justReleased(Input.ButtonB)) {
                     self.registery.singletons().get(GameEvents).nextStage();
                     self.registery.singletons().get(GameEvents).reseed();
                     self.reset();
                 }
             },
             .Menu => {
-                if (input.justReleased(Input.ButtonB)) {
+                if (frame_data.input.justReleased(Input.ButtonB)) {
                     self.registery.singletons().get(GameEvents).nextStage();
                     self.registery.singletons().get(GameEvents).reseed();
                     self.reset();
@@ -349,16 +358,16 @@ pub const State = struct {
             .Play => {
                 {
                     var next_direction = self.registery.singletons().get(HeadDirection);
-                    if (input.justPressed(Input.Left)) {
+                    if (frame_data.input.justPressed(Input.Left)) {
                         next_direction.go(.Left);
                     }
-                    if (input.justPressed(Input.Right)) {
+                    if (frame_data.input.justPressed(Input.Right)) {
                         next_direction.go(.Right);
                     }
-                    if (input.justPressed(Input.Up)) {
+                    if (frame_data.input.justPressed(Input.Up)) {
                         next_direction.go(.Up);
                     }
-                    if (input.justPressed(Input.Down)) {
+                    if (frame_data.input.justPressed(Input.Down)) {
                         next_direction.go(.Down);
                     }
                 }
@@ -548,10 +557,11 @@ pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
 }
 
 pub fn gameOver(state: *State, simple_renderer: *SimpleRenderer) void {
+    const frame_data = state.registery.singletons().getConst(FrameInput);
     simple_renderer.setForegroundPallete(1);
     simple_renderer.drawText("GAME OVER", 42, CANVAS_SIZE - 15);
 
-    if (state.input.down(Input.ButtonB)) {
+    if (frame_data.input.down(Input.ButtonB)) {
         simple_renderer.setForegroundPallete(2);
         simple_renderer.drawText("Press Z to Restart", 8, CANVAS_SIZE - 30);
     } else {
@@ -561,8 +571,9 @@ pub fn gameOver(state: *State, simple_renderer: *SimpleRenderer) void {
 }
 
 pub fn mainMenu(state: *State, simple_renderer: *SimpleRenderer) void {
+    const frame_data = state.registery.singletons().getConst(FrameInput);
     simple_renderer.drawText("WELCOME!", 48, CANVAS_SIZE / 2);
-    if (state.input.down(Input.ButtonB)) {
+    if (frame_data.input.down(Input.ButtonB)) {
         simple_renderer.setForegroundPallete(1);
     } else {
         simple_renderer.setForegroundPallete(2);
