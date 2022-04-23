@@ -362,7 +362,9 @@ pub const State = struct {
                     if (willCollide(&self.registery)) {
                         self.registery.singletons().get(GameEvents).died();
                         self.game_state = .GameOver;
-                    } else {
+                    }
+
+                    if (!willCollide(&self.registery)) {
                         growTailSystem(&self.registery);
                         updateSegmentPositionSystem(&self.registery);
                         fruitGenerationSystem(&self.registery);
