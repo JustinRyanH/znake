@@ -359,7 +359,7 @@ pub const State = struct {
                 if (self.shouldTick()) {
                     self.registery.singletons().get(GameEvents).ticked();
                     headDirectionChangeSystem(&self.registery);
-                    if (willBeOutOfBounds(&self.registery) or willCollideWithSelf(&self.registery)) {
+                    if (willCollide(&self.registery)) {
                         self.registery.singletons().get(GameEvents).died();
                         self.game_state = .GameOver;
                     } else {
@@ -658,6 +658,10 @@ pub fn maybEat(registery: *ecs.Registry) void {
     }
     registery.singletons().get(GameEvents).eatFruit();
     fruit.pos = null;
+}
+
+pub fn willCollide(registery: *ecs.Registry) bool {
+    return willBeOutOfBounds(registery) or willCollideWithSelf(registery);
 }
 
 pub fn willCollideWithSelf(registery: *ecs.Registry) bool {
