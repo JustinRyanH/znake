@@ -471,9 +471,9 @@ pub fn drawFruit(
     }
 }
 
-pub fn drawState(self: *State, simple_renderer: *SimpleRenderer) void {
+pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
     {
-        var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
+        var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
         var iter = view.iterator();
         while (iter.next()) |entity| {
             var pos = view.get(PositionComponent, entity);
@@ -492,7 +492,7 @@ pub fn drawState(self: *State, simple_renderer: *SimpleRenderer) void {
         }
     }
 
-    var fruit_v2 = &self.registery.singletons().get(SnakeGame).fruit;
+    var fruit_v2 = &registery.singletons().get(SnakeGame).fruit;
     drawFruit(fruit_v2, simple_renderer);
 }
 
@@ -508,7 +508,7 @@ pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
             // Sound
         }
     }
-    drawState(state, simple_renderer);
+    drawState(&state.registery, simple_renderer);
 }
 
 pub fn gameOver(state: *State, simple_renderer: *SimpleRenderer) void {
