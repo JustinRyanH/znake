@@ -365,7 +365,7 @@ pub const State = struct {
                         fruitGenerationSystem(&self.registery);
                     }
 
-                    self.maybEat();
+                    maybEat(&self.registery);
                 }
             },
         }
@@ -463,15 +463,6 @@ pub const State = struct {
         var head = self.registery.singletons().getConst(SnakeEdges).head;
         var view = self.registery.view(.{SegmentComponent}, .{});
         return view.get(head);
-    }
-
-    pub fn maybEat(self: *State) void {
-        var snake_head_position = self.snakeHeadPosition();
-        if (!self.getFruit().overlaps(snake_head_position.*)) {
-            return;
-        }
-        self.registery.singletons().get(GameEvents).eatFruit();
-        self.getFruit().pos = null;
     }
 
     pub fn addTail(self: *State, last: ecs.Entity, direction: Direction, pos: PositionComponent) ecs.Entity {
@@ -650,6 +641,12 @@ fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ec
     return entity;
 }
 
+pub fn getHeadPosition(registery: *ecs.Registry) PositionComponent {
+    var head = registery.singletons().getConst(SnakeEdges).head;
+    var view = registery.view(.{PositionComponent}, .{});
+    return view.getConst(head);
+}
+
 fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
     var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
     var parent_segment = view.get(SegmentComponent, parent);
@@ -671,6 +668,20 @@ fn createSnake(registery: *ecs.Registry, direction: Direction, pos: Vec2) void {
         .head = head_entity,
         .tail = tail_entity,
     });
+}
+
+pub fn maybEat(registery: *ecs.Registry) void {
+    var fruit = registery.singletons().get(Fruit);
+    if (fruit.pos == null) {
+        return;
+    }
+
+    var snake_head_position = getHeadPosition(registery);
+    if (!fruit.*.overlaps(snake_head_position)) {
+        return;
+    }
+    registery.singletons().get(GameEvents).eatFruit();
+    fruit.pos = null;
 }
 
 test "Input" {
