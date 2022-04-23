@@ -254,14 +254,12 @@ pub const SnakeGame = struct {
     head_direction: HeadDirection,
     randoms: RandomGenerators,
     step_stride: u32,
+    game_state: GameState = .Menu,
 };
 
 pub const State = struct {
     allocator: mem.Allocator,
     registery: ecs.Registry,
-
-    frame: u32 = 0,
-    game_state: GameState = .Menu,
 
     fn render(self: *State, renderer: *SimpleRenderer) void {
         _ = self;
@@ -286,7 +284,8 @@ pub const State = struct {
         self.render(renderer);
         input.swap();
 
-        switch (self.game_state) {
+        const snake_game = self.registery.singletons().getConst(SnakeGame);
+        switch (snake_game.game_state) {
             .Menu => mainMenu(self, renderer),
             .Play => play(self, renderer),
             .GameOver => gameOver(self, renderer),
@@ -295,7 +294,8 @@ pub const State = struct {
 
     pub fn updateGame(self: *State) void {
         const frame_data = self.registery.singletons().getConst(FrameInput);
-        switch (self.game_state) {
+        const snake_game = self.registery.singletons().getConst(SnakeGame);
+        switch (snake_game.game_state) {
             .GameOver => {
                 if (frame_data.input.justReleased(Input.ButtonB)) {
                     self.registery.singletons().get(GameEvents).nextStage();
@@ -332,7 +332,7 @@ pub const State = struct {
 
                     collideSystems(&self.registery);
                     if (self.registery.singletons().getConst(GameEvents).hasDied()) {
-                        self.game_state = .GameOver;
+                        self.registery.singletons().get(SnakeGame).game_state = .GameOver;
                     }
 
                     growTailSystem(&self.registery);
@@ -400,7 +400,7 @@ pub const State = struct {
         const head_position = Vec2{ .x = x, .y = y };
 
         createSnake(&self.registery, head_direction, head_position);
-        self.game_state = .Play;
+        self.registery.singletons().get(SnakeGame).game_state = .Play;
         fruitGenerationSystem(&self.registery);
     }
 
