@@ -458,7 +458,8 @@ pub const State = struct {
 
     pub fn nextFruit(self: *State) void {
         const fruit_random = self.registery.singletons().getConst(RandomGenerators).fruit_random;
-        self.getFruit().pos = Vec2{
+        const fruit = self.registery.singletons().get(Fruit);
+        fruit.pos = Vec2{
             .x = fruit_random.intRangeLessThan(i32, self.getBounds().x_min, self.getBounds().x_max),
             .y = fruit_random.intRangeLessThan(i32, self.getBounds().y_min + 1, self.getBounds().y_max),
         };
