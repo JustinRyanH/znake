@@ -84,8 +84,7 @@ export fn frame() void {
     if (should_update) {
         game.update(&input, &simple_renderer);
         if (game.events.shouldReseed()) {
-            std.debug.print("Reseed: {}\n", .{game.frame});
-            prng.seed(game.frame);
+            prng.seed(game.frame); // Fix where frame is always zero
         }
 
         renderer.updateImage();
