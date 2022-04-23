@@ -360,12 +360,10 @@ pub const State = struct {
                     if (self.willBeOutOfBounds() or self.willCollideWithSelf()) {
                         self.events.died();
                         self.game_state = .GameOver;
-                    } else if (self.getFruit().missing()) {
+                    } else {
                         growTailSystem(&self.registery);
                         updateSegmentPositionSystem(&self.registery);
                         fruitGenerationSystem(&self.registery);
-                    } else {
-                        updateSegmentPositionSystem(&self.registery);
                     }
 
                     self.maybEat();
