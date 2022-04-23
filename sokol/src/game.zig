@@ -263,7 +263,6 @@ pub const State = struct {
 
     frame: u32 = 0,
 
-    next_head_direction: HeadDirection = .{},
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
 
@@ -316,7 +315,7 @@ pub const State = struct {
             },
             .Play => {
                 {
-                    var next_direction = self.registery.singletons().get(HeadDirection);
+                    var next_direction = &self.registery.singletons().get(SnakeGame).head_direction;
                     if (frame_data.input.justPressed(Input.Left)) {
                         next_direction.go(.Left);
                     }
@@ -375,7 +374,6 @@ pub const State = struct {
             .head_direction = HeadDirection{},
         };
         state.registery.singletons().add(snake_game);
-        state.registery.singletons().add(HeadDirection{});
         state.registery.singletons().add(bounds);
         state.registery.singletons().add(randoms);
         state.registery.singletons().add(events);
@@ -397,11 +395,12 @@ pub const State = struct {
             self.registery.singletons().remove(SnakeEdges);
         }
 
-        self.next_head_direction.direction = .Up;
+        var snake_game = self.registery.singletons().get(SnakeGame);
+        snake_game.head_direction.direction = .Up;
 
         const x = @divTrunc((self.getBounds().x_max - self.getBounds().x_min), 2) - 1;
         const y = @divTrunc((self.getBounds().y_max - self.getBounds().y_min), 2) - 1;
-        const head_direction = self.next_head_direction.direction;
+        const head_direction = snake_game.head_direction.direction;
         const head_position = Vec2{ .x = x, .y = y };
 
         createSnake(&self.registery, head_direction, head_position);
@@ -559,7 +558,7 @@ fn updateSegmentPositionSystem(registery: *ecs.Registry) void {
 }
 
 fn headDirectionChangeSystem(registery: *ecs.Registry) void {
-    var next_direction = registery.singletons().get(HeadDirection);
+    var next_direction = &registery.singletons().get(SnakeGame).head_direction;
     var head = registery.singletons().getConst(SnakeEdges).head;
     var view = registery.view(.{SegmentComponent}, .{});
     view.get(head).go(next_direction.direction);
