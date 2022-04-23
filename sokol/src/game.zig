@@ -341,22 +341,25 @@ pub const State = struct {
                 }
             },
             .Play => {
-                var next_direction = self.registery.singletons().get(HeadDirection);
-                if (self.input.justPressed(Input.Left)) {
-                    next_direction.go(.Left);
-                }
-                if (self.input.justPressed(Input.Right)) {
-                    next_direction.go(.Right);
-                }
-                if (self.input.justPressed(Input.Up)) {
-                    next_direction.go(.Up);
-                }
-                if (self.input.justPressed(Input.Down)) {
-                    next_direction.go(.Down);
+                {
+                    var next_direction = self.registery.singletons().get(HeadDirection);
+                    if (self.input.justPressed(Input.Left)) {
+                        next_direction.go(.Left);
+                    }
+                    if (self.input.justPressed(Input.Right)) {
+                        next_direction.go(.Right);
+                    }
+                    if (self.input.justPressed(Input.Up)) {
+                        next_direction.go(.Up);
+                    }
+                    if (self.input.justPressed(Input.Down)) {
+                        next_direction.go(.Down);
+                    }
                 }
                 if (self.shouldTick()) {
                     self.registery.singletons().get(GameEvents).ticked();
                     {
+                        var next_direction = self.registery.singletons().get(HeadDirection);
                         var edges = self.registery.singletons().get(SnakeEdges);
                         var view = self.registery.view(.{SegmentComponent}, .{});
                         var head = view.get(edges.head);
