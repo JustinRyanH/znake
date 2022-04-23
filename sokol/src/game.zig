@@ -325,7 +325,6 @@ pub const State = struct {
             .frame = old_input.frame + 1,
             .input = input.*,
         };
-        self.frame += 1;
         self.registery.singletons().get(GameEvents).clear();
         self.updateGame();
         self.render(renderer);
@@ -418,11 +417,11 @@ pub const State = struct {
     }
 
     pub fn shouldTick(self: *State) bool {
-        return @mod(self.frame, self.step_stride) == 0;
+        const frame_data = self.registery.singletons().getConst(FrameInput);
+        return @mod(frame_data.frame, self.step_stride) == 0;
     }
 
     pub fn reset(self: *State) void {
-        self.frame = 0;
         {
             var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
             var iter = view.iterator();
