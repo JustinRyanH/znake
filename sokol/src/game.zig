@@ -279,7 +279,9 @@ pub const State = struct {
             .frame = old_input.frame + 1,
             .input = input.*,
         };
-        self.registery.singletons().get(GameEvents).clear();
+        var events = &self.registery.singletons().get(SnakeGame).events;
+        events.clear();
+        self.registery.singletons().get(SnakeGame).events.clear();
         self.updateGame();
         self.render(renderer);
         input.swap();
@@ -298,15 +300,15 @@ pub const State = struct {
         switch (snake_game.game_state) {
             .GameOver => {
                 if (frame_data.input.justReleased(Input.ButtonB)) {
-                    self.registery.singletons().get(GameEvents).nextStage();
-                    self.registery.singletons().get(GameEvents).reseed();
+                    self.registery.singletons().get(SnakeGame).events.nextStage();
+                    self.registery.singletons().get(SnakeGame).events.reseed();
                     self.reset();
                 }
             },
             .Menu => {
                 if (frame_data.input.justReleased(Input.ButtonB)) {
-                    self.registery.singletons().get(GameEvents).nextStage();
-                    self.registery.singletons().get(GameEvents).reseed();
+                    self.registery.singletons().get(SnakeGame).events.nextStage();
+                    self.registery.singletons().get(SnakeGame).events.reseed();
                     self.reset();
                 }
             },
@@ -327,11 +329,11 @@ pub const State = struct {
                     }
                 }
                 if (self.shouldTick()) {
-                    self.registery.singletons().get(GameEvents).ticked();
+                    self.registery.singletons().get(SnakeGame).events.ticked();
                     headDirectionChangeSystem(&self.registery);
 
                     collideSystems(&self.registery);
-                    if (self.registery.singletons().getConst(GameEvents).hasDied()) {
+                    if (self.registery.singletons().get(SnakeGame).events.hasDied()) {
                         self.registery.singletons().get(SnakeGame).game_state = .GameOver;
                     }
 
@@ -496,8 +498,9 @@ pub fn drawState(self: *State, simple_renderer: *SimpleRenderer) void {
 }
 
 pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
-    const tick_happened = state.registery.singletons().get(GameEvents).hasTicked();
-    const has_eaten = state.registery.singletons().get(GameEvents).hasEatenFruit();
+    const snake_game = state.registery.singletons().get(SnakeGame);
+    const tick_happened = snake_game.events.hasTicked();
+    const has_eaten = snake_game.events.hasEatenFruit();
 
     if (tick_happened) {
         if (has_eaten) {
@@ -586,7 +589,7 @@ pub fn collideSystems(registery: *ecs.Registry) void {
     if (!willCollide(registery)) {
         return;
     }
-    registery.singletons().get(GameEvents).died();
+    registery.singletons().get(SnakeGame).events.died();
 }
 
 fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ecs.Entity {
@@ -636,7 +639,7 @@ pub fn maybEat(registery: *ecs.Registry) void {
     if (!fruit.*.overlaps(snake_head_position)) {
         return;
     }
-    registery.singletons().get(GameEvents).eatFruit();
+    registery.singletons().get(SnakeGame).events.eatFruit();
     fruit.pos = null;
 }
 

@@ -84,7 +84,7 @@ export fn frame() void {
     if (should_update) {
         game.update(&input, &simple_renderer);
         if (game.registery.singletons().getConst(Game.GameEvents).shouldReseed()) {
-            prng.seed(game.frame); // Fix where frame is always zero
+            prng.seed(game.registery.singletons().getConst(Game.FrameInput).frame);
         }
 
         renderer.updateImage();
