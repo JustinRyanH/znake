@@ -359,7 +359,7 @@ pub const State = struct {
                 if (self.shouldTick()) {
                     self.registery.singletons().get(GameEvents).ticked();
                     headDirectionChangeSystem(&self.registery);
-                    if (self.willBeOutOfBounds() or self.willCollideWithSelf()) {
+                    if (willBeOutOfBounds(&self.registery) or willCollideWithSelf(&self.registery)) {
                         self.registery.singletons().get(GameEvents).died();
                         self.game_state = .GameOver;
                     } else {
@@ -429,26 +429,6 @@ pub const State = struct {
         fruitGenerationSystem(&self.registery);
     }
 
-    pub fn willCollideWithSelf(self: *State) bool {
-        var head = self.registery.singletons().getConst(SnakeEdges).head;
-        var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
-        var head_segment = view.get(SegmentComponent, head);
-        var head_pos = view.get(PositionComponent, head);
-        var next_pos = head_segment.nextPosition(head_pos.*);
-
-        var iter = view.iterator();
-        while (iter.next()) |entity| {
-            if (head == entity) continue;
-            var body_segment = view.get(SegmentComponent, entity);
-            var body_pos = view.get(PositionComponent, entity);
-            var body_next_pos = body_segment.nextPosition(body_pos.*);
-            if (body_next_pos.equals(next_pos)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     pub fn getFruit(self: *State) *Fruit {
         return self.registery.singletons().get(Fruit);
     }
@@ -483,23 +463,6 @@ pub const State = struct {
             }
         }
         return entity;
-    }
-
-    pub fn willBeOutOfBounds(self: *State) bool {
-        const bounds = self.registery.singletons().getConst(Bounds);
-        var head = self.registery.singletons().getConst(SnakeEdges).head;
-        var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
-        var ecs_segment = view.get(SegmentComponent, head);
-        var current_position = view.get(PositionComponent, head);
-
-        const position = current_position.add(ecs_segment.direction.to_vec2());
-        if (position.y < bounds.y_min or position.y > bounds.y_max) {
-            return true;
-        }
-        if (position.x < bounds.x_min or position.x > bounds.x_max) {
-            return true;
-        }
-        return false;
     }
 };
 
@@ -695,6 +658,43 @@ pub fn maybEat(registery: *ecs.Registry) void {
     }
     registery.singletons().get(GameEvents).eatFruit();
     fruit.pos = null;
+}
+
+pub fn willCollideWithSelf(registery: *ecs.Registry) bool {
+    var head = registery.singletons().getConst(SnakeEdges).head;
+    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
+    var head_segment = view.get(SegmentComponent, head);
+    var head_pos = view.get(PositionComponent, head);
+    var next_pos = head_segment.nextPosition(head_pos.*);
+
+    var iter = view.iterator();
+    while (iter.next()) |entity| {
+        if (head == entity) continue;
+        var body_segment = view.get(SegmentComponent, entity);
+        var body_pos = view.get(PositionComponent, entity);
+        var body_next_pos = body_segment.nextPosition(body_pos.*);
+        if (body_next_pos.equals(next_pos)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+pub fn willBeOutOfBounds(registery: *ecs.Registry) bool {
+    const bounds = registery.singletons().getConst(Bounds);
+    var head = registery.singletons().getConst(SnakeEdges).head;
+    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
+    var ecs_segment = view.get(SegmentComponent, head);
+    var current_position = view.get(PositionComponent, head);
+
+    const position = current_position.add(ecs_segment.direction.to_vec2());
+    if (position.y < bounds.y_min or position.y > bounds.y_max) {
+        return true;
+    }
+    if (position.x < bounds.x_min or position.x > bounds.x_max) {
+        return true;
+    }
+    return false;
 }
 
 test "Input" {
