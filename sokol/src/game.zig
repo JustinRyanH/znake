@@ -486,16 +486,17 @@ pub const State = struct {
     }
 
     pub fn willBeOutOfBounds(self: *State) bool {
+        const bounds = self.registery.singletons().getConst(Bounds);
         var head = self.registery.singletons().getConst(SnakeEdges).head;
         var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
         var ecs_segment = view.get(SegmentComponent, head);
         var current_position = view.get(PositionComponent, head);
 
         const position = current_position.add(ecs_segment.direction.to_vec2());
-        if (position.y < self.getBounds().y_min or position.y > self.getBounds().y_max) {
+        if (position.y < bounds.y_min or position.y > bounds.y_max) {
             return true;
         }
-        if (position.x < self.getBounds().x_min or position.x > self.getBounds().x_max) {
+        if (position.x < bounds.x_min or position.x > bounds.x_max) {
             return true;
         }
         return false;
