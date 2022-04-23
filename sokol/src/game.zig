@@ -11,6 +11,8 @@ pub const SNAKE_SIZE = 8;
 const SNAKE_HALF_SIZE = SNAKE_SIZE / 2;
 const PositionComponent = Vec2;
 
+pub const Input = @import("./input.zig");
+
 pub const FrameInput = struct {
     frame: usize = 0,
     input: Input = .{},
@@ -217,55 +219,6 @@ pub const GameState = enum {
     Menu,
     Play,
     GameOver,
-};
-
-pub const Input = packed struct {
-    pub const ButtonA = 1;
-    pub const ButtonB = 2;
-    pub const Left = 16;
-    pub const Right = 32;
-    pub const Up = 64;
-    pub const Down = 128;
-
-    frame: u8 = 0,
-    last_frame: u8 = 0,
-
-    pub fn down(self: *const Input, button: u8) bool {
-        return self.frame & button != 0;
-    }
-
-    pub fn up(self: *const Input, button: u8) bool {
-        return !self.down(button);
-    }
-
-    pub fn justReleased(self: *const Input, button: u8) bool {
-        const last_down = self.last_frame_down(button);
-        return last_down and self.up(button);
-    }
-
-    pub fn justPressed(self: *const Input, button: u8) bool {
-        const last_up = !self.last_frame_down(button);
-        return last_up and self.down(button);
-    }
-
-    pub fn setDown(self: *Input, button: u8) void {
-        self.frame = self.frame | button;
-    }
-    pub fn setUp(self: *Input, button: u8) void {
-        self.frame = self.frame & ~button;
-    }
-
-    pub fn process(self: *Input, current: u8) void {
-        self.frame = current;
-    }
-
-    pub fn swap(self: *Input) void {
-        self.last_frame = self.frame;
-    }
-
-    fn last_frame_down(self: *const Input, button: u8) bool {
-        return self.last_frame & button != 0;
-    }
 };
 
 pub const HeadDirection = struct {
@@ -725,24 +678,4 @@ pub fn willBeOutOfBounds(registery: *ecs.Registry) bool {
         return true;
     }
     return false;
-}
-
-test "Input" {
-    var input: Input = .{};
-    try std.testing.expect(input.frame == 0);
-    input.setDown(Input.Left);
-    input.setDown(Input.ButtonA);
-    input.setDown(Input.ButtonB);
-    try std.testing.expect(input.down(Input.Left) == true);
-    try std.testing.expect(input.down(Input.ButtonA) == true);
-    try std.testing.expect(input.justPressed(Input.Left));
-
-    input.setUp(Input.ButtonA);
-    try std.testing.expect(input.up(Input.ButtonA) == true);
-    try std.testing.expect(input.down(Input.Left) == true);
-
-    input.swap();
-    input.setUp(Input.Left);
-    try std.testing.expect(input.justReleased(Input.Left) == true);
-    try std.testing.expect(input.up(Input.Left) == true);
 }
