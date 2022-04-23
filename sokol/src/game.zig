@@ -374,11 +374,9 @@ pub const State = struct {
                         self.game_state = .GameOver;
                     }
 
-                    if (!willCollide(&self.registery)) {
-                        growTailSystem(&self.registery);
-                        updateSegmentPositionSystem(&self.registery);
-                        fruitGenerationSystem(&self.registery);
-                    }
+                    growTailSystem(&self.registery);
+                    updateSegmentPositionSystem(&self.registery);
+                    fruitGenerationSystem(&self.registery);
 
                     maybEat(&self.registery);
                 }
@@ -577,6 +575,7 @@ pub fn mainMenu(state: *State, simple_renderer: *SimpleRenderer) void {
 }
 
 fn updateSegmentPositionSystem(registery: *ecs.Registry) void {
+    if (willCollide(registery)) return;
     var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
     var iter = view.iterator();
     while (iter.next()) |entity| {
@@ -599,6 +598,7 @@ fn headDirectionChangeSystem(registery: *ecs.Registry) void {
 }
 
 fn growTailSystem(registery: *ecs.Registry) void {
+    if (willCollide(registery)) return;
     const fruit = registery.singletons().getConst(Fruit);
     if (!fruit.missing()) {
         return;
@@ -609,6 +609,7 @@ fn growTailSystem(registery: *ecs.Registry) void {
 }
 
 pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
+    if (willCollide(registery)) return;
     var fruit = registery.singletons().get(Fruit);
     if (!fruit.missing()) {
         return;
