@@ -70,6 +70,15 @@ pub const GameEvents = struct {
         return false;
     }
 
+    pub fn hasDied(self: *GameEvents) bool {
+        for (self.inner.items) |event| {
+            if (event == .Died) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     pub fn hasEatenFruit(self: *GameEvents) bool {
         for (self.inner.items) |event| {
             if (event == .EatFruit) {
@@ -359,8 +368,9 @@ pub const State = struct {
                 if (self.shouldTick()) {
                     self.registery.singletons().get(GameEvents).ticked();
                     headDirectionChangeSystem(&self.registery);
-                    if (willCollide(&self.registery)) {
-                        self.registery.singletons().get(GameEvents).died();
+
+                    collideSystems(&self.registery);
+                    if (self.registery.singletons().getConst(GameEvents).hasDied()) {
                         self.game_state = .GameOver;
                     }
 
@@ -609,6 +619,13 @@ pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
         .x = fruit_random.intRangeLessThan(i32, bounds.x_min, bounds.x_max),
         .y = fruit_random.intRangeLessThan(i32, bounds.y_min + 1, bounds.y_max),
     };
+}
+
+pub fn collideSystems(registery: *ecs.Registry) void {
+    if (!willCollide(registery)) {
+        return;
+    }
+    registery.singletons().get(GameEvents).died();
 }
 
 fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ecs.Entity {
