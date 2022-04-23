@@ -277,7 +277,6 @@ pub const State = struct {
     input: Input = .{},
 
     maybe_next_direction: Direction = .Up,
-    events: GameEvents,
     fruit: Fruit = .{},
     game_state: GameState = .Menu,
 
@@ -299,7 +298,7 @@ pub const State = struct {
     pub fn update(self: *State, input: *Input, renderer: *SimpleRenderer) void {
         self.input = input.*;
         self.frame += 1;
-        self.events.clear();
+        self.registery.singletons().get(GameEvents).clear();
         self.updateGame();
         self.render(renderer);
         input.swap();
@@ -315,15 +314,15 @@ pub const State = struct {
         switch (self.game_state) {
             .GameOver => {
                 if (self.input.justReleased(Input.ButtonB)) {
-                    self.events.nextStage();
-                    self.events.reseed();
+                    self.registery.singletons().get(GameEvents).nextStage();
+                    self.registery.singletons().get(GameEvents).reseed();
                     self.reset();
                 }
             },
             .Menu => {
                 if (self.input.justReleased(Input.ButtonB)) {
-                    self.events.nextStage();
-                    self.events.reseed();
+                    self.registery.singletons().get(GameEvents).nextStage();
+                    self.registery.singletons().get(GameEvents).reseed();
                     self.reset();
                 }
             },
@@ -350,7 +349,7 @@ pub const State = struct {
                     }
                 }
                 if (self.shouldTick()) {
-                    self.events.ticked();
+                    self.registery.singletons().get(GameEvents).ticked();
                     {
                         var edges = self.registery.singletons().get(SnakeEdges);
                         var view = self.registery.view(.{SegmentComponent}, .{});
@@ -358,7 +357,7 @@ pub const State = struct {
                         head.*.direction = self.maybe_next_direction;
                     }
                     if (self.willBeOutOfBounds() or self.willCollideWithSelf()) {
-                        self.events.died();
+                        self.registery.singletons().get(GameEvents).died();
                         self.game_state = .GameOver;
                     } else {
                         growTailSystem(&self.registery);
@@ -383,6 +382,7 @@ pub const State = struct {
         const randoms: RandomGenerators = .{
             .fruit_random = config.random,
         };
+        const events = GameEvents.init(allocator);
 
         state.* = .{
             .registery = ecs.Registry.init(allocator),
@@ -390,11 +390,11 @@ pub const State = struct {
             .step_stride = config.step_stride,
             .allocator = allocator,
             .randoms = randoms,
-            .events = GameEvents.init(allocator),
         };
         state.registery.singletons().add(Fruit{});
         state.registery.singletons().add(bounds);
         state.registery.singletons().add(state.randoms);
+        state.registery.singletons().add(events);
         return state;
     }
 
@@ -470,7 +470,7 @@ pub const State = struct {
         if (!self.getFruit().overlaps(snake_head_position.*)) {
             return;
         }
-        self.events.eatFruit();
+        self.registery.singletons().get(GameEvents).eatFruit();
         self.getFruit().pos = null;
     }
 
@@ -569,8 +569,8 @@ pub fn drawState(self: *State, simple_renderer: *SimpleRenderer) void {
 }
 
 pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
-    const tick_happened = state.events.hasTicked();
-    const has_eaten = state.events.hasEatenFruit();
+    const tick_happened = state.registery.singletons().get(GameEvents).hasTicked();
+    const has_eaten = state.registery.singletons().get(GameEvents).hasEatenFruit();
 
     if (tick_happened) {
         if (has_eaten) {

@@ -83,7 +83,7 @@ export fn frame() void {
     const should_update = frame_rate.shouldTick(stime.sec(time));
     if (should_update) {
         game.update(&input, &simple_renderer);
-        if (game.events.shouldReseed()) {
+        if (game.registery.singletons().getConst(Game.GameEvents).shouldReseed()) {
             prng.seed(game.frame); // Fix where frame is always zero
         }
 
