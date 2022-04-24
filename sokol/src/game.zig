@@ -252,7 +252,6 @@ pub const StateSetup = struct {
 pub const SnakeGame = struct {
     bounds: Bounds,
     events: GameEvents,
-    fruit: Fruit,
     head_direction: HeadDirection,
     randoms: RandomGenerators,
     step_stride: u32,
@@ -370,7 +369,6 @@ pub const State = struct {
             .bounds = bounds,
             .events = events,
             .randoms = randoms,
-            .fruit = Fruit{},
             .head_direction = HeadDirection{},
         };
         state.registery.singletons().add(snake_game);
