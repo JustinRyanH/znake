@@ -493,9 +493,21 @@ pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) voi
             }
         }
     }
+    {
+        var view = registery.view(.{ FruitTag, PositionComponent }, .{});
+        var iter = view.iterator();
+        while (iter.next()) |entity| {
+            var pos = view.getConst(PositionComponent, entity);
 
-    var fruit_v2 = &registery.singletons().get(SnakeGame).fruit;
-    drawFruit(fruit_v2, simple_renderer);
+            const x = (pos.x * SNAKE_SIZE);
+            const y = (pos.y * SNAKE_SIZE);
+            simple_renderer.setForegroundPallete(3);
+            simple_renderer.drawRect(x + SNAKE_HALF_SIZE / 2, y + SNAKE_HALF_SIZE / 2, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
+        }
+    }
+
+    // var fruit_v2 = &registery.singletons().get(SnakeGame).fruit;
+    // drawFruit(fruit_v2, simple_renderer);
 }
 
 pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
