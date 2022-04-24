@@ -18,6 +18,8 @@ pub const FrameInput = struct {
     input: Input = .{},
 };
 
+pub const FruitTag = struct {};
+
 pub const GameEvent = enum {
     EatFruit,
     TickHappened,
@@ -570,7 +572,26 @@ fn growTailSystem(registery: *ecs.Registry) void {
     edges.tail = new_tail;
 }
 
+pub fn fruitGenerationSystemV2(registery: *ecs.Registry) void {
+    if (willCollide(registery)) return;
+    var view = registery.view(.{ PositionComponent, FruitTag }, .{});
+    if (view.registry.len(FruitTag) > 0) return;
+
+    const snake_game = registery.singletons().getConst(SnakeGame);
+    const bounds = snake_game.bounds;
+    const fruit_random = snake_game.randoms.fruit_random;
+
+    var entity = registery.create();
+    const position: PositionComponent = Vec2{
+        .x = fruit_random.intRangeLessThan(i32, bounds.x_min, bounds.x_max),
+        .y = fruit_random.intRangeLessThan(i32, bounds.y_min + 1, bounds.y_max),
+    };
+    registery.add(entity, FruitTag{});
+    registery.add(entity, position);
+}
+
 pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
+    fruitGenerationSystemV2(registery);
     if (willCollide(registery)) return;
     var fruit = &registery.singletons().get(SnakeGame).fruit;
     if (!fruit.missing()) {
@@ -628,7 +649,21 @@ fn createSnake(registery: *ecs.Registry, direction: Direction, pos: Vec2) void {
     });
 }
 
+pub fn maybEatV2(registery: *ecs.Registry) void {
+    var snake_head_position = getHeadPosition(registery);
+    var view = registery.view(.{ PositionComponent, FruitTag }, .{});
+    var iter = view.iterator();
+    while (iter.next()) |entity| {
+        const position = view.getConst(PositionComponent, entity);
+        if (position.equals(snake_head_position)) {
+            registery.removeAll(entity);
+            registery.singletons().get(SnakeGame).events.eatFruit();
+        }
+    }
+}
+
 pub fn maybEat(registery: *ecs.Registry) void {
+    maybEatV2(registery);
     var fruit = &registery.singletons().get(SnakeGame).fruit;
     if (fruit.pos == null) {
         return;
