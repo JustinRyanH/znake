@@ -699,7 +699,7 @@ pub fn willBeOutOfBounds(registery: *ecs.Registry) bool {
     if (position.y < bounds.y_min or position.y > bounds.y_max) {
         return true;
     }
-    if (position.x < bounds.x_min or position.x > bounds.x_max) {
+    if (position.x < bounds.x_min or position.x >= bounds.x_max) {
         return true;
     }
     return false;
