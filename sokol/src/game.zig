@@ -557,7 +557,7 @@ fn growTailSystem(registery: *ecs.Registry) void {
     edges.tail = new_tail;
 }
 
-pub fn fruitGenerationSystemV2(registery: *ecs.Registry) void {
+pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
     if (willCollide(registery)) return;
     var view = registery.view(.{ PositionComponent, FruitTag }, .{});
     if (view.registry.len(FruitTag) > 0) return;
@@ -573,10 +573,6 @@ pub fn fruitGenerationSystemV2(registery: *ecs.Registry) void {
     };
     registery.add(entity, FruitTag{});
     registery.add(entity, position);
-}
-
-pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
-    fruitGenerationSystemV2(registery);
 }
 
 pub fn collideSystems(registery: *ecs.Registry) void {
