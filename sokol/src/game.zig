@@ -295,13 +295,15 @@ pub const State = struct {
     }
 
     pub fn updateGame(self: *State) void {
-        const snake_game = self.registery.singletons().getConst(SnakeGame);
+        const snake_game = self.registery.singletons().get(SnakeGame);
         switch (snake_game.game_state) {
             .GameOver, .Menu => {
                 menuStageInput(&self.registery);
-                cleanupSnakeSystem(&self.registery);
-                createSnakeSystem(&self.registery);
-                fruitGenerationSystem(&self.registery);
+                if (snake_game.events.hasNextStage()) {
+                    cleanupSnakeSystem(&self.registery);
+                    createSnakeSystem(&self.registery);
+                    fruitGenerationSystem(&self.registery);
+                }
             },
             .Play => {
                 inputSystem(&self.registery);
