@@ -8,6 +8,7 @@ const sgapp = @import("sokol").app_gfx_glue;
 const Game = @import("game.zig");
 const RendererVals = @import("renderer_vals.zig");
 const SimpleRenderer = @import("simple_renderer.zig");
+const GameInput = @import("./input.zig");
 
 var general_purpose_allocator = std.heap.GeneralPurposeAllocator(.{}){};
 var prng = std.rand.DefaultPrng.init(0);
@@ -16,7 +17,6 @@ const gpa = general_purpose_allocator.allocator();
 const global_random = prng.random();
 
 const CANVAS_SIZE = Game.CANVAS_SIZE;
-const GameInput = Game.Input;
 
 pub const Color = sg.Color;
 

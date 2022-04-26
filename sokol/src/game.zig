@@ -1,6 +1,7 @@
 const std = @import("std");
 const SimpleRenderer = @import("simple_renderer.zig");
 const ecs = @import("ecs");
+const Input = @import("./input.zig");
 const mem = std.mem;
 const rand = std.rand;
 const ArrayList = std.ArrayList;
@@ -11,7 +12,6 @@ pub const SNAKE_SIZE = 8;
 const SNAKE_HALF_SIZE = SNAKE_SIZE / 2;
 const PositionComponent = Vec2;
 
-pub const Input = @import("./input.zig");
 
 pub const FrameInput = struct {
     frame: usize = 0,
