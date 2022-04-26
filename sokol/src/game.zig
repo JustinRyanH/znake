@@ -360,15 +360,7 @@ pub const State = struct {
     }
 
     pub fn reset(self: *State) void {
-        {
-            var view = self.registery.view(.{ SegmentComponent, PositionComponent }, .{});
-            var iter = view.iterator();
-            while (iter.next()) |entity| {
-                self.registery.destroy(entity);
-            }
-            self.registery.singletons().remove(SnakeEdges);
-        }
-
+        cleanupSnakeSystem(&self.registery);
         var snake_game = self.registery.singletons().get(SnakeGame);
         snake_game.head_direction.direction = .Up;
 
@@ -555,6 +547,15 @@ fn growTailSystem(registery: *ecs.Registry) void {
     var edges = registery.singletons().get(SnakeEdges);
     var new_tail = appendTail(registery, edges.tail);
     edges.tail = new_tail;
+}
+
+fn cleanupSnakeSystem(registery: *ecs.Registry) void {
+    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
+    var iter = view.iterator();
+    while (iter.next()) |entity| {
+        registery.destroy(entity);
+    }
+    registery.singletons().remove(SnakeEdges);
 }
 
 pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
