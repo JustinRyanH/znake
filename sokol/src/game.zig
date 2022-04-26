@@ -647,7 +647,7 @@ fn createSnake(registery: *ecs.Registry, direction: Direction, pos: Vec2) void {
     });
 }
 
-pub fn maybEatV2(registery: *ecs.Registry) void {
+pub fn maybEat(registery: *ecs.Registry) void {
     var snake_head_position = getHeadPosition(registery);
     var view = registery.view(.{ PositionComponent, FruitTag }, .{});
     var iter = view.iterator();
@@ -658,10 +658,6 @@ pub fn maybEatV2(registery: *ecs.Registry) void {
             registery.singletons().get(SnakeGame).events.eatFruit();
         }
     }
-}
-
-pub fn maybEat(registery: *ecs.Registry) void {
-    maybEatV2(registery);
 }
 
 pub fn willCollide(registery: *ecs.Registry) bool {
