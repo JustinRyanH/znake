@@ -584,7 +584,11 @@ pub fn createSnakeSystem(registery: *ecs.Registry) void {
     const head_direction = snake_game.head_direction.direction;
     const head_position = Vec2{ .x = x, .y = y };
 
-    createSnake(registery, head_direction, head_position);
+    var head_entity = createHead(registery, head_direction, head_position);
+    var tail_entity = appendTail(registery, head_entity);
+    const snake_edges = registery.singletons().getOrAdd(SnakeEdges);
+    snake_edges.head = head_entity;
+    snake_edges.tail = tail_entity;
 }
 
 pub fn inputSystem(registery: *ecs.Registry) void {
@@ -637,15 +641,6 @@ fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
     registery.add(entity, tail_segment);
     registery.add(entity, tail_position);
     return entity;
-}
-
-fn createSnake(registery: *ecs.Registry, direction: Direction, pos: Vec2) void {
-    var head_entity = createHead(registery, direction, pos);
-    var tail_entity = appendTail(registery, head_entity);
-    registery.singletons().add(SnakeEdges{
-        .head = head_entity,
-        .tail = tail_entity,
-    });
 }
 
 pub fn maybEat(registery: *ecs.Registry) void {
