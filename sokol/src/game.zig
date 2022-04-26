@@ -299,7 +299,9 @@ pub const State = struct {
         switch (snake_game.game_state) {
             .GameOver, .Menu => {
                 menuStageInput(&self.registery);
-                self.reset();
+                cleanupSnakeSystem(&self.registery);
+                createSnakeSystem(&self.registery);
+                fruitGenerationSystem(&self.registery);
             },
             .Play => {
                 inputSystem(&self.registery);
@@ -353,12 +355,6 @@ pub const State = struct {
         const frame_data = self.registery.singletons().getConst(FrameInput);
         const snake_game = self.registery.singletons().getConst(SnakeGame);
         return @mod(frame_data.frame, snake_game.step_stride) == 0;
-    }
-
-    pub fn reset(self: *State) void {
-        cleanupSnakeSystem(&self.registery);
-        createSnakeSystem(&self.registery);
-        fruitGenerationSystem(&self.registery);
     }
 
     pub fn snakeHeadPosition(self: *State) *PositionComponent {
