@@ -314,7 +314,7 @@ pub const State = struct {
                         self.registery.singletons().get(SnakeGame).game_state = .GameOver;
                     }
 
-                    maybEat(&self.registery);
+                    maybeEatFruitSystem(&self.registery);
                     growTailSystem(&self.registery);
                     updateSegmentPositionSystem(&self.registery);
                     fruitGenerationSystem(&self.registery);
@@ -635,7 +635,7 @@ fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
     return entity;
 }
 
-pub fn maybEat(registery: *ecs.Registry) void {
+pub fn maybeEatFruitSystem(registery: *ecs.Registry) void {
     var snake_head_position = getHeadPosition(registery);
     var view = registery.view(.{ PositionComponent, FruitTag }, .{});
     var iter = view.iterator();
