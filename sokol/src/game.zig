@@ -297,11 +297,7 @@ pub const State = struct {
     pub fn updateGame(self: *State) void {
         const snake_game = self.registery.singletons().getConst(SnakeGame);
         switch (snake_game.game_state) {
-            .GameOver => {
-                menuStageInput(&self.registery);
-                self.reset();
-            },
-            .Menu => {
+            .GameOver, .Menu => {
                 menuStageInput(&self.registery);
                 self.reset();
             },
