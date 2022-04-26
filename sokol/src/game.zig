@@ -361,17 +361,7 @@ pub const State = struct {
 
     pub fn reset(self: *State) void {
         cleanupSnakeSystem(&self.registery);
-        var snake_game = self.registery.singletons().get(SnakeGame);
-        snake_game.head_direction.direction = .Up;
-
-        const bounds = snake_game.bounds;
-        const x = @divTrunc((bounds.x_max - bounds.x_min), 2) - 1;
-        const y = @divTrunc((bounds.y_max - bounds.y_min), 2) - 1;
-        const head_direction = snake_game.head_direction.direction;
-        const head_position = Vec2{ .x = x, .y = y };
-
-        createSnake(&self.registery, head_direction, head_position);
-        self.registery.singletons().get(SnakeGame).game_state = .Play;
+        createSnakeSystem(&self.registery);
         fruitGenerationSystem(&self.registery);
     }
 
@@ -581,6 +571,20 @@ pub fn collideSystems(registery: *ecs.Registry) void {
         return;
     }
     registery.singletons().get(SnakeGame).events.died();
+}
+
+pub fn createSnakeSystem(registery: *ecs.Registry) void {
+    var snake_game = registery.singletons().get(SnakeGame);
+    snake_game.head_direction.direction = .Up;
+    snake_game.game_state = .Play;
+
+    const bounds = snake_game.bounds;
+    const x = @divTrunc((bounds.x_max - bounds.x_min), 2) - 1;
+    const y = @divTrunc((bounds.y_max - bounds.y_min), 2) - 1;
+    const head_direction = snake_game.head_direction.direction;
+    const head_position = Vec2{ .x = x, .y = y };
+
+    createSnake(registery, head_direction, head_position);
 }
 
 pub fn inputSystem(registery: *ecs.Registry) void {
