@@ -295,22 +295,15 @@ pub const State = struct {
     }
 
     pub fn updateGame(self: *State) void {
-        const frame_data = self.registery.singletons().getConst(FrameInput);
         const snake_game = self.registery.singletons().getConst(SnakeGame);
         switch (snake_game.game_state) {
             .GameOver => {
-                if (frame_data.input.justReleased(Input.ButtonB)) {
-                    self.registery.singletons().get(SnakeGame).events.nextStage();
-                    self.registery.singletons().get(SnakeGame).events.reseed();
-                    self.reset();
-                }
+                menuStageInput(&self.registery);
+                self.reset();
             },
             .Menu => {
-                if (frame_data.input.justReleased(Input.ButtonB)) {
-                    self.registery.singletons().get(SnakeGame).events.nextStage();
-                    self.registery.singletons().get(SnakeGame).events.reseed();
-                    self.reset();
-                }
+                menuStageInput(&self.registery);
+                self.reset();
             },
             .Play => {
                 inputSystem(&self.registery);
@@ -595,7 +588,7 @@ pub fn collideSystems(registery: *ecs.Registry) void {
 
 pub fn inputSystem(registery: *ecs.Registry) void {
     const frame_data = registery.singletons().getConst(FrameInput);
-    var next_direction = registery.singletons().get(SnakeGame).head_direction;
+    var next_direction = &registery.singletons().get(SnakeGame).head_direction;
     if (frame_data.input.justPressed(Input.Left)) {
         next_direction.go(.Left);
     }
@@ -608,6 +601,13 @@ pub fn inputSystem(registery: *ecs.Registry) void {
     if (frame_data.input.justPressed(Input.Down)) {
         next_direction.go(.Down);
     }
+}
+
+pub fn menuStageInput(registery: *ecs.Registry) void {
+    const frame_data = registery.singletons().getConst(FrameInput);
+    if (!frame_data.input.justReleased(Input.ButtonB)) return;
+    registery.singletons().get(SnakeGame).events.nextStage();
+    registery.singletons().get(SnakeGame).events.reseed();
 }
 
 fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ecs.Entity {
