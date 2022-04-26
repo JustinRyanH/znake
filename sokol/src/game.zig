@@ -12,7 +12,6 @@ pub const SNAKE_SIZE = 8;
 const SNAKE_HALF_SIZE = SNAKE_SIZE / 2;
 const PositionComponent = Vec2;
 
-
 pub const FrameInput = struct {
     frame: usize = 0,
     input: Input = .{},
@@ -314,21 +313,7 @@ pub const State = struct {
                 }
             },
             .Play => {
-                {
-                    var next_direction = &self.registery.singletons().get(SnakeGame).head_direction;
-                    if (frame_data.input.justPressed(Input.Left)) {
-                        next_direction.go(.Left);
-                    }
-                    if (frame_data.input.justPressed(Input.Right)) {
-                        next_direction.go(.Right);
-                    }
-                    if (frame_data.input.justPressed(Input.Up)) {
-                        next_direction.go(.Up);
-                    }
-                    if (frame_data.input.justPressed(Input.Down)) {
-                        next_direction.go(.Down);
-                    }
-                }
+                inputSystem(&self.registery);
                 if (self.shouldTick()) {
                     self.registery.singletons().get(SnakeGame).events.ticked();
                     headDirectionChangeSystem(&self.registery);
@@ -606,6 +591,23 @@ pub fn collideSystems(registery: *ecs.Registry) void {
         return;
     }
     registery.singletons().get(SnakeGame).events.died();
+}
+
+pub fn inputSystem(registery: *ecs.Registry) void {
+    const frame_data = registery.singletons().getConst(FrameInput);
+    var next_direction = registery.singletons().get(SnakeGame).head_direction;
+    if (frame_data.input.justPressed(Input.Left)) {
+        next_direction.go(.Left);
+    }
+    if (frame_data.input.justPressed(Input.Right)) {
+        next_direction.go(.Right);
+    }
+    if (frame_data.input.justPressed(Input.Up)) {
+        next_direction.go(.Up);
+    }
+    if (frame_data.input.justPressed(Input.Down)) {
+        next_direction.go(.Down);
+    }
 }
 
 fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ecs.Entity {
