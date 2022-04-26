@@ -8,4 +8,4 @@ Original implementation
 
 ## Sokol Snake
 
-Migrated from the Original Wasm4 version, and implemented an [ecs](github.com/prime31/zig-ecs/)
+Migrated from the Original Wasm4 version, and included an [ecs](github.com/prime31/zig-ecs/) 
