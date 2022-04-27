@@ -154,3 +154,64 @@ pub fn inputSystem(registery: *ecs.Registry) void {
         next_direction.go(.Down);
     }
 }
+
+pub fn headDirectionChangeSystem(registery: *ecs.Registry) void {
+    var next_direction = &registery.singletons().get(SnakeGame).head_direction;
+    var head = registery.singletons().getConst(SnakeEdges).head;
+    var view = registery.view(.{SegmentComponent}, .{});
+    view.get(head).go(next_direction.direction);
+    next_direction.swap();
+}
+
+pub fn cleanupSnakeSystem(registery: *ecs.Registry) void {
+    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
+    var iter = view.iterator();
+    while (iter.next()) |entity| {
+        registery.destroy(entity);
+    }
+    registery.singletons().remove(SnakeEdges);
+}
+
+pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
+    if (willCollide(registery)) return;
+    var view = registery.view(.{ PositionComponent, FruitTag }, .{});
+    if (view.registry.len(FruitTag) > 0) return;
+
+    const snake_game = registery.singletons().getConst(SnakeGame);
+    const bounds = snake_game.bounds;
+    const fruit_random = snake_game.randoms.fruit_random;
+
+    var entity = registery.create();
+    const position: PositionComponent = Vec2{
+        .x = fruit_random.intRangeLessThan(i32, bounds.x_min, bounds.x_max),
+        .y = fruit_random.intRangeLessThan(i32, bounds.y_min + 1, bounds.y_max),
+    };
+    registery.add(entity, FruitTag{});
+    registery.add(entity, position);
+}
+
+pub fn collideSystems(registery: *ecs.Registry) void {
+    if (!willCollide(registery)) {
+        return;
+    }
+    registery.singletons().get(SnakeGame).events.died();
+}
+
+pub fn createSnakeSystem(registery: *ecs.Registry) void {
+    var snake_game = registery.singletons().get(SnakeGame);
+    snake_game.head_direction.direction = .Up;
+    snake_game.game_state = .Play;
+
+    const bounds = snake_game.bounds;
+    const x = @divTrunc((bounds.x_max - bounds.x_min), 2) - 1;
+    const y = @divTrunc((bounds.y_max - bounds.y_min), 2) - 1;
+    const head_direction = snake_game.head_direction.direction;
+    const head_position = Vec2{ .x = x, .y = y };
+
+    var head_entity = createHead(registery, head_direction, head_position);
+    var tail_entity = appendTail(registery, head_entity);
+    const snake_edges = registery.singletons().getOrAdd(SnakeEdges);
+    snake_edges.head = head_entity;
+    snake_edges.tail = tail_entity;
+}
+
