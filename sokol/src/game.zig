@@ -329,23 +329,7 @@ pub fn createSnakeSystem(registery: *ecs.Registry) void {
     snake_edges.tail = tail_entity;
 }
 
-pub fn inputSystem(registery: *ecs.Registry) void {
-    const frame_data = registery.singletons().getConst(FrameInput);
-    var next_direction = &registery.singletons().get(SnakeGame).head_direction;
-    if (frame_data.input.justPressed(Input.Left)) {
-        next_direction.go(.Left);
-    }
-    if (frame_data.input.justPressed(Input.Right)) {
-        next_direction.go(.Right);
-    }
-    if (frame_data.input.justPressed(Input.Up)) {
-        next_direction.go(.Up);
-    }
-    if (frame_data.input.justPressed(Input.Down)) {
-        next_direction.go(.Down);
-    }
-}
-
+const inputSystem = Systems.inputSystem;
 const maybeEatFruitSystem = Systems.maybeEatFruitSystem;
 const willCollide = Systems.willCollide;
 const appendTail = Systems.appendTail;

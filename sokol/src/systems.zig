@@ -23,7 +23,6 @@ pub const HeadDirection = Types.HeadDirection;
 pub const RandomGenerators = Types.RandomGenerators;
 pub const SnakeGame = Types.SnakeGame;
 
-
 fn willCollideWithSelf(registery: *ecs.Registry) bool {
     var head = registery.singletons().getConst(SnakeEdges).head;
     var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
@@ -126,7 +125,6 @@ pub fn menuStageInputSystem(registery: *ecs.Registry) void {
     registery.singletons().get(SnakeGame).events.reseed();
 }
 
-
 pub fn maybeEatFruitSystem(registery: *ecs.Registry) void {
     var snake_head_position = getHeadPosition(registery);
     var view = registery.view(.{ PositionComponent, FruitTag }, .{});
@@ -137,5 +135,22 @@ pub fn maybeEatFruitSystem(registery: *ecs.Registry) void {
             registery.removeAll(entity);
             registery.singletons().get(SnakeGame).events.eatFruit();
         }
+    }
+}
+
+pub fn inputSystem(registery: *ecs.Registry) void {
+    const frame_data = registery.singletons().getConst(FrameInput);
+    var next_direction = &registery.singletons().get(SnakeGame).head_direction;
+    if (frame_data.input.justPressed(Input.Left)) {
+        next_direction.go(.Left);
+    }
+    if (frame_data.input.justPressed(Input.Right)) {
+        next_direction.go(.Right);
+    }
+    if (frame_data.input.justPressed(Input.Up)) {
+        next_direction.go(.Up);
+    }
+    if (frame_data.input.justPressed(Input.Down)) {
+        next_direction.go(.Down);
     }
 }
