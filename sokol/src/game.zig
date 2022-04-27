@@ -52,21 +52,6 @@ pub const SegmentComponent = struct {
     }
 };
 
-pub const Fruit = struct {
-    pos: ?Vec2 = null,
-
-    pub fn missing(self: *const Fruit) bool {
-        return self.pos == null;
-    }
-
-    pub fn overlaps(self: *Fruit, other: Vec2) bool {
-        if (self.pos) |pos| {
-            return pos.equals(other);
-        }
-        return false;
-    }
-};
-
 pub const GameState = enum {
     Menu,
     Play,
@@ -262,18 +247,6 @@ pub fn drawSegmentSmallV2(direction: *const Direction, position: *PositionCompon
 
     simple_renderer.setForegroundPallete(1);
     simple_renderer.drawRect(x, y, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
-}
-
-pub fn drawFruit(
-    fruit: *const Fruit,
-    simple_renderer: *SimpleRenderer,
-) void {
-    if (fruit.pos) |pos| {
-        const x = (pos.x * SNAKE_SIZE);
-        const y = (pos.y * SNAKE_SIZE);
-        simple_renderer.setForegroundPallete(3);
-        simple_renderer.drawRect(x + SNAKE_HALF_SIZE / 2, y + SNAKE_HALF_SIZE / 2, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
-    }
 }
 
 pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
