@@ -353,12 +353,6 @@ pub fn menuStageInput(registery: *ecs.Registry) void {
     registery.singletons().get(SnakeGame).events.reseed();
 }
 
-pub fn getHeadPosition(registery: *ecs.Registry) PositionComponent {
-    var head = registery.singletons().getConst(SnakeEdges).head;
-    var view = registery.view(.{PositionComponent}, .{});
-    return view.getConst(head);
-}
-
 pub fn maybeEatFruitSystem(registery: *ecs.Registry) void {
     var snake_head_position = getHeadPosition(registery);
     var view = registery.view(.{ PositionComponent, FruitTag }, .{});
@@ -376,3 +370,4 @@ const willCollide = Systems.willCollide;
 const appendTail = Systems.appendTail;
 const growTailSystem = Systems.growTailSystem;
 const createHead = Systems.createHead;
+const getHeadPosition = Systems.getHeadPosition;

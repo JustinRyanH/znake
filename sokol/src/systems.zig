@@ -111,3 +111,9 @@ pub fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2
     registery.add(entity, position);
     return entity;
 }
+
+pub fn getHeadPosition(registery: *ecs.Registry) PositionComponent {
+    var head = registery.singletons().getConst(SnakeEdges).head;
+    var view = registery.view(.{PositionComponent}, .{});
+    return view.getConst(head);
+}
