@@ -277,17 +277,6 @@ fn headDirectionChangeSystem(registery: *ecs.Registry) void {
     next_direction.swap();
 }
 
-fn growTailSystem(registery: *ecs.Registry) void {
-    if (willCollide(registery)) return;
-    var events = registery.singletons().get(SnakeGame).events;
-    if (!events.hasEatenFruit()) {
-        return;
-    }
-    var edges = registery.singletons().get(SnakeEdges);
-    var new_tail = appendTail(registery, edges.tail);
-    edges.tail = new_tail;
-}
-
 fn cleanupSnakeSystem(registery: *ecs.Registry) void {
     var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
     var iter = view.iterator();
@@ -391,5 +380,6 @@ pub fn maybeEatFruitSystem(registery: *ecs.Registry) void {
     }
 }
 
-pub const willCollide = Systems.willCollide;
-pub const appendTail = Systems.appendTail;
+const willCollide = Systems.willCollide;
+const appendTail = Systems.appendTail;
+const growTailSystem = Systems.growTailSystem;

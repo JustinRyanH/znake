@@ -92,3 +92,14 @@ pub fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
     registery.add(entity, tail_position);
     return entity;
 }
+
+pub fn growTailSystem(registery: *ecs.Registry) void {
+    if (willCollide(registery)) return;
+    var events = registery.singletons().get(SnakeGame).events;
+    if (!events.hasEatenFruit()) {
+        return;
+    }
+    var edges = registery.singletons().get(SnakeEdges);
+    var new_tail = appendTail(registery, edges.tail);
+    edges.tail = new_tail;
+}
