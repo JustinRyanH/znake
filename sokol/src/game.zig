@@ -11,6 +11,7 @@ pub const CANVAS_SIZE = 160;
 pub const SNAKE_SIZE = 8;
 
 const SNAKE_HALF_SIZE = SNAKE_SIZE / 2;
+
 const PositionComponent = Vec2;
 
 pub const FrameInput = Types.FrameInput;
@@ -20,62 +21,11 @@ pub const Vec2 = Types.Vec2;
 pub const Direction = Types.Direction;
 pub const Bounds = Types.Bounds;
 pub const SnakeEdges = Types.SnakeEdges;
-
-pub const SegmentComponent = struct {
-    const SegmentType = enum {
-        Head,
-        Body,
-        Tail,
-    };
-
-    previous_entity: ?ecs.Entity = null,
-    next_entity: ?ecs.Entity = null,
-    direction: Direction,
-    segment_type: SegmentType,
-
-    pub fn nextPosition(self: *const SegmentComponent, position: Vec2) Vec2 {
-        return position.add(self.direction.to_vec2());
-    }
-
-    pub fn go(self: *SegmentComponent, direction: Direction) void {
-        if (self.direction == direction.opposite()) {
-            return;
-        }
-        self.direction = direction;
-    }
-};
-
-pub const GameState = enum {
-    Menu,
-    Play,
-    GameOver,
-};
-
-pub const HeadDirection = struct {
-    direction: Direction = .Up,
-    current_direction: Direction = .Up,
-
-    pub fn go(self: *HeadDirection, direction: Direction) void {
-        if (self.current_direction.opposite() != direction) {
-            self.direction = direction;
-        }
-    }
-
-    pub fn swap(self: *HeadDirection) void {
-        self.current_direction = self.direction;
-    }
-};
-pub const RandomGenerators = struct {
-    fruit_random: rand.Random,
-};
-pub const SnakeGame = struct {
-    bounds: Bounds,
-    events: GameEvents,
-    head_direction: HeadDirection,
-    randoms: RandomGenerators,
-    step_stride: u32,
-    game_state: GameState = .Menu,
-};
+pub const SegmentComponent = Types.SegmentComponent;
+pub const GameState = Types.GameState;
+pub const HeadDirection = Types.HeadDirection;
+pub const RandomGenerators = Types.RandomGenerators;
+pub const SnakeGame = Types.SnakeGame;
 
 pub const StateSetup = struct {
     y_min: u8,

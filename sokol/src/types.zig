@@ -4,6 +4,7 @@ const Input = @import("./input.zig");
 
 const ArrayList = std.ArrayList;
 const mem = std.mem;
+const rand = std.rand;
 
 pub const Bounds = struct {
     x_min: i32,
@@ -193,3 +194,35 @@ pub const FrameInput = struct {
 };
 
 pub const FruitTag = struct {};
+
+pub const GameState = enum {
+    Menu,
+    Play,
+    GameOver,
+};
+
+pub const HeadDirection = struct {
+    direction: Direction = .Up,
+    current_direction: Direction = .Up,
+
+    pub fn go(self: *HeadDirection, direction: Direction) void {
+        if (self.current_direction.opposite() != direction) {
+            self.direction = direction;
+        }
+    }
+
+    pub fn swap(self: *HeadDirection) void {
+        self.current_direction = self.direction;
+    }
+};
+pub const RandomGenerators = struct {
+    fruit_random: rand.Random,
+};
+pub const SnakeGame = struct {
+    bounds: Bounds,
+    events: GameEvents,
+    head_direction: HeadDirection,
+    randoms: RandomGenerators,
+    step_stride: u32,
+    game_state: GameState = .Menu,
+};
