@@ -78,7 +78,7 @@ pub const State = struct {
         const snake_game = self.registery.singletons().get(SnakeGame);
         switch (snake_game.game_state) {
             .GameOver, .Menu => {
-                menuStageInput(&self.registery);
+                menuStageInputSystem(&self.registery);
                 if (snake_game.events.hasNextStage()) {
                     cleanupSnakeSystem(&self.registery);
                     createSnakeSystem(&self.registery);
@@ -346,7 +346,7 @@ pub fn inputSystem(registery: *ecs.Registry) void {
     }
 }
 
-pub fn menuStageInput(registery: *ecs.Registry) void {
+pub fn menuStageInputSystem(registery: *ecs.Registry) void {
     const frame_data = registery.singletons().getConst(FrameInput);
     if (!frame_data.input.justReleased(Input.ButtonB)) return;
     registery.singletons().get(SnakeGame).events.nextStage();
