@@ -113,30 +113,7 @@ pub const GameEvents = struct {
 
 pub const Vec2 = Types.Vec2;
 
-pub const Direction = enum {
-    Up,
-    Down,
-    Left,
-    Right,
-
-    pub fn to_vec2(self: Direction) Vec2 {
-        return switch (self) {
-            .Up => .{ .y = -1 },
-            .Down => .{ .y = 1 },
-            .Left => .{ .x = -1 },
-            .Right => .{ .x = 1 },
-        };
-    }
-
-    pub fn opposite(self: Direction) Direction {
-        return switch (self) {
-            .Up => .Down,
-            .Down => .Up,
-            .Left => .Right,
-            .Right => .Left,
-        };
-    }
-};
+pub const Direction = Types.Direction;
 
 pub const Bounds = Types.Bounds;
 pub const SnakeEdges = struct {
