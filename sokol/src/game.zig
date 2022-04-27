@@ -1,5 +1,6 @@
 const std = @import("std");
 const SimpleRenderer = @import("simple_renderer.zig");
+const Types = @import("./types.zig");
 const ecs = @import("ecs");
 const Input = @import("./input.zig");
 const mem = std.mem;
@@ -165,13 +166,7 @@ pub const Direction = enum {
     }
 };
 
-pub const Bounds = struct {
-    x_min: i32,
-    x_max: i32,
-    y_min: i32,
-    y_max: i32,
-};
-
+pub const Bounds = Types.Bounds;
 pub const SnakeEdges = struct {
     tail: ecs.Entity,
     head: ecs.Entity,
