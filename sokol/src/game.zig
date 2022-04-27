@@ -20,106 +20,13 @@ pub const FrameInput = struct {
 
 pub const FruitTag = struct {};
 
-pub const GameEvents = struct {
-    const GameEvent = enum {
-        EatFruit,
-        TickHappened,
-        Died,
-        NextStage,
-        ShouldReseed,
-    };
-
-    inner: ArrayList(GameEvent),
-
-    pub fn init(allocator: mem.Allocator) GameEvents {
-        return .{
-            .inner = ArrayList(GameEvent).init(allocator),
-        };
-    }
-
-    pub fn clear(self: *GameEvents) void {
-        self.inner.clearAndFree();
-    }
-
-    pub fn ticked(self: *GameEvents) void {
-        self.append(.TickHappened);
-    }
-
-    pub fn died(self: *GameEvents) void {
-        self.append(.Died);
-    }
-
-    pub fn eatFruit(self: *GameEvents) void {
-        self.append(.EatFruit);
-    }
-
-    pub fn nextStage(self: *GameEvents) void {
-        self.append(.NextStage);
-    }
-
-    pub fn reseed(self: *GameEvents) void {
-        self.append(.ShouldReseed);
-    }
-
-    pub fn hasNextStage(self: *GameEvents) bool {
-        for (self.inner.items) |event| {
-            if (event == .NextStage) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    pub fn hasTicked(self: *GameEvents) bool {
-        for (self.inner.items) |event| {
-            if (event == .TickHappened) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    pub fn hasDied(self: *GameEvents) bool {
-        for (self.inner.items) |event| {
-            if (event == .Died) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    pub fn hasEatenFruit(self: *GameEvents) bool {
-        for (self.inner.items) |event| {
-            if (event == .EatFruit) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    pub fn shouldReseed(self: *GameEvents) bool {
-        for (self.inner.items) |event| {
-            if (event == .ShouldReseed) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    fn append(self: *GameEvents, event: GameEvent) void {
-        self.inner.append(event) catch @panic("Cannot Append Event");
-    }
-};
-
+pub const GameEvents = Types.GameEvents;
 pub const Vec2 = Types.Vec2;
 
 pub const Direction = Types.Direction;
 
 pub const Bounds = Types.Bounds;
-pub const SnakeEdges = struct {
-    tail: ecs.Entity,
-    head: ecs.Entity,
-};
+pub const SnakeEdges = Types.SnakeEdges;
 
 pub const SegmentComponent = struct {
     const SegmentType = enum {
