@@ -22,6 +22,7 @@ pub const HeadDirection = Types.HeadDirection;
 pub const RandomGenerators = Types.RandomGenerators;
 pub const SnakeGame = Types.SnakeGame;
 
+
 fn willCollideWithSelf(registery: *ecs.Registry) bool {
     var head = registery.singletons().getConst(SnakeEdges).head;
     var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
@@ -76,4 +77,18 @@ pub fn updateSegmentPositionSystem(registery: *ecs.Registry) void {
             segment.*.direction = previous_segment.direction;
         }
     }
+}
+
+pub fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
+    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
+    var parent_segment = view.get(SegmentComponent, parent);
+    parent_segment.segment_type = .Body;
+    var parent_position = view.getConst(PositionComponent, parent);
+    var entity = registery.create();
+
+    const tail_segment = SegmentComponent{ .direction = parent_segment.direction, .previous_entity = parent, .segment_type = .Tail };
+    const tail_position: PositionComponent = parent_position.add(parent_segment.direction.opposite().to_vec2());
+    registery.add(entity, tail_segment);
+    registery.add(entity, tail_position);
+    return entity;
 }

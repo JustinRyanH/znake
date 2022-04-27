@@ -378,20 +378,6 @@ pub fn getHeadPosition(registery: *ecs.Registry) PositionComponent {
     return view.getConst(head);
 }
 
-fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
-    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
-    var parent_segment = view.get(SegmentComponent, parent);
-    parent_segment.segment_type = .Body;
-    var parent_position = view.getConst(PositionComponent, parent);
-    var entity = registery.create();
-
-    const tail_segment = SegmentComponent{ .direction = parent_segment.direction, .previous_entity = parent, .segment_type = .Tail };
-    const tail_position: PositionComponent = parent_position.add(parent_segment.direction.opposite().to_vec2());
-    registery.add(entity, tail_segment);
-    registery.add(entity, tail_position);
-    return entity;
-}
-
 pub fn maybeEatFruitSystem(registery: *ecs.Registry) void {
     var snake_head_position = getHeadPosition(registery);
     var view = registery.view(.{ PositionComponent, FruitTag }, .{});
@@ -406,3 +392,4 @@ pub fn maybeEatFruitSystem(registery: *ecs.Registry) void {
 }
 
 pub const willCollide = Systems.willCollide;
+pub const appendTail = Systems.appendTail;
