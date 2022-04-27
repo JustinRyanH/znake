@@ -1,6 +1,7 @@
 const std = @import("std");
 const SimpleRenderer = @import("simple_renderer.zig");
 const Types = @import("./types.zig");
+const Systems = @import("./systems.zig");
 const ecs = @import("ecs");
 const Input = @import("./input.zig");
 const mem = std.mem;
@@ -266,20 +267,7 @@ pub fn mainMenu(state: *State, simple_renderer: *SimpleRenderer) void {
     simple_renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
 }
 
-fn updateSegmentPositionSystem(registery: *ecs.Registry) void {
-    if (willCollide(registery)) return;
-    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
-    var iter = view.iterator();
-    while (iter.next()) |entity| {
-        var pos = view.get(PositionComponent, entity);
-        var segment = view.get(SegmentComponent, entity);
-        pos.* = segment.nextPosition(pos.*);
-        if (segment.previous_entity) |entt| {
-            var previous_segment = view.get(SegmentComponent, entt);
-            segment.*.direction = previous_segment.direction;
-        }
-    }
-}
+const updateSegmentPositionSystem = Systems.updateSegmentPositionSystem;
 
 fn headDirectionChangeSystem(registery: *ecs.Registry) void {
     var next_direction = &registery.singletons().get(SnakeGame).head_direction;
@@ -417,43 +405,4 @@ pub fn maybeEatFruitSystem(registery: *ecs.Registry) void {
     }
 }
 
-pub fn willCollide(registery: *ecs.Registry) bool {
-    return willBeOutOfBounds(registery) or willCollideWithSelf(registery);
-}
-
-pub fn willCollideWithSelf(registery: *ecs.Registry) bool {
-    var head = registery.singletons().getConst(SnakeEdges).head;
-    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
-    var head_segment = view.get(SegmentComponent, head);
-    var head_pos = view.get(PositionComponent, head);
-    var next_pos = head_segment.nextPosition(head_pos.*);
-
-    var iter = view.iterator();
-    while (iter.next()) |entity| {
-        if (head == entity) continue;
-        var body_segment = view.get(SegmentComponent, entity);
-        var body_pos = view.get(PositionComponent, entity);
-        var body_next_pos = body_segment.nextPosition(body_pos.*);
-        if (body_next_pos.equals(next_pos)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-pub fn willBeOutOfBounds(registery: *ecs.Registry) bool {
-    const bounds = registery.singletons().getConst(SnakeGame).bounds;
-    var head = registery.singletons().getConst(SnakeEdges).head;
-    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
-    var ecs_segment = view.get(SegmentComponent, head);
-    var current_position = view.get(PositionComponent, head);
-
-    const position = current_position.add(ecs_segment.direction.to_vec2());
-    if (position.y < bounds.y_min or position.y > bounds.y_max) {
-        return true;
-    }
-    if (position.x < bounds.x_min or position.x >= bounds.x_max) {
-        return true;
-    }
-    return false;
-}
+pub const willCollide = Systems.willCollide;
