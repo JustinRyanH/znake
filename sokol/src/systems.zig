@@ -1,5 +1,6 @@
 const std = @import("std");
 const Types = @import("./types.zig");
+const Input = @import("./input.zig");
 const ecs = @import("ecs");
 
 pub const CANVAS_SIZE = 160;
@@ -116,4 +117,11 @@ pub fn getHeadPosition(registery: *ecs.Registry) PositionComponent {
     var head = registery.singletons().getConst(SnakeEdges).head;
     var view = registery.view(.{PositionComponent}, .{});
     return view.getConst(head);
+}
+
+pub fn menuStageInputSystem(registery: *ecs.Registry) void {
+    const frame_data = registery.singletons().getConst(FrameInput);
+    if (!frame_data.input.justReleased(Input.ButtonB)) return;
+    registery.singletons().get(SnakeGame).events.nextStage();
+    registery.singletons().get(SnakeGame).events.reseed();
 }
