@@ -239,15 +239,6 @@ pub const HeadDirection = struct {
 pub const RandomGenerators = struct {
     fruit_random: rand.Random,
 };
-pub const StateSetup = struct {
-    y_min: u8,
-    y_max: u8,
-    x_min: u8,
-    x_max: u8,
-    step_stride: u32,
-    random: rand.Random,
-};
-
 pub const SnakeGame = struct {
     bounds: Bounds,
     events: GameEvents,
@@ -255,6 +246,15 @@ pub const SnakeGame = struct {
     randoms: RandomGenerators,
     step_stride: u32,
     game_state: GameState = .Menu,
+};
+
+pub const StateSetup = struct {
+    y_min: u8,
+    y_max: u8,
+    x_min: u8,
+    x_max: u8,
+    step_stride: u32,
+    random: rand.Random,
 };
 
 pub const State = struct {
