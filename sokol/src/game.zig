@@ -28,6 +28,20 @@ pub const HeadDirection = Types.HeadDirection;
 pub const RandomGenerators = Types.RandomGenerators;
 pub const SnakeGame = Types.SnakeGame;
 
+const headDirectionChangeSystem = Systems.headDirectionChangeSystem;
+const cleanupSnakeSystem = Systems.cleanupSnakeSystem;
+const fruitGenerationSystem = Systems.fruitGenerationSystem;
+const collideSystems = Systems.collideSystems;
+const createSnakeSystem = Systems.createSnakeSystem;
+const inputSystem = Systems.inputSystem;
+const maybeEatFruitSystem = Systems.maybeEatFruitSystem;
+const willCollide = Systems.willCollide;
+const appendTail = Systems.appendTail;
+const growTailSystem = Systems.growTailSystem;
+const createHead = Systems.createHead;
+const getHeadPosition = Systems.getHeadPosition;
+const menuStageInputSystem = Systems.menuStageInputSystem;
+
 pub const StateSetup = struct {
     y_min: u8,
     y_max: u8,
@@ -266,18 +280,3 @@ pub fn mainMenu(state: *State, simple_renderer: *SimpleRenderer) void {
     }
     simple_renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
 }
-
-const updateSegmentPositionSystem = Systems.updateSegmentPositionSystem;
-const headDirectionChangeSystem = Systems.headDirectionChangeSystem;
-const cleanupSnakeSystem = Systems.cleanupSnakeSystem;
-const fruitGenerationSystem = Systems.fruitGenerationSystem;
-const collideSystems = Systems.collideSystems;
-const createSnakeSystem = Systems.createSnakeSystem;
-const inputSystem = Systems.inputSystem;
-const maybeEatFruitSystem = Systems.maybeEatFruitSystem;
-const willCollide = Systems.willCollide;
-const appendTail = Systems.appendTail;
-const growTailSystem = Systems.growTailSystem;
-const createHead = Systems.createHead;
-const getHeadPosition = Systems.getHeadPosition;
-const menuStageInputSystem = Systems.menuStageInputSystem;
