@@ -20,15 +20,15 @@ pub const FrameInput = struct {
 
 pub const FruitTag = struct {};
 
-pub const GameEvent = enum {
-    EatFruit,
-    TickHappened,
-    Died,
-    NextStage,
-    ShouldReseed,
-};
-
 pub const GameEvents = struct {
+    const GameEvent = enum {
+        EatFruit,
+        TickHappened,
+        Died,
+        NextStage,
+        ShouldReseed,
+    };
+
     inner: ArrayList(GameEvent),
 
     pub fn init(allocator: mem.Allocator) GameEvents {
