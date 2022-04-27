@@ -103,3 +103,11 @@ pub fn growTailSystem(registery: *ecs.Registry) void {
     var new_tail = appendTail(registery, edges.tail);
     edges.tail = new_tail;
 }
+
+pub fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2) ecs.Entity {
+    var entity = registery.create();
+    const segment = SegmentComponent{ .direction = direction, .segment_type = .Head };
+    registery.add(entity, segment);
+    registery.add(entity, position);
+    return entity;
+}
