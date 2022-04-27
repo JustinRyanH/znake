@@ -13,18 +13,11 @@ pub const SNAKE_SIZE = 8;
 const SNAKE_HALF_SIZE = SNAKE_SIZE / 2;
 const PositionComponent = Vec2;
 
-pub const FrameInput = struct {
-    frame: usize = 0,
-    input: Input = .{},
-};
-
-pub const FruitTag = struct {};
-
+pub const FrameInput = Types.FrameInput;
+pub const FruitTag = Types.FruitTag;
 pub const GameEvents = Types.GameEvents;
 pub const Vec2 = Types.Vec2;
-
 pub const Direction = Types.Direction;
-
 pub const Bounds = Types.Bounds;
 pub const SnakeEdges = Types.SnakeEdges;
 

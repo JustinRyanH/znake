@@ -1,5 +1,7 @@
 const std = @import("std");
 const ecs = @import("ecs");
+const Input = @import("./input.zig");
+
 const ArrayList = std.ArrayList;
 const mem = std.mem;
 
@@ -184,3 +186,10 @@ pub const SegmentComponent = struct {
         self.direction = direction;
     }
 };
+
+pub const FrameInput = struct {
+    frame: usize = 0,
+    input: Input = .{},
+};
+
+pub const FruitTag = struct {};
