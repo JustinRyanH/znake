@@ -346,19 +346,7 @@ pub fn inputSystem(registery: *ecs.Registry) void {
     }
 }
 
-pub fn maybeEatFruitSystem(registery: *ecs.Registry) void {
-    var snake_head_position = getHeadPosition(registery);
-    var view = registery.view(.{ PositionComponent, FruitTag }, .{});
-    var iter = view.iterator();
-    while (iter.next()) |entity| {
-        const position = view.getConst(PositionComponent, entity);
-        if (position.equals(snake_head_position)) {
-            registery.removeAll(entity);
-            registery.singletons().get(SnakeGame).events.eatFruit();
-        }
-    }
-}
-
+const maybeEatFruitSystem = Systems.maybeEatFruitSystem;
 const willCollide = Systems.willCollide;
 const appendTail = Systems.appendTail;
 const growTailSystem = Systems.growTailSystem;
