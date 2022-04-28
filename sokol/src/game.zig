@@ -69,13 +69,6 @@ pub const State = struct {
         self.updateGame();
         render(&self.registery, renderer);
         input.swap();
-
-        const snake_game = self.registery.singletons().getConst(SnakeGame);
-        switch (snake_game.game_state) {
-            .Menu => mainMenu(&self.registery, renderer),
-            .Play => play(&self.registery, renderer),
-            .GameOver => gameOver(&self.registery, renderer),
-        }
     }
 
     pub fn updateGame(self: *State) void {
@@ -271,7 +264,7 @@ pub fn mainMenu(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void
     simple_renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
 }
 
-pub fn render(_: *ecs.Registry, renderer: *SimpleRenderer) void {
+pub fn render(registery: *ecs.Registry, renderer: *SimpleRenderer) void {
     renderer.setForegroundPallete(0);
     renderer.reset();
 
@@ -279,4 +272,11 @@ pub fn render(_: *ecs.Registry, renderer: *SimpleRenderer) void {
     renderer.drawRect(0, 0, CANVAS_SIZE, 16);
     renderer.setBackgroundPallete(0);
     renderer.drawText("SOKOL Znake", 34, 4);
+
+    const snake_game = registery.singletons().getConst(SnakeGame);
+    switch (snake_game.game_state) {
+        .Menu => mainMenu(registery, renderer),
+        .Play => play(registery, renderer),
+        .GameOver => gameOver(registery, renderer),
+    }
 }
