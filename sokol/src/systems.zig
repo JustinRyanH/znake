@@ -10,18 +10,18 @@ const SNAKE_HALF_SIZE = SNAKE_SIZE / 2;
 
 const PositionComponent = Vec2;
 
+pub const Bounds = Types.Bounds;
+pub const Direction = Types.Direction;
 pub const FrameInput = Types.FrameInput;
 pub const FruitTag = Types.FruitTag;
 pub const GameEvents = Types.GameEvents;
-pub const Vec2 = Types.Vec2;
-pub const Direction = Types.Direction;
-pub const Bounds = Types.Bounds;
-pub const SnakeEdges = Types.SnakeEdges;
-pub const SegmentComponent = Types.SegmentComponent;
 pub const GameState = Types.GameState;
 pub const HeadDirection = Types.HeadDirection;
 pub const RandomGenerators = Types.RandomGenerators;
+pub const SegmentComponent = Types.SegmentComponent;
+pub const SnakeEdges = Types.SnakeEdges;
 pub const SnakeGame = Types.SnakeGame;
+pub const Vec2 = Types.Vec2;
 
 fn willCollideWithSelf(registery: *ecs.Registry) bool {
     var head = registery.singletons().getConst(SnakeEdges).head;
