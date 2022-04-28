@@ -74,7 +74,7 @@ pub const State = struct {
         switch (snake_game.game_state) {
             .Menu => mainMenu(self, renderer),
             .Play => play(self, renderer),
-            .GameOver => gameOver(self, renderer),
+            .GameOver => gameOver(&self.registery, renderer),
         }
     }
 
@@ -246,8 +246,8 @@ pub fn play(state: *State, simple_renderer: *SimpleRenderer) void {
     drawState(&state.registery, simple_renderer);
 }
 
-pub fn gameOver(state: *State, simple_renderer: *SimpleRenderer) void {
-    const frame_data = state.registery.singletons().getConst(FrameInput);
+pub fn gameOver(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
+    const frame_data = registery.singletons().getConst(FrameInput);
     simple_renderer.setForegroundPallete(1);
     simple_renderer.drawText("GAME OVER", 42, CANVAS_SIZE - 15);
 
