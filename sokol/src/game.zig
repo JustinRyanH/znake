@@ -224,7 +224,7 @@ pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) voi
     }
 }
 
-pub fn play(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
+pub fn renderPlay(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
     const snake_game = registery.singletons().get(SnakeGame);
     const tick_happened = snake_game.events.hasTicked();
     const has_eaten = snake_game.events.hasEatenFruit();
@@ -239,7 +239,7 @@ pub fn play(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
     drawState(registery, simple_renderer);
 }
 
-pub fn gameOver(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
+pub fn renderGameOver(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
     const frame_data = registery.singletons().getConst(FrameInput);
     simple_renderer.setForegroundPallete(1);
     simple_renderer.drawText("GAME OVER", 42, CANVAS_SIZE - 15);
@@ -253,7 +253,7 @@ pub fn gameOver(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void
     }
 }
 
-pub fn mainMenu(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
+pub fn renderMainMenu(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
     const frame_data = registery.singletons().getConst(FrameInput);
     simple_renderer.drawText("WELCOME!", 48, CANVAS_SIZE / 2);
     if (frame_data.input.down(Input.ButtonB)) {
@@ -275,8 +275,8 @@ pub fn render(registery: *ecs.Registry, renderer: *SimpleRenderer) void {
 
     const snake_game = registery.singletons().getConst(SnakeGame);
     switch (snake_game.game_state) {
-        .Menu => mainMenu(registery, renderer),
-        .Play => play(registery, renderer),
-        .GameOver => gameOver(registery, renderer),
+        .Menu => renderMainMenu(registery, renderer),
+        .Play => renderPlay(registery, renderer),
+        .GameOver => renderGameOver(registery, renderer),
     }
 }
