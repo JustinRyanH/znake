@@ -41,6 +41,7 @@ const growTailSystem = Systems.growTailSystem;
 const createHead = Systems.createHead;
 const getHeadPosition = Systems.getHeadPosition;
 const menuStageInputSystem = Systems.menuStageInputSystem;
+const updateSegmentPositionSystem = Systems.updateSegmentPositionSystem;
 
 pub const StateSetup = struct {
     y_min: u8,
