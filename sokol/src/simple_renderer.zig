@@ -1,9 +1,16 @@
+const SimpleRenderer = @This();
+
 const std = @import("std");
 const RendererVals = @import("renderer_vals.zig");
 const LocalMem = @import("local_mem.zig");
-pub const FONT = RendererVals.FONT;
-const SimpleRenderer = @This();
 const mem = std.mem;
+
+pub const FONT = RendererVals.FONT;
+pub const BlitOptions = packed struct {
+    flip_x: bool = false,
+    flip_y: bool = false,
+    _: u6 = 0,
+};
 
 ptr: *anyopaque,
 vtable: *const VTable,
@@ -139,11 +146,12 @@ pub fn blitBits(self: *SimpleRenderer, src: []const RendererVals.DrawPixel, dst_
     _ = src_y;
 }
 
-pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize) void {
+pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize, options: BlitOptions) void {
     const test_source = LocalMem.bitcastSlice(RendererVals.DrawPixel, source);
     std.debug.assert(test_source.len == source.len * 8);
     self.blitBits(test_source, dst_x, dst_y, width, height, src_x, src_y);
     _ = test_source;
+    _ = options;
     const min_x = std.math.clamp(dst_x, 0, self.getWidth());
     const max_x = std.math.clamp(dst_x + width - 1, 0, self.getWidth());
     const min_y = std.math.clamp(dst_y, 0, self.getHeight());
@@ -178,7 +186,7 @@ pub fn drawText(self: *SimpleRenderer, text: []const u8, x: u8, y: u8) void {
         var source_start: usize = (byte - 32);
         source_start = source_start << 3;
         if (i > self.getWidth()) return;
-        self.blitBytes(&FONT, i, y, 8, 8, source_start, 0);
+        self.blitBytes(&FONT, i, y, 8, 8, source_start, 0, .{});
         i += 8;
     }
 }

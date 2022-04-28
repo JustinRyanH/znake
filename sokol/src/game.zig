@@ -213,7 +213,7 @@ pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) voi
             switch (sprite.kind) {
                 .Fruit => {
                     simple_renderer.setForegroundPallete(3);
-                    simple_renderer.blitBytes(&fruit, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0);
+                    simple_renderer.blitBytes(&fruit, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, .{});
                     // simple_renderer.drawRect(x + SNAKE_HALF_SIZE / 2, y + SNAKE_HALF_SIZE / 2, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
                 },
                 else => {},
