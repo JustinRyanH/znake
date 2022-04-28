@@ -56,17 +56,6 @@ pub const State = struct {
     allocator: mem.Allocator,
     registery: ecs.Registry,
 
-    fn render(self: *State, renderer: *SimpleRenderer) void {
-        _ = self;
-        renderer.setForegroundPallete(0);
-        renderer.reset();
-
-        renderer.setForegroundPallete(3);
-        renderer.drawRect(0, 0, CANVAS_SIZE, 16);
-        renderer.setBackgroundPallete(0);
-        renderer.drawText("SOKOL Znake", 34, 4);
-    }
-
     pub fn update(self: *State, input: *Input, renderer: *SimpleRenderer) void {
         var existing_input = self.registery.singletons().getOrAdd(FrameInput);
         const old_input = existing_input.*;
@@ -78,7 +67,7 @@ pub const State = struct {
         events.clear();
         self.registery.singletons().get(SnakeGame).events.clear();
         self.updateGame();
-        self.render(renderer);
+        render(&self.registery, renderer);
         input.swap();
 
         const snake_game = self.registery.singletons().getConst(SnakeGame);
@@ -280,4 +269,14 @@ pub fn mainMenu(state: *State, simple_renderer: *SimpleRenderer) void {
         simple_renderer.setForegroundPallete(2);
     }
     simple_renderer.drawText("Press Z to Start", 16, CANVAS_SIZE / 2 + 14);
+}
+
+pub fn render(_: *ecs.Registry, renderer: *SimpleRenderer) void {
+    renderer.setForegroundPallete(0);
+    renderer.reset();
+
+    renderer.setForegroundPallete(3);
+    renderer.drawRect(0, 0, CANVAS_SIZE, 16);
+    renderer.setBackgroundPallete(0);
+    renderer.drawText("SOKOL Znake", 34, 4);
 }
