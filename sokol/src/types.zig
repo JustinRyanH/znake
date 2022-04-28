@@ -6,6 +6,16 @@ const ArrayList = std.ArrayList;
 const mem = std.mem;
 const rand = std.rand;
 
+pub const Sprite = struct {
+    const SpriteKind = enum {
+        Body,
+        Tail,
+        Fruit,
+    };
+    kind: SpriteKind,
+    direction: Direction,
+};
+
 pub const Bounds = struct {
     x_min: i32,
     x_max: i32,

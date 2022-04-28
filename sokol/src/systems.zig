@@ -21,6 +21,7 @@ pub const RandomGenerators = Types.RandomGenerators;
 pub const SegmentComponent = Types.SegmentComponent;
 pub const SnakeEdges = Types.SnakeEdges;
 pub const SnakeGame = Types.SnakeGame;
+pub const Sprite = Types.Sprite;
 pub const Vec2 = Types.Vec2;
 
 fn willCollideWithSelf(registery: *ecs.Registry) bool {
@@ -187,6 +188,7 @@ pub fn fruitGenerationSystem(registery: *ecs.Registry) void {
         .y = fruit_random.intRangeLessThan(i32, bounds.y_min + 1, bounds.y_max),
     };
     registery.add(entity, FruitTag{});
+    registery.add(entity, Sprite{ .direction = .Up, .kind = .Fruit });
     registery.add(entity, position);
 }
 
@@ -214,4 +216,3 @@ pub fn createSnakeSystem(registery: *ecs.Registry) void {
     snake_edges.head = head_entity;
     snake_edges.tail = tail_entity;
 }
-

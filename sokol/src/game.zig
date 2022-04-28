@@ -192,15 +192,21 @@ pub fn drawSegmentSmallV2(direction: *const Direction, position: *PositionCompon
 
 pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
     {
-        var view = registery.view(.{ FruitTag, PositionComponent }, .{});
+        var view = registery.view(.{ Types.Sprite, PositionComponent }, .{});
         var iter = view.iterator();
         while (iter.next()) |entity| {
             var pos = view.getConst(PositionComponent, entity);
-
+            const sprite = view.getConst(Types.Sprite, entity);
             const x = (pos.x * SNAKE_SIZE);
             const y = (pos.y * SNAKE_SIZE);
-            simple_renderer.setForegroundPallete(3);
-            simple_renderer.drawRect(x + SNAKE_HALF_SIZE / 2, y + SNAKE_HALF_SIZE / 2, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
+
+            switch (sprite.kind) {
+                .Fruit => {
+                    simple_renderer.setForegroundPallete(3);
+                    simple_renderer.drawRect(x + SNAKE_HALF_SIZE / 2, y + SNAKE_HALF_SIZE / 2, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
+                },
+                else => {},
+            }
         }
     }
     {
