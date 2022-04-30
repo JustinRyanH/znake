@@ -57,8 +57,20 @@ var renderer: *SimpleSokolRenderer = undefined;
 var game: *Game.State = undefined;
 var frame_rate: FixedFrameRate = .{};
 var input: GameInput = .{};
+var input_manager: InputManager = undefined;
+
+pub const InputManager = struct {
+    file: std.fs.File,
+};
+
+pub const InputStream = packed struct {
+    frame: usize,
+    input: u8,
+};
 
 export fn init() void {
+    var file = std.fs.cwd().createFile("test.txt", .{ .read = true }) catch @panic("Failed to Create write file");
+    input_manager = .{ .file = file };
     sg.setup(.{
         .context = sgapp.context(),
     });
@@ -112,6 +124,7 @@ export fn sokol_input(event: ?*const sapp.Event) void {
 }
 
 export fn cleanup() void {
+    input_manager.file.close();
     renderer.deinit() catch @panic("Failed to clean up renderer");
     std.debug.assert(!general_purpose_allocator.deinit());
 }
