@@ -241,15 +241,27 @@ pub const DrawPixel = enum(u1) {
     foreground,
 };
 
-// pub fn getDrawCommand(src: []const u8, x: usize, y: usize, stride: usize) DrawPixel {
-//     _ = src;
-//     _ = x;
-//     _ = y;
-//     _ = stride;
-//     return DrawPixel.foreground;
-// }
+pub fn getDrawCommand(src: []const u8, x: usize, y: usize, stride: usize) DrawPixel {
+    _ = src;
+    _ = x;
+    _ = y;
+    _ = stride;
+    return DrawPixel.foreground;
+}
 
-// test "getDrawCommand" {}
+test "getDrawCommand" {
+    const square = [8]u8{
+        0b00000000,
+        0b01111110,
+        0b01000010,
+        0b01011010,
+        0b01011010,
+        0b01000010,
+        0b01111110,
+        0b00000000,
+    };
+    try std.testing.expectEqual(getDrawCommand(&square, 0, 0, 8), DrawPixel.foreground);
+}
 
 pub fn bytemaskToDraws(byte: u8) [8]DrawPixel {
     var result: [8]DrawPixel = undefined;
