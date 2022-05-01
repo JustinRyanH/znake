@@ -241,6 +241,16 @@ pub const DrawPixel = enum(u1) {
     foreground,
 };
 
+// pub fn getDrawCommand(src: []const u8, x: usize, y: usize, stride: usize) DrawPixel {
+//     _ = src;
+//     _ = x;
+//     _ = y;
+//     _ = stride;
+//     return DrawPixel.foreground;
+// }
+
+// test "getDrawCommand" {}
+
 pub fn bytemaskToDraws(byte: u8) [8]DrawPixel {
     var result: [8]DrawPixel = undefined;
     var byte_copy = byte;
