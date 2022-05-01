@@ -128,7 +128,7 @@ pub fn drawRect(self: *SimpleRenderer, x: i32, y: i32, width: u16, height: u16) 
     }
 }
 
-pub fn blitBits(self: *SimpleRenderer, src: []const RendererVals.DrawPixel, dst_x: u8, dst_y: u8, width: u8, height: u8, src_x: usize, src_y: usize) void {
+pub fn blitBits(self: *SimpleRenderer, src: []const RendererVals.DrawPixel, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize) void {
     _ = self;
     _ = src;
     _ = dst_x;
@@ -139,7 +139,7 @@ pub fn blitBits(self: *SimpleRenderer, src: []const RendererVals.DrawPixel, dst_
     _ = src_y;
 }
 
-pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: u8, dst_y: u8, width: u8, height: u8, src_x: usize, src_y: usize) void {
+pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize) void {
     const test_source = LocalMem.bitcastSlice(RendererVals.DrawPixel, source);
     std.debug.assert(test_source.len == source.len * 8);
     self.blitBits(test_source, dst_x, dst_y, width, height, src_x, src_y);
@@ -148,7 +148,7 @@ pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: u8, dst_y: u8
     const max_x = std.math.clamp(dst_x + width - 1, 0, self.getWidth());
     const min_y = std.math.clamp(dst_y, 0, self.getHeight());
     const max_y = std.math.clamp(dst_y + height - 1, 0, self.getHeight());
-    const source_start = src_y * width + src_x;
+    const source_start = src_y * @intCast(usize, width) + src_x;
     var x: i32 = min_x;
     var y: i32 = min_y;
 
