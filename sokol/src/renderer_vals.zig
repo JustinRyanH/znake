@@ -236,7 +236,7 @@ pub const Pixel = packed struct {
     a: u8 = 255,
 };
 
-pub const DrawPixel = enum {
+pub const DrawPixel = enum(u1) {
     background,
     foreground,
 };
