@@ -134,7 +134,7 @@ pub fn drawRect(self: *SimpleRenderer, x: i32, y: i32, width: u16, height: u16) 
     }
 }
 
-pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize, options: BlitOptions) void {
+pub fn blitBytesOld(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize, options: BlitOptions) void {
     _ = options;
     const min_x = std.math.clamp(dst_x, 0, self.getWidth());
     const max_x = std.math.clamp(dst_x + width - 1, 0, self.getWidth());
@@ -162,6 +162,10 @@ pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i
             }
         }
     }
+}
+
+pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize, options: BlitOptions) void {
+    self.blitBytesOld(source, dst_x, dst_y, width, height, src_x, src_y, options);
 }
 
 pub fn drawText(self: *SimpleRenderer, text: []const u8, x: u8, y: u8) void {
