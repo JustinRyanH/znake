@@ -242,11 +242,15 @@ pub const DrawPixel = enum(u1) {
 };
 
 pub fn getDrawCommand(src: []const u8, x: usize, y: usize, stride: usize) DrawPixel {
-    _ = src;
-    _ = x;
-    _ = y;
-    _ = stride;
-    return DrawPixel.foreground;
+    const byte = src[y * stride];
+    var byte_copy = byte << @intCast(u3, x);
+    const value = @bitReverse(u8, byte) << @intCast(u3, x) & 0b10000000;
+    byte_copy = byte_copy << @intCast(u3, x);
+    if (value > 0) {
+        return DrawPixel.background;
+    } else {
+        return DrawPixel.foreground;
+    }
 }
 
 test "getDrawCommand" {
@@ -260,7 +264,16 @@ test "getDrawCommand" {
         0b01111110,
         0b00000000,
     };
-    try std.testing.expectEqual(getDrawCommand(&square, 0, 0, 8), DrawPixel.foreground);
+    // First Bit in 0b`0`0000000
+    try std.testing.expectEqual(getDrawCommand(&square, 0, 0, 1), DrawPixel.foreground);
+    // Second Bit in 0b0`0`000000
+    try std.testing.expectEqual(getDrawCommand(&square, 0, 1, 1), DrawPixel.foreground);
+    // Second Bit in 0b0`1`111110,
+    try std.testing.expectEqual(getDrawCommand(&square, 1, 1, 1), DrawPixel.background);
+    // Second Bit in in 0b0`1`000010
+    try std.testing.expectEqual(getDrawCommand(&square, 2, 1, 1), DrawPixel.background);
+    // Third Bit in in 0b01`0`00010
+    try std.testing.expectEqual(getDrawCommand(&square, 2, 2, 1), DrawPixel.foreground);
 }
 
 pub fn bytemaskToDraws(byte: u8) [8]DrawPixel {
