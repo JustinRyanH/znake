@@ -242,10 +242,11 @@ pub const DrawPixel = enum(u1) {
 };
 
 pub fn getDrawCommand(src: []const u8, x: usize, y: usize, stride: usize) DrawPixel {
-    const byte = src[y * stride];
-    var byte_copy = byte << @intCast(u3, x);
-    const value = @bitReverse(u8, byte) << @intCast(u3, x) & 0b10000000;
-    byte_copy = byte_copy << @intCast(u3, x);
+    const x_offset = @divTrunc(x, 8);
+    const x_byte_offset = x - x_offset * 8;
+    const byte = src[y * stride + x_offset];
+    const shifted_byte = byte << @intCast(u3, x_byte_offset);
+    const value = shifted_byte & 0b10000000;
     if (value > 0) {
         return DrawPixel.background;
     } else {
@@ -270,9 +271,9 @@ test "getDrawCommand" {
     try std.testing.expectEqual(getDrawCommand(&square, 0, 1, 1), DrawPixel.foreground);
     // Second Bit in 0b0`1`111110,
     try std.testing.expectEqual(getDrawCommand(&square, 1, 1, 1), DrawPixel.background);
-    // Second Bit in in 0b0`1`000010
-    try std.testing.expectEqual(getDrawCommand(&square, 2, 1, 1), DrawPixel.background);
     // Third Bit in in 0b01`0`00010
+    try std.testing.expectEqual(getDrawCommand(&square, 2, 1, 1), DrawPixel.background);
+    // Third Bit in in 0b01`0`11010
     try std.testing.expectEqual(getDrawCommand(&square, 2, 2, 1), DrawPixel.foreground);
 
     // zig fmt: off
@@ -283,11 +284,16 @@ test "getDrawCommand" {
         0b01000000, 0b00000010,
         0b01000000, 0b00000010,
         0b01000000, 0b00000010,
-        0b01111110, 0b11111110,
-        0b00000000, 0b00000000,
+        0b01111111, 0b11111110,
+        0b00000000, 0b00000001,
     };
     // zig fmt: on
     try std.testing.expectEqual(getDrawCommand(&rectangle, 0, 0, 2), DrawPixel.foreground);
+    try std.testing.expectEqual(getDrawCommand(&rectangle, 8, 1, 2), DrawPixel.background);
+    try std.testing.expectEqual(getDrawCommand(&rectangle, 14, 1, 2), DrawPixel.background);
+    try std.testing.expectEqual(getDrawCommand(&rectangle, 15, 1, 2), DrawPixel.foreground);
+    try std.testing.expectEqual(getDrawCommand(&rectangle, 15, 7, 2), DrawPixel.background);
+    try std.testing.expectEqual(getDrawCommand(&rectangle, 14, 7, 2), DrawPixel.foreground);
 }
 
 pub fn bytemaskToDraws(byte: u8) [8]DrawPixel {
