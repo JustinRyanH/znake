@@ -244,7 +244,8 @@ pub const DrawPixel = enum(u1) {
 pub fn getDrawCommand(src: []const u8, x: usize, y: usize, stride: usize) DrawPixel {
     const x_offset = @divTrunc(x, 8);
     const x_byte_offset = x - x_offset * 8;
-    const byte = src[y * stride + x_offset];
+    const index = y * stride + (x_offset * 8);
+    const byte = src[index];
     const shifted_byte = byte << @intCast(u3, x_byte_offset);
     const value = shifted_byte & 0b10000000;
     if (value > 0) {
