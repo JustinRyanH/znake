@@ -144,7 +144,9 @@ pub fn blitBytesOld(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y
     var x: i32 = min_x;
     var y: i32 = min_y;
 
-    for (source[source_start..]) |byte| {
+    var byte_index = source_start;
+    while (byte_index < source.len) : (byte_index += 1) {
+        const byte = source[byte_index];
         const commands = RendererVals.bytemaskToDraws(byte);
         for (commands) |cmd| {
             switch (cmd) {
