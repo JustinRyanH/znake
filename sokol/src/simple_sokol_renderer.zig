@@ -136,13 +136,15 @@ pub fn setBackgroundPallete(self: *Self, color: ?u2) void {
 pub fn setPixel(self: *Self, x: i32, y: i32) void {
     const ux = @intCast(usize, x);
     const uy = @intCast(usize, y);
-    self.frame_buffer[self.width * uy + ux] = pixelFromSokolColor(self.pallete);
+    const index = self.width * uy + ux;
+    self.frame_buffer[index] = pixelFromSokolColor(self.pallete);
 }
 
 pub fn setBackgroundPixel(self: *Self, x: i32, y: i32) void {
     const ux = @intCast(usize, x);
     const uy = @intCast(usize, y);
+    const index = self.width * uy + ux;
     if (self.backgroundPallete) |pallete| {
-        self.frame_buffer[self.width * uy + ux] = pixelFromSokolColor(pallete);
+        self.frame_buffer[index] = pixelFromSokolColor(pallete);
     }
 }
