@@ -276,25 +276,6 @@ test "getDrawCommand" {
     try std.testing.expectEqual(getDrawCommand(&square, 2, 1, 1), DrawPixel.background);
     // Third Bit in in 0b01`0`11010
     try std.testing.expectEqual(getDrawCommand(&square, 2, 2, 1), DrawPixel.foreground);
-
-    // zig fmt: off
-    const rectangle = [16]u8{
-        0b00000000, 0b00000000,
-        0b01111111, 0b11111110,
-        0b01000000, 0b00000010,
-        0b01000000, 0b00000010,
-        0b01000000, 0b00000010,
-        0b01000000, 0b00000010,
-        0b01111111, 0b11111110,
-        0b00000000, 0b00000001,
-    };
-    // zig fmt: on
-    try std.testing.expectEqual(getDrawCommand(&rectangle, 0, 0, 2), DrawPixel.foreground);
-    try std.testing.expectEqual(getDrawCommand(&rectangle, 8, 1, 2), DrawPixel.background);
-    try std.testing.expectEqual(getDrawCommand(&rectangle, 14, 1, 2), DrawPixel.background);
-    try std.testing.expectEqual(getDrawCommand(&rectangle, 15, 1, 2), DrawPixel.foreground);
-    try std.testing.expectEqual(getDrawCommand(&rectangle, 15, 7, 2), DrawPixel.background);
-    try std.testing.expectEqual(getDrawCommand(&rectangle, 14, 7, 2), DrawPixel.foreground);
 }
 
 pub fn bytemaskToDraws(byte: u8) [8]DrawPixel {
