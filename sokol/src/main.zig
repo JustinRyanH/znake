@@ -77,7 +77,7 @@ fn setupInputRecording() void {
 }
 
 export fn init() void {
-    setupInputRecording();
+    // setupInputRecording();
     sg.setup(.{
         .context = sgapp.context(),
     });
@@ -114,7 +114,7 @@ export fn frame() void {
     const should_update = frame_rate.shouldTick(stime.sec(time));
     if (should_update) {
         var frame_input = game.registery.singletons().get(Game.FrameInput);
-        recordInput(frame_input);
+        // recordInput(frame_input);
 
         game.update(&input, &simple_renderer);
         if (game.registery.singletons().getConst(Game.SnakeGame).events.shouldReseed()) {
