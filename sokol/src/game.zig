@@ -191,13 +191,13 @@ pub fn drawSegmentSmallV2(direction: *const Direction, position: *PositionCompon
 }
 
 const fruit = [8]u8{
-    0b11111111,
-    0b11111111,
+    0b11001111,
+    0b11100111,
     0b11000011,
+    0b10000001,
+    0b10000001,
+    0b10000001,
     0b11000011,
-    0b11000011,
-    0b11000011,
-    0b11111111,
     0b11111111,
 };
 pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) void {
@@ -214,7 +214,6 @@ pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) voi
                 .Fruit => {
                     simple_renderer.setForegroundPallete(3);
                     simple_renderer.blitBytes(&fruit, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, .{});
-                    // simple_renderer.drawRect(x + SNAKE_HALF_SIZE / 2, y + SNAKE_HALF_SIZE / 2, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
                 },
                 else => {},
             }
