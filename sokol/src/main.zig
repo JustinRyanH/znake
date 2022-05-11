@@ -68,12 +68,16 @@ pub const InputStream = packed struct {
     input: u8,
 };
 
-export fn init() void {
+fn setupInputRecording() void {
     var all_together: [100]u8 = undefined;
     const all_together_slice = all_together[0..];
     const file_path = std.fmt.bufPrint(all_together_slice, "znake-{}.input", .{std.time.timestamp()}) catch @panic("Failed to create File name");
     var file = std.fs.cwd().createFile(file_path, .{ .read = true }) catch @panic("Failed to Create write file");
     input_manager = .{ .file = file };
+}
+
+export fn init() void {
+    setupInputRecording();
     sg.setup(.{
         .context = sgapp.context(),
     });
@@ -93,6 +97,16 @@ export fn init() void {
     game.registery.singletons().add(Game.FrameInput{});
 }
 
+fn recordInput(frame_input: *Game.FrameInput) void {
+    const input_stuff = InputStream{
+        .frame = frame_input.frame + 1,
+        .input = frame_input.input.frame,
+    };
+
+    const input_as_bytes = std.mem.asBytes(&input_stuff);
+    _ = input_manager.file.write(input_as_bytes) catch @panic("Cannot write Input data");
+}
+
 export fn frame() void {
     const time = stime.now();
     var simple_renderer = renderer.simpleRenderer();
@@ -100,13 +114,7 @@ export fn frame() void {
     const should_update = frame_rate.shouldTick(stime.sec(time));
     if (should_update) {
         var frame_input = game.registery.singletons().get(Game.FrameInput);
-        const input_stuff = InputStream{
-            .frame = frame_input.frame + 1,
-            .input = frame_input.input.frame,
-        };
-
-        const foo = std.mem.asBytes(&input_stuff);
-        _ = input_manager.file.write(foo) catch @panic("Cannot write Input data");
+        recordInput(frame_input);
 
         game.update(&input, &simple_renderer);
         if (game.registery.singletons().getConst(Game.SnakeGame).events.shouldReseed()) {
