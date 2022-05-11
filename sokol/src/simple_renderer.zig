@@ -166,7 +166,7 @@ pub fn blitBytesOld(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y
     }
 }
 
-pub fn blitBytesV2(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize, options: BlitOptions) void {
+pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize, options: BlitOptions) void {
     _ = options;
     const min_x: i32 = 0;
     const min_y: i32 = 0;
@@ -191,22 +191,13 @@ pub fn blitBytesV2(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y:
     }
 }
 
-pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize, options: BlitOptions) void {
-    _ = options;
-    self.blitBytesOld(source, dst_x, dst_y, width, height, src_x, src_y, options);
-}
-
-pub fn drawTextV2(self: *SimpleRenderer, text: []const u8, x: u8, y: u8) void {
+pub fn drawText(self: *SimpleRenderer, text: []const u8, x: u8, y: u8) void {
     var i: u8 = x;
     for (text) |byte| {
         var source_start: usize = (byte - 32);
         source_start = source_start << 3;
         if (i > self.getWidth()) return;
-        self.blitBytesV2(&FONT, i, y, 8, 8, source_start, 0, .{});
+        self.blitBytes(&FONT, i, y, 8, 8, source_start, 0, .{});
         i += 8;
     }
-}
-
-pub fn drawText(self: *SimpleRenderer, text: []const u8, x: u8, y: u8) void {
-    drawTextV2(self, text, x, y);
 }
