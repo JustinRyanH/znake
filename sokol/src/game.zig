@@ -213,7 +213,7 @@ pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) voi
             switch (sprite.kind) {
                 .Fruit => {
                     simple_renderer.setForegroundPallete(3);
-                    simple_renderer.blitBytes(&fruit, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, .{ .flip_y = true, .flip_x = true });
+                    simple_renderer.blitBytes(&fruit, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, .{});
                 },
                 else => {},
             }
