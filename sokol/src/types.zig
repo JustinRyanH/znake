@@ -8,12 +8,13 @@ const rand = std.rand;
 
 pub const Sprite = struct {
     const SpriteKind = enum {
+        Head,
         Body,
         Tail,
         Fruit,
     };
     kind: SpriteKind,
-    direction: Direction,
+    direction: Direction = .Up,
 };
 
 pub const Bounds = struct {

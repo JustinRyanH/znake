@@ -190,6 +190,17 @@ pub fn drawSegmentSmallV2(direction: *const Direction, position: *PositionCompon
     simple_renderer.drawRect(x, y, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
 }
 
+const HEAD = [8]u8{
+    0b11111111,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+};
+
 const fruit = [8]u8{
     0b11001111,
     0b11100111,
@@ -215,12 +226,16 @@ pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) voi
                     simple_renderer.setForegroundPallete(3);
                     simple_renderer.blitBytes(&fruit, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, .{});
                 },
+                .Head => {
+                    simple_renderer.setForegroundPallete(1);
+                    simple_renderer.blitBytes(&HEAD, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, .{});
+                },
                 else => {},
             }
         }
     }
     {
-        var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
+        var view = registery.view(.{ SegmentComponent, PositionComponent }, .{Types.Sprite});
         var iter = view.iterator();
         while (iter.next()) |entity| {
             var pos = view.get(PositionComponent, entity);

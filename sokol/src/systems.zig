@@ -110,6 +110,7 @@ pub fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2
     const segment = SegmentComponent{ .direction = direction, .segment_type = .Head };
     registery.add(entity, segment);
     registery.add(entity, position);
+    registery.add(entity, Sprite{ .kind = .Head });
     return entity;
 }
 
