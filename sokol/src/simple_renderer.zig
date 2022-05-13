@@ -8,7 +8,8 @@ pub const FONT = RendererVals.FONT;
 pub const BlitOptions = packed struct {
     flip_x: bool = false,
     flip_y: bool = false,
-    _: u6 = 0,
+    rotate: bool = false,
+    _: u5 = 0,
 };
 
 ptr: *anyopaque,
