@@ -191,6 +191,28 @@ pub fn drawSegmentSmallV2(direction: *const Direction, position: *PositionCompon
     simple_renderer.drawRect(x, y, SNAKE_HALF_SIZE, SNAKE_HALF_SIZE);
 }
 
+const TAIL = [8]u8{
+    0b10000001,
+    0b10000001,
+    0b10000001,
+    0b10000001,
+    0b11000011,
+    0b11000011,
+    0b11100111,
+    0b11111111,
+};
+
+const BODY = [8]u8{
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+    0b00000000,
+};
+
 const HEAD = [8]u8{
     0b11000011,
     0b10000001,
@@ -246,7 +268,14 @@ pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) voi
                     simple_renderer.setForegroundPallete(1);
                     simple_renderer.blitBytes(&HEAD, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, options);
                 },
-                else => {},
+                .Body => {
+                    simple_renderer.setForegroundPallete(1);
+                    simple_renderer.blitBytes(&BODY, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, options);
+                },
+                .Tail => {
+                    simple_renderer.setForegroundPallete(1);
+                    simple_renderer.blitBytes(&TAIL, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, options);
+                },
             }
         }
     }

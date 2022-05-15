@@ -81,9 +81,14 @@ pub fn updateSegmentPositionSystem(registery: *ecs.Registry) void {
 }
 
 pub fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
-    var view = registery.view(.{ SegmentComponent, PositionComponent }, .{});
+    var view = registery.view(.{ SegmentComponent, PositionComponent, Sprite }, .{});
     var parent_segment = view.get(SegmentComponent, parent);
-    parent_segment.segment_type = .Body;
+    var parent_sprite = view.get(Sprite, parent);
+    if (parent_segment.segment_type != .Head) {
+        parent_segment.segment_type = .Body;
+        parent_sprite.kind = .Body;
+    }
+
     var parent_position = view.getConst(PositionComponent, parent);
     var entity = registery.create();
 
@@ -91,6 +96,7 @@ pub fn appendTail(registery: *ecs.Registry, parent: ecs.Entity) ecs.Entity {
     const tail_position: PositionComponent = parent_position.add(parent_segment.direction.opposite().to_vec2());
     registery.add(entity, tail_segment);
     registery.add(entity, tail_position);
+    registery.add(entity, Sprite{ .kind = .Tail });
     return entity;
 }
 
