@@ -168,6 +168,7 @@ pub fn blitBytesOld(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y
 }
 
 pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i32, width: i32, height: i32, src_x: usize, src_y: usize, options: BlitOptions) void {
+    const flip_x = if (options.rotate) !options.flip_x else options.flip_x;
     const min_x: i32 = 0;
     const min_y: i32 = 0;
 
@@ -179,11 +180,11 @@ pub fn blitBytes(self: *SimpleRenderer, source: []const u8, dst_x: i32, dst_y: i
         var x = min_x;
         while (x < max_x) : (x += 1) {
             const y_offset = if (options.flip_y) height - y - 1 else y;
-            const x_offset = if (options.flip_x) width - x - 1 else x;
+            const x_offset = if (flip_x) width - x - 1 else x;
             const sx = src_x + @intCast(usize, x_offset);
             const sy = src_y + @intCast(usize, y_offset);
-            const dx = dst_x + x;
-            const dy = dst_y + y;
+            const dx = dst_x + if (!options.rotate) x else y;
+            const dy = dst_y + if (!options.rotate) y else x;
             const draw = RendererVals.getDrawCommand(source, sx, sy, 1);
             switch (draw) {
                 .background => self.setAltPixel(dx, dy),
