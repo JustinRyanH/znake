@@ -222,26 +222,27 @@ pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) voi
             const x = (pos.x * SNAKE_SIZE);
             const y = (pos.y * SNAKE_SIZE);
 
+            var options = SimpleRenderer.BlitOptions{};
+            switch (sprite.direction) {
+                .Up => {},
+                .Down => {
+                    options.flip_y = true;
+                },
+                .Right => {
+                    options.flip_y = true;
+                    options.rotate = true;
+                },
+                .Left => {
+                    options.rotate = true;
+                },
+            }
+
             switch (sprite.kind) {
                 .Fruit => {
                     simple_renderer.setForegroundPallete(3);
-                    simple_renderer.blitBytes(&fruit, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, .{});
+                    simple_renderer.blitBytes(&fruit, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, options);
                 },
                 .Head => {
-                    var options = SimpleRenderer.BlitOptions{};
-                    switch (sprite.direction) {
-                        .Up => {},
-                        .Down => {
-                            options.flip_y = true;
-                        },
-                        .Right => {
-                            options.flip_y = true;
-                            options.rotate = true;
-                        },
-                        .Left => {
-                            options.rotate = true;
-                        },
-                    }
                     simple_renderer.setForegroundPallete(1);
                     simple_renderer.blitBytes(&HEAD, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, options);
                 },
