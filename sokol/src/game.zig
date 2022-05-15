@@ -95,6 +95,7 @@ pub const State = struct {
 
                     maybeEatFruitSystem(&self.registery);
                     growTailSystem(&self.registery);
+                    Systems.spriteDirectionSystem(&self.registery);
                     updateSegmentPositionSystem(&self.registery);
                     fruitGenerationSystem(&self.registery);
                 }
@@ -227,8 +228,17 @@ pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) voi
                     simple_renderer.blitBytes(&fruit, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, .{});
                 },
                 .Head => {
+                    var options = SimpleRenderer.BlitOptions{};
+                    switch (sprite.direction) {
+                        .Up => {},
+                        .Down => {
+                            options.flip_y = true;
+                        },
+                        .Right => {},
+                        .Left => {},
+                    }
                     simple_renderer.setForegroundPallete(1);
-                    simple_renderer.blitBytes(&HEAD, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, .{});
+                    simple_renderer.blitBytes(&HEAD, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, options);
                 },
                 else => {},
             }

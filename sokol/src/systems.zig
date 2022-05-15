@@ -114,6 +114,16 @@ pub fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2
     return entity;
 }
 
+pub fn spriteDirectionSystem(registery: *ecs.Registry) void {
+    var view = registery.view(.{ SegmentComponent, Sprite }, .{});
+    var iter = view.iterator();
+    while (iter.next()) |entity| {
+        const segment = view.getConst(SegmentComponent, entity);
+        var sprite = view.get(Sprite, entity);
+        sprite.direction = segment.direction;
+    }
+}
+
 pub fn getHeadPosition(registery: *ecs.Registry) PositionComponent {
     var head = registery.singletons().getConst(SnakeEdges).head;
     var view = registery.view(.{PositionComponent}, .{});
