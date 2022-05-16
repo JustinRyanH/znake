@@ -121,12 +121,17 @@ pub fn createHead(registery: *ecs.Registry, direction: Direction, position: Vec2
 }
 
 pub fn spriteDirectionSystem(registery: *ecs.Registry) void {
-    var view = registery.view(.{ SegmentComponent, Sprite }, .{});
+    var view = registery.view(.{ SegmentComponent, PositionComponent, Sprite }, .{});
     var iter = view.iterator();
     while (iter.next()) |entity| {
         const segment = view.getConst(SegmentComponent, entity);
         var sprite = view.get(Sprite, entity);
-        sprite.direction = segment.direction;
+        if (segment.segment_type == .Tail) {
+            const next_segment = view.getConst(SegmentComponent, segment.previous_entity.?);
+            sprite.direction = next_segment.direction;
+        } else {
+            sprite.direction = segment.direction;
+        }
     }
 }
 
