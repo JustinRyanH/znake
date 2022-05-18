@@ -224,7 +224,7 @@ const HEAD = [8]u8{
     0b00000000,
 };
 
-const fruit = [8]u8{
+const FRUIT = [8]u8{
     0b11001111,
     0b11100111,
     0b11000011,
@@ -262,7 +262,7 @@ pub fn drawState(registery: *ecs.Registry, simple_renderer: *SimpleRenderer) voi
             switch (sprite.kind) {
                 .Fruit => {
                     simple_renderer.setForegroundPallete(3);
-                    simple_renderer.blitBytes(&fruit, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, options);
+                    simple_renderer.blitBytes(&FRUIT, x, y, SNAKE_SIZE, SNAKE_SIZE, 0, 0, options);
                 },
                 .Head => {
                     simple_renderer.setForegroundPallete(1);
