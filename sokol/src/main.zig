@@ -4,6 +4,7 @@ const sg = @import("sokol").gfx;
 const sapp = @import("sokol").app;
 const stime = @import("sokol").time;
 const sgapp = @import("sokol").app_gfx_glue;
+const nuklear = @import("nuklear");
 
 const Game = @import("game.zig");
 const RendererVals = @import("renderer_vals.zig");
