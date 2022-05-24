@@ -4,7 +4,7 @@ const sg = @import("sokol").gfx;
 const sapp = @import("sokol").app;
 const stime = @import("sokol").time;
 const sgapp = @import("sokol").app_gfx_glue;
-const nuklear = @import("nuklear");
+const nk = @import("nuklear");
 
 const Game = @import("game.zig");
 const RendererVals = @import("renderer_vals.zig");
@@ -55,6 +55,7 @@ const SnakeXMax = WorldWidth;
 pub const SimpleSokolRenderer = @import("./simple_sokol_renderer.zig");
 
 var renderer: *SimpleSokolRenderer = undefined;
+var atlas: nk.FontAtlas = undefined;
 var game: *Game.State = undefined;
 var frame_rate: FixedFrameRate = .{};
 var input: GameInput = .{};
@@ -68,6 +69,19 @@ pub const InputStream = packed struct {
     frame: usize,
     input: u8,
 };
+
+fn uploadAtlas(data: [*]const u8, w: usize, h: usize) sg.Image {
+    var img_desc = sg.ImageDesc{
+        .width = @intCast(i32, w),
+        .height = @intCast(i32, h),
+        .min_filter = .LINEAR,
+        .mag_filter = .LINEAR,
+        .pixel_format = .RGBA8,
+    };
+
+    img_desc.data.subimage[0][0] = sg.asRange(data[0..(w * h * 4)]);
+    return sg.makeImage(img_desc);
+}
 
 fn setupInputRecording() void {
     var all_together: [100]u8 = undefined;
@@ -83,6 +97,17 @@ export fn init() void {
         .context = sgapp.context(),
     });
     stime.setup();
+    atlas = nk.atlas.init(&gpa);
+
+    nk.atlas.begin(&atlas);
+    const baked = nk.atlas.bake(&atlas, .rgba32) catch @panic("Failed to Create Nuklear Font Atlas");
+    const img = uploadAtlas(baked.data, baked.w, baked.h);
+    var _null: nk.DrawNullTexture = undefined;
+    nk.atlas.end(
+        &atlas,
+        nk.rest.nkHandleId(@intCast(c_int, img.id)),
+        &_null,
+    );
 
     renderer = SimpleSokolRenderer.init(gpa, CANVAS_SIZE) catch @panic("Failed to Create Renderer");
 
@@ -147,6 +172,7 @@ export fn sokol_input(event: ?*const sapp.Event) void {
 }
 
 export fn cleanup() void {
+    nk.atlas.clear(&atlas);
     input_manager.file.close();
     renderer.deinit() catch @panic("Failed to clean up renderer");
     std.debug.assert(!general_purpose_allocator.deinit());
@@ -157,8 +183,8 @@ pub fn main() void {
         .init_cb = init,
         .frame_cb = frame,
         .event_cb = sokol_input,
-        .width = 480,
-        .height = 480,
+        .width = 600,
+        .height = 600,
         .icon = .{
             .sokol_default = true,
         },
