@@ -4,3 +4,6 @@
 [submodule "sokol/lib/zig-ecs"]
 	path = sokol/lib/zig-ecs
 	url = https://github.com/prime31/zig-ecs.git
+[submodule "sokol/lib/zig-nuklear"]
+	path = sokol/lib/zig-nuklear
+	url = https://github.com/Hejsil/zig-nuklear.git
