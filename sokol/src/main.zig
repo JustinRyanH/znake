@@ -56,6 +56,7 @@ pub const SimpleSokolRenderer = @import("./simple_sokol_renderer.zig");
 
 var renderer: *SimpleSokolRenderer = undefined;
 var atlas: nk.FontAtlas = undefined;
+var nk_ctx: nk.Context = undefined;
 var game: *Game.State = undefined;
 var frame_rate: FixedFrameRate = .{};
 var input: GameInput = .{};
@@ -108,6 +109,8 @@ export fn init() void {
         nk.rest.nkHandleId(@intCast(c_int, img.id)),
         &_null,
     );
+
+    nk_ctx = nk.init(&gpa, &atlas.default_font.*.handle);
 
     renderer = SimpleSokolRenderer.init(gpa, CANVAS_SIZE) catch @panic("Failed to Create Renderer");
 
@@ -173,6 +176,7 @@ export fn sokol_input(event: ?*const sapp.Event) void {
 
 export fn cleanup() void {
     nk.atlas.clear(&atlas);
+    nk.free(&nk_ctx);
     input_manager.file.close();
     renderer.deinit() catch @panic("Failed to clean up renderer");
     std.debug.assert(!general_purpose_allocator.deinit());
