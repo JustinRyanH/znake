@@ -57,6 +57,9 @@ pub const SimpleSokolRenderer = @import("./simple_sokol_renderer.zig");
 var renderer: *SimpleSokolRenderer = undefined;
 var atlas: nk.FontAtlas = undefined;
 var nk_ctx: nk.Context = undefined;
+var nk_cmds: nk.Buffer = undefined;
+var nk_vbuf: nk.Buffer = undefined;
+var nk_ebuf: nk.Buffer = undefined;
 var game: *Game.State = undefined;
 var frame_rate: FixedFrameRate = .{};
 var input: GameInput = .{};
@@ -111,6 +114,9 @@ export fn init() void {
     );
 
     nk_ctx = nk.init(&gpa, &atlas.default_font.*.handle);
+    nk_cmds = nk.Buffer.init(&gpa, std.mem.page_size);
+    nk_vbuf = nk.Buffer.init(&gpa, std.mem.page_size);
+    nk_ebuf = nk.Buffer.init(&gpa, std.mem.page_size);
 
     renderer = SimpleSokolRenderer.init(gpa, CANVAS_SIZE) catch @panic("Failed to Create Renderer");
 
@@ -137,6 +143,7 @@ fn recordInput(frame_input: *Game.FrameInput) void {
 }
 
 export fn frame() void {
+    nk.input.end(&nk_ctx);
     const time = stime.now();
     var simple_renderer = renderer.simpleRenderer();
 
@@ -157,6 +164,35 @@ export fn frame() void {
 
 export fn sokol_input(event: ?*const sapp.Event) void {
     const ev = event.?;
+    nk.input.begin(&nk_ctx);
+    switch (ev.type) {
+        .KEY_DOWN, .KEY_UP => {
+            const key_down = ev.type == .KEY_DOWN;
+            switch (ev.key_code) {
+                .DELETE => nk.input.key(&nk_ctx, .del, key_down),
+                .ENTER => nk.input.key(&nk_ctx, .enter, key_down),
+                .TAB => nk.input.key(&nk_ctx, .tab, key_down),
+                .UP => nk.input.key(&nk_ctx, .up, key_down),
+                .DOWN => nk.input.key(&nk_ctx, .down, key_down),
+                else => {},
+            }
+        },
+        .MOUSE_MOVE => {
+            nk.input.motion(&nk_ctx, @floatToInt(c_int, ev.mouse_x), @floatToInt(c_int, ev.mouse_y));
+        },
+        .MOUSE_DOWN, .MOUSE_UP => {
+            const mouse_down = ev.type == .MOUSE_DOWN;
+            const x = @floatToInt(c_int, ev.mouse_x);
+            const y = @floatToInt(c_int, ev.mouse_y);
+            switch (ev.mouse_button) {
+                .LEFT => nk.input.button(&nk_ctx, .left, x, y, mouse_down),
+                .RIGHT => nk.input.button(&nk_ctx, .right, x, y, mouse_down),
+                .MIDDLE => nk.input.button(&nk_ctx, .middle, x, y, mouse_down),
+                else => {},
+            }
+        },
+        else => {},
+    }
     switch (ev.type) {
         .KEY_DOWN, .KEY_UP => {
             const key_down = ev.type == .KEY_DOWN;
@@ -177,6 +213,11 @@ export fn sokol_input(event: ?*const sapp.Event) void {
 export fn cleanup() void {
     nk.atlas.clear(&atlas);
     nk.free(&nk_ctx);
+
+    nk_cmds.free();
+    nk_vbuf.free();
+    nk_ebuf.free();
+
     input_manager.file.close();
     renderer.deinit() catch @panic("Failed to clean up renderer");
     std.debug.assert(!general_purpose_allocator.deinit());
