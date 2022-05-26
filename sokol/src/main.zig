@@ -98,7 +98,7 @@ export fn init() void {
         .context = sgapp.context(),
     });
     stime.setup();
-    snk = Snk.setup(gpa, .{});
+    snk = Snk.setup(gpa, .{}) catch @panic("Failed to create Nuklear Context");
 
     renderer = SimpleSokolRenderer.init(gpa, CANVAS_SIZE) catch @panic("Failed to Create Renderer");
 
@@ -163,6 +163,7 @@ export fn sokol_input(event: ?*const sapp.Event) void {
 }
 
 export fn cleanup() void {
+    snk.shutdown();
     input_manager.file.close();
     renderer.deinit() catch @panic("Failed to clean up renderer");
     std.debug.assert(!general_purpose_allocator.deinit());
