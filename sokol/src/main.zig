@@ -10,6 +10,7 @@ const Game = @import("game.zig");
 const RendererVals = @import("renderer_vals.zig");
 const SimpleRenderer = @import("simple_renderer.zig");
 const GameInput = @import("./input.zig");
+const Snk = @import("./snk.zig");
 
 var general_purpose_allocator = std.heap.GeneralPurposeAllocator(.{}){};
 var prng = std.rand.DefaultPrng.init(0);
@@ -59,6 +60,7 @@ var game: *Game.State = undefined;
 var frame_rate: FixedFrameRate = .{};
 var input: GameInput = .{};
 var input_manager: InputManager = undefined;
+var snk: Snk = undefined;
 
 pub const InputManager = struct {
     file: std.fs.File,
@@ -96,6 +98,7 @@ export fn init() void {
         .context = sgapp.context(),
     });
     stime.setup();
+    snk = Snk.setup(gpa, .{});
 
     renderer = SimpleSokolRenderer.init(gpa, CANVAS_SIZE) catch @panic("Failed to Create Renderer");
 
