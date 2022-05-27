@@ -148,7 +148,11 @@ pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
 // nk_clear(&_snuklear.ctx);
 // return &_snuklear.ctx;
 // }
-// fn render(self: *Snk, width: i32, height: i32) void {
+pub fn render(self: *Snk, width: i32, height: i32) void {
+    _ = self;
+    _ = width;
+    _ = height;
+}
 
 // static const struct nk_draw_vertex_layout_element vertex_layout[] = {
 //     {NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct _snk_vertex_t, pos)},

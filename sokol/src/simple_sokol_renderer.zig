@@ -113,12 +113,9 @@ pub fn updateImage(self: *Self) void {
 }
 
 pub fn draw(self: *Self) void {
-    sg.beginDefaultPass(self.pass_action, sapp.width(), sapp.height());
     sg.applyPipeline(self.pip);
     sg.applyBindings(self.bind);
     sg.draw(0, 6, 1);
-    sg.endPass();
-    sg.commit();
 }
 
 pub fn setFrontendPallete(self: *Self, color: u2) void {

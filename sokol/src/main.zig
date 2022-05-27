@@ -140,7 +140,13 @@ export fn frame() void {
 
         renderer.updateImage();
     }
-    renderer.draw();
+    {
+        sg.beginDefaultPass(renderer.pass_action, sapp.width(), sapp.height());
+        renderer.draw();
+        snk.render(sapp.width(), sapp.height());
+        sg.endPass();
+        sg.commit();
+    }
 }
 
 export fn sokol_input(event: ?*const sapp.Event) void {
