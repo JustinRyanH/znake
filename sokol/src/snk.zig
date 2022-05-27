@@ -254,6 +254,58 @@ pub fn render(self: *Snk, width: i32, height: i32) void {
     self.nk_vbuf.clear();
 
     _ = nk.vertex.convert(&self.ctx, &self.nk_cmds, &self.nk_vbuf, &self.nk_ebuf, cfg);
+    const nk_vbuf_memory = self.nk_vbuf.memory();
+    const nk_ebuf_memory = self.nk_ebuf.memory();
+
+    const vbuffer_overflow = nk_vbuf_memory.len > self.vertex_buffer_size;
+    const ebuffer_overflow = nk_ebuf_memory.len > self.index_buffer_size;
+    const buffer_did_not_overflow = !vbuffer_overflow and !ebuffer_overflow;
+    std.debug.assert(buffer_did_not_overflow);
+    if (buffer_did_not_overflow) {
+        const dpi_scale = self.desc.dpi_scale;
+        const fb_width = @floatToInt(i32, self.vs_params.disp_size.x * dpi_scale);
+        const fb_height = @floatToInt(i32, self.vs_params.disp_size.y * dpi_scale);
+        sg.applyViewport(0, 0, fb_width, fb_height, true);
+        sg.applyScissorRect(0, 0, fb_width, fb_height, true);
+        sg.applyPipeline(self.pip);
+        sg.applyUniforms(sg.ShaderStage.VS, 0, sg.asRange(&self.vs_params));
+
+        sg.updateBuffer(self.vbuf, sg.asRange(nk_vbuf_memory));
+        sg.updateBuffer(self.ibuf, sg.asRange(nk_ebuf_memory));
+
+        var it = nk.vertex.iterator(&self.ctx, &self.nk_cmds);
+        var idx_offset: i32 = 0;
+        while (it.next()) |cmd| {
+            if (cmd.*.elem_count > 0) {
+                var img: sg.Image = undefined;
+                if (cmd.*.texture.id != 0) {
+                    img.id = @intCast(u32, cmd.*.texture.id);
+                } else {
+                    img = self.img;
+                }
+
+                var binding: sg.Bindings = .{
+                    .index_buffer = self.ibuf,
+                    .index_buffer_offset = idx_offset,
+                };
+                binding.fs_images[0] = img;
+                binding.vertex_buffers[0] = self.vbuf;
+                binding.vertex_buffer_offsets[0] = 0;
+                sg.applyBindings(binding);
+
+                sg.applyScissorRectf(
+                    cmd.*.clip_rect.x * dpi_scale,
+                    cmd.*.clip_rect.y * dpi_scale,
+                    cmd.*.clip_rect.w * dpi_scale,
+                    cmd.*.clip_rect.h * dpi_scale,
+                    true,
+                );
+                sg.draw(0, cmd.*.elem_count, 1);
+                idx_offset += @intCast(i32, cmd.*.elem_count) * @sizeOf(u16);
+            }
+        }
+        sg.applyScissorRect(0, 0, fb_width, fb_height, true);
+    }
 
     _ = cfg;
     _ = self;
