@@ -126,6 +126,7 @@ fn recordInput(frame_input: *Game.FrameInput) void {
 }
 
 export fn frame() void {
+    snk.newFrame();
     const time = stime.now();
     var simple_renderer = renderer.simpleRenderer();
     example.showcase(&snk.ctx);
@@ -153,6 +154,7 @@ export fn frame() void {
 
 export fn sokol_input(event: ?*const sapp.Event) void {
     const ev = event.?;
+    snk.handleEvent(ev);
     switch (ev.type) {
         .KEY_DOWN, .KEY_UP => {
             const key_down = ev.type == .KEY_DOWN;

@@ -38,7 +38,7 @@ shd: sg.Shader = undefined,
 pip: sg.Pipeline = undefined,
 is_osx: bool = false,
 mouse_pos: [2]i32 = .{ 0, 0 },
-mouse_scroll: [2]i32 = .{ 0, 0 },
+mouse_scroll: [2]f32 = .{ 0, 0 },
 mouse_did_move: bool = false,
 mouse_did_scroll: bool = false,
 btn_down: [nk.c.NK_BUTTON_MAX]bool = std.mem.zeroes([nk.c.NK_BUTTON_MAX]bool),
@@ -118,116 +118,58 @@ pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
 
     return out;
 }
-// fn newFrame(self: *Snk) nk.Context {
-// #if !defined(SOKOL_NUKLEAR_NO_SOKOL_APP)
-// nk_input_begin(&_snuklear.ctx);
-// if (_snuklear.mouse_did_move) {
-//     nk_input_motion(&_snuklear.ctx, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1]);
-//     _snuklear.mouse_did_move = false;
-// }
-// if (_snuklear.mouse_did_scroll) {
-//     nk_input_scroll(&_snuklear.ctx, nk_vec2(_snuklear.mouse_scroll[0], _snuklear.mouse_scroll[1]));
-//     _snuklear.mouse_did_scroll = false;
-// }    // struct nk_convert_config cfg = {
-//     .shape_AA = NK_ANTI_ALIASING_ON,
-//     .line_AA = NK_ANTI_ALIASING_ON,
-//     .vertex_layout = vertex_layout,
-//     .vertex_size = sizeof(_snk_vertex_t),
-//     .vertex_alignment = 4,
-//     .circle_segment_count = 22,
-//     .curve_segment_count = 22,
-//     .arc_segment_count = 22,
-//     .global_alpha = 1.0f
-// };
 
-// _snuklear.vs_params.disp_size[0] = (float)width;
-// _snuklear.vs_params.disp_size[1] = (float)height;
-// for (int i = 0; i < NK_BUTTON_MAX; i++) {
-//     if (_snuklear.btn_down[i]) {
-//         _snuklear.btn_down[i] = false;
-//         nk_input_button(&_snuklear.ctx, (enum nk_buttons)i, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1], 1);
-//     }
-//     else if (_snuklear.btn_up[i]) {
-//         _snuklear.btn_up[i] = false;
-//         nk_input_button(&_snuklear.ctx, (enum nk_buttons)i, _s    // struct nk_convert_config cfg = {
-//     .shape_AA = NK_ANTI_ALIASING_ON,
-//     .line_AA = NK_ANTI_ALIASING_ON,
-//     .vertex_layout = vertex_layout,
-//     .vertex_size = sizeof(_snk_vertex_t),
-//     .vertex_alignment = 4,
-//     .circle_segment_count = 22,
-//     .curve_segment_count = 22,
-//     .arc_segment_count = 22,
-//     .global_alpha = 1.0f
-// };
+pub fn newFrame(self: *Snk) void {
+    defer nk.clear(&self.ctx);
+    nk.input.begin(&self.ctx);
+    defer nk.input.end(&self.ctx);
+    if (self.mouse_did_move) {
+        nk.input.motion(&self.ctx, self.mouse_pos[0], self.mouse_pos[1]);
+        self.mouse_did_move = false;
+    }
+    //     #if !defined(SOKOL_NUKLEAR_NO_SOKOL_APP)
+    // nk_input_begin(&_snuklear.ctx);
+    // if (_snuklear.mouse_did_move) {
+    //     nk_input_motion(&_snuklear.ctx, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1]);
+    //     _snuklear.mouse_did_move = false;
+    // }
+    // if (_snuklear.mouse_did_scroll) {
+    //     nk_input_scroll(&_snuklear.ctx, nk_vec2(_snuklear.mouse_scroll[0], _snuklear.mouse_scroll[1]));
+    //     _snuklear.mouse_did_scroll = false;
+    // }
+    // for (int i = 0; i < NK_BUTTON_MAX; i++) {
+    //     if (_snuklear.btn_down[i]) {
+    //         _snuklear.btn_down[i] = false;
+    //         nk_input_button(&_snuklear.ctx, (enum nk_buttons)i, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1], 1);
+    //     }
+    //     else if (_snuklear.btn_up[i]) {
+    //         _snuklear.btn_up[i] = false;
+    //         nk_input_button(&_snuklear.ctx, (enum nk_buttons)i, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1], 0);
+    //     }
+    // }
+    // const size_t char_buffer_len = strlen(_snuklear.char_buffer);
+    // if (char_buffer_len > 0) {
+    //     for (size_t i = 0; i < char_buffer_len; i++) {
+    //         nk_input_char(&_snuklear.ctx, _snuklear.char_buffer[i]);
+    //     }
+    //     memset(_snuklear.char_buffer, 0, NK_INPUT_MAX);
+    // }
+    // for (int i = 0; i < NK_KEY_MAX; i++) {
+    //     if (_snuklear.keys_down[i]) {
+    //         nk_input_key(&_snuklear.ctx, (enum nk_keys)i, true);
+    //         _snuklear.keys_down[i] = 0;
+    //     }
+    //     if (_snuklear.keys_up[i]) {
+    //         nk_input_key(&_snuklear.ctx, (enum nk_keys)i, false);
+    //         _snuklear.keys_up[i] = 0;
+    //     }
+    // }
+    // nk_input_end(&_snuklear.ctx);
+    // #endif
 
-// _snuklear.vs_params.disp_size[0] = (float)width;
-// _snuklear.vs_params.disp_size[1] = (float)height;nuklear.mouse_pos[0], _snuklear.mouse_pos[1], 0);
-//     }
-// }
-// const size_t char_buffer_len = strlen(_snuklear.char_buffer);
-// if (char_buffer_len > 0) {
-//     for (size_t i = 0; i < char_buffer_len; i++) {    // struct nk_convert_config cfg = {
-//     .shape_AA = NK_ANTI_ALIASING_ON,
-//     .line_AA = NK_ANTI_ALIASING_ON,
-//     .vertex_layout = vertex_layout,
-//     .vertex_size = sizeof(_snk_vertex_t),
-//     .vertex_alignment = 4,
-//     .circle_segment_count = 22,
-//     .curve_segment_count = 22,
-//     .arc_segment_count = 22,
-//     .global_alpha = 1.0f
-// };
-
-// _snuklear.vs_params.disp_size[0] = (float)width;
-// _snuklear.vs_params.disp_size[1] = (float)height;
-//         nk_input_char(&_snuklear.ctx, _snuklear.char_buffer[i]);
-//     }
-//     memset(_snuklear.char_buffer, 0, NK_INPUT_MAX);
-// }
-// for (int i = 0; i < NK_KEY_MAX; i++) {
-//     if (_snuklear.keys_down[i]) {
-//         nk_input_key(&_snuklear.ctx, (enum nk_keys)i, true);
-//         _snuklear.keys_down[i] = 0;
-//     }
-//     if (_snuklear.keys_up[i]) {
-//         nk_input_key(&_snuklear.ctx, (enum nk_keys)i, false);
-//         _snuklear.keys_up[i] = 0;
-//     }
-// }
-// nk_input_end(&_snuklear.ctx);
-// struct nk_convert_config cfg = {
-//     .shape_AA = NK_ANTI_ALIASING_ON,
-//     .line_AA = NK_ANTI_ALIASING_ON,
-//     .vertex_layout = vertex_layout,
-//     .vertex_size = sizeof(_snk_vertex_t),
-//     .vertex_alignment = 4,
-//     .circle_segment_count = 22,
-//     .curve_segment_count = 22,
-//     .arc_segment_count = 22,
-//     .global_alpha = 1.0f
-// };
-
-// _snuklear.vs_params.disp_size[0] = (float)width;
-// _snuklear.vs_params.disp_size[1] = (float)height;
-// #endif
-
-// nk_clear(&_snuklear.ctx);    // struct nk_convert_config cfg = {
-//     .shape_AA = NK_ANTI_ALIASING_ON,
-//     .line_AA = NK_ANTI_ALIASING_ON,
-//     .vertex_layout = vertex_layout,
-//     .vertex_size = sizeof(_snk_vertex_t),
-//     .vertex_alignment = 4,
-//     .circle_segment_count = 22,
-//     .curve_segment_count = 22,
-//     .arc_segment_count = 22,
-//     .global_alpha = 1.0f
-// };
-
-// _snuklear.vs_params.disp_size[0] = (float)width;
-// _snuklear.vs_params.disp_size[1] = (float)height;kkkj
-// return &_snuklear.ctx;
-// }
+    // nk_clear(&_snuklear.ctx);
+    // return &_snuklear.ctx;
+}
 
 pub fn render(self: *Snk, width: i32, height: i32) void {
     const nk_vertex_layout = [_]nk.DrawVertexLayoutElement{
@@ -308,114 +250,33 @@ pub fn render(self: *Snk, width: i32, height: i32) void {
         }
         sg.applyScissorRect(0, 0, fb_width, fb_height, true);
     }
-    nk.clear(&self.ctx);
 }
 
-// /* Setup vert/index buffers and convert */
-// struct nk_buffer cmds, verts, idx;
-// nk_buffer_init_default(&cmds);
-// nk_buffer_init_default(&verts);
-// nk_buffer_init_default(&idx);
-// nk_convert(&_snuklear.ctx, &cmds, &verts, &idx, &cfg);
+pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
+    var dpi_scale = self.desc.dpi_scale;
 
-// /* Check for vertex- and index-buffer overflow, assert in debug-mode,
-//    otherwise silently skip rendering
-// */
-// const bool vertex_buffer_overflow = nk_buffer_total(&verts) > _snuklear.vertex_buffer_size;
-// const bool index_buffer_overflow = nk_buffer_total(&idx) > _snuklear.index_buffer_size;
-// SOKOL_ASSERT(!vertex_buffer_overflow && !index_buffer_overflow);
-// if (!vertex_buffer_overflow && !index_buffer_overflow) {
-
-//     /* Setup rendering */
-//     const float dpi_scale = _snuklear.desc.dpi_scale;
-//     const int fb_width = (int)(_snuklear.vs_params.disp_size[0] * dpi_scale);
-//     const int fb_height = (int)(_snuklear.vs_params.disp_size[1] * dpi_scale);
-//     sg_apply_viewport(0, 0, fb_width, fb_height, true);
-//     sg_apply_scissor_rect(0, 0, fb_width, fb_height, true);
-//     sg_apply_pipeline(_snuklear.pip);
-//     sg_apply_uniforms(SG_SHADERSTAGE_VS, 0, &SG_RANGE(_snuklear.vs_params));
-//     sg_update_buffer(_snuklear.vbuf, &(sg_range){ nk_buffer_memory_const(&verts), nk_buffer_total(&verts) });
-//     sg_update_buffer(_snuklear.ibuf, &(sg_range){ nk_buffer_memory_const(&idx), nk_buffer_total(&idx) });
-
-//     /* Iterate through the command list, rendering each one */
-//     const struct nk_draw_command* cmd = NULL;
-//     int idx_offset = 0;
-//     nk_draw_foreach(cmd, &_snuklear.ctx, &cmds) {
-//         if (cmd->elem_count > 0) {
-//             sg_image img;
-//             if (cmd->texture.id != 0) {
-//                 img = (sg_image){ .id = (uint32_t) cmd->texture.id };
-//             }
-//             else {
-//                 img = _snuklear.img;
-//             }
-//             sg_apply_bindings(&(sg_bindings){
-//                 .fs_images[0] = img,
-//                 .vertex_buffers[0] = _snuklear.vbuf,
-//                 .index_buffer = _snuklear.ibuf,
-//                 .vertex_buffer_offsets[0] = 0,
-//                 .index_buffer_offset = idx_offset
-//             });
-//             sg_apply_scissor_rectf(cmd->clip_rect.x * dpi_scale,
-//                                    cmd->clip_rect.y * dpi_scale,
-//                                    cmd->clip_rect.w * dpi_scale,
-//                                    cmd->clip_rect.h * dpi_scale,
-//                                    true);
-//             sg_draw(0, (int)cmd->elem_count, 1);
-//             idx_offset += (int)cmd->elem_count * (int)sizeof(uint16_t);
-//         }
-//     }
-//     sg_apply_scissor_rect(0, 0, fb_width, fb_height, true);
-// }
-
-// /* Cleanup */
-// nk_buffer_free(&cmds);
-// nk_buffer_free(&verts);
-// nk_buffer_free(&idx);
-// }
-// fn handleEvent(self: *Snk, event: *sapp.Event) void {
-
+    switch (event.type) {
+        .MOUSE_DOWN, .MOUSE_UP => {
+            self.mouse_pos[0] = @floatToInt(i32, event.mouse_x / dpi_scale);
+            self.mouse_pos[1] = @floatToInt(i32, event.mouse_y / dpi_scale);
+            const is_mouse_down = event.type == .MOUSE_DOWN;
+            switch (event.mouse_button) {
+                .LEFT => self.btn_down[nk.c.NK_BUTTON_LEFT] = is_mouse_down,
+                .RIGHT => self.btn_down[nk.c.NK_BUTTON_RIGHT] = is_mouse_down,
+                .MIDDLE => self.btn_down[nk.c.NK_BUTTON_MIDDLE] = is_mouse_down,
+                else => {},
+            }
+        },
+        .MOUSE_MOVE => {
+            self.mouse_pos[0] = @floatToInt(i32, event.mouse_x / dpi_scale);
+            self.mouse_pos[1] = @floatToInt(i32, event.mouse_y / dpi_scale);
+            self.mouse_did_move = true;
+        },
+        else => {},
+    }
+}
 // const float dpi_scale = _snuklear.desc.dpi_scale;
 // switch (ev->type) {
-//     case SAPP_EVENTTYPE_MOUSE_DOWN:
-//         _snuklear.mouse_pos[0] = (int) (ev->mouse_x / dpi_scale);
-//         _snuklear.mouse_pos[1] = (int) (ev->mouse_y / dpi_scale);
-//         switch (ev->mouse_button) {
-//             case SAPP_MOUSEBUTTON_LEFT:
-//                 _snuklear.btn_down[NK_BUTTON_LEFT] = true;
-//                 break;
-//             case SAPP_MOUSEBUTTON_RIGHT:
-//                 _snuklear.btn_down[NK_BUTTON_RIGHT] = true;
-//                 break;
-//             case SAPP_MOUSEBUTTON_MIDDLE:
-//                 _snuklear.btn_down[NK_BUTTON_MIDDLE] = true;
-//                 break;
-//             default:
-//                 break;
-//         }
-//         break;
-//     case SAPP_EVENTTYPE_MOUSE_UP:
-//         _snuklear.mouse_pos[0] = (int) (ev->mouse_x / dpi_scale);
-//         _snuklear.mouse_pos[1] = (int) (ev->mouse_y / dpi_scale);
-//         switch (ev->mouse_button) {
-//             case SAPP_MOUSEBUTTON_LEFT:
-//                 _snuklear.btn_up[NK_BUTTON_LEFT] = true;
-//                 break;
-//             case SAPP_MOUSEBUTTON_RIGHT:
-//                 _snuklear.btn_up[NK_BUTTON_RIGHT] = true;
-//                 break;
-//             case SAPP_MOUSEBUTTON_MIDDLE:
-//                 _snuklear.btn_up[NK_BUTTON_MIDDLE] = true;
-//                 break;
-//             default:
-//                 break;
-//         }
-//         break;
-//     case SAPP_EVENTTYPE_MOUSE_MOVE:
-//         _snuklear.mouse_pos[0] = (int) (ev->mouse_x / dpi_scale);
-//         _snuklear.mouse_pos[1] = (int) (ev->mouse_y / dpi_scale);
-//         _snuklear.mouse_did_move = true;
-//         break;
 //     case SAPP_EVENTTYPE_MOUSE_ENTER:
 //     case SAPP_EVENTTYPE_MOUSE_LEAVE:
 //         for (int i = 0; i < NK_BUTTON_MAX; i++) {
@@ -510,12 +371,13 @@ pub fn shutdown(self: *Snk) void {
     self.nk_ebuf.free();
     self.nk_vbuf.free();
 
-    // /* NOTE: it's valid to call the destroy funcs with SG_INVALID_ID */
-    // sg_push_debug_group("sokol-nuklear");
-    // sg_destroy_pipeline(_snuklear.pip);
-    // sg_destroy_shader(_snuklear.shd);
-    // sg_destroy_image(_snuklear.img);
-    // sg_destroy_buffer(_snuklear.ibuf);
-    // sg_destroy_buffer(_snuklear.vbuf);
-    // sg_pop_debug_group();
+    {
+        sg.pushDebugGroup("sokol-nuklear");
+        defer sg.popDebugGroup();
+        sg.destroyPipeline(self.pip);
+        sg.destroyShader(self.shd);
+        sg.destroyImage(self.img);
+        sg.destroyBuffer(self.vbuf);
+        sg.destroyBuffer(self.ibuf);
+    }
 }
