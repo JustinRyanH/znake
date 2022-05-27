@@ -237,6 +237,8 @@ pub fn render(self: *Snk, width: i32, height: i32) void {
         .{ .attribute = nk.c.NK_VERTEX_ATTRIBUTE_COUNT, .format = nk.c.NK_FORMAT_COUNT, .offset = 0 },
     };
 
+    self.vs_params.disp_size.x = @intToFloat(f32, width);
+    self.vs_params.disp_size.y = @intToFloat(f32, height);
     var cfg = nk.ConvertConfig{
         .shape_AA = nk.c.NK_ANTI_ALIASING_ON,
         .line_AA = nk.c.NK_ANTI_ALIASING_ON,
@@ -306,11 +308,7 @@ pub fn render(self: *Snk, width: i32, height: i32) void {
         }
         sg.applyScissorRect(0, 0, fb_width, fb_height, true);
     }
-
-    _ = cfg;
-    _ = self;
-    _ = width;
-    _ = height;
+    nk.clear(&self.ctx);
 }
 
 // /* Setup vert/index buffers and convert */

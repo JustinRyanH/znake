@@ -144,12 +144,11 @@ export fn frame() void {
     }
     {
         sg.beginDefaultPass(renderer.pass_action, sapp.width(), sapp.height());
-        renderer.draw();
+        // renderer.draw();
         snk.render(sapp.width(), sapp.height());
         sg.endPass();
         sg.commit();
     }
-    nk.clear(&snk.ctx);
 }
 
 export fn sokol_input(event: ?*const sapp.Event) void {
