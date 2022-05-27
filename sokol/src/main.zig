@@ -144,7 +144,7 @@ export fn frame() void {
     }
     {
         sg.beginDefaultPass(renderer.pass_action, sapp.width(), sapp.height());
-        // renderer.draw();
+        renderer.draw();
         snk.render(sapp.width(), sapp.height());
         sg.endPass();
         sg.commit();
@@ -182,8 +182,8 @@ pub fn main() void {
         .init_cb = init,
         .frame_cb = frame,
         .event_cb = sokol_input,
-        .width = 600,
-        .height = 600,
+        .width = 1200,
+        .height = 1200,
         .icon = .{
             .sokol_default = true,
         },
