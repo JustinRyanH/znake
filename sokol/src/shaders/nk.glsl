@@ -1,3 +1,5 @@
+@ctype vec2 @import("../math.zig").Vec2
+
 @vs vs
 uniform vs_params {
     vec2 disp_size;

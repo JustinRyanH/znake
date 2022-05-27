@@ -5,9 +5,16 @@ const nk = @import("nuklear");
 const sapp = @import("sokol").app;
 const sg = @import("sokol").gfx;
 const shd = @import("shaders/nk.glsl.zig");
+const math = @import("./math.zig");
 
 const Snk = @This();
 const NkInputMax = 16;
+
+pub const NkVertex = packed struct {
+    position: math.Vec2,
+    uv: math.Vec2,
+    color: [4]u8,
+};
 
 pub const Desc = struct {
     max_vertices: usize = std.math.maxInt(u16),
@@ -39,6 +46,10 @@ btn_up: [nk.c.NK_BUTTON_MAX]bool = std.mem.zeroes([nk.c.NK_BUTTON_MAX]bool),
 char_buffer: [nk.c.NK_INPUT_MAX]u8 = std.mem.zeroes([nk.c.NK_INPUT_MAX]u8),
 keys_down: [nk.c.NK_KEY_MAX]bool = std.mem.zeroes([nk.c.NK_KEY_MAX]bool),
 keys_up: [nk.c.NK_KEY_MAX]bool = std.mem.zeroes([nk.c.NK_KEY_MAX]bool),
+null_texture: nk.DrawNullTexture = undefined,
+nk_cmds: nk.Buffer = undefined,
+nk_vbuf: nk.Buffer = undefined,
+nk_ebuf: nk.Buffer = undefined,
 
 pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
     var out: Snk = .{
@@ -61,8 +72,7 @@ pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
     };
     imageDesc.data.subimage[0][0] = sg.asRange(baked.data[0..(baked.w * baked.h * 4)]);
     out.img = sg.makeImage(imageDesc);
-    var _null: nk.DrawNullTexture = undefined;
-    nk.atlas.end(&out.atlas, nk.rest.nkHandleId(@intCast(c_int, out.img.id)), &_null);
+    nk.atlas.end(&out.atlas, nk.rest.nkHandleId(@intCast(c_int, out.img.id)), &out.null_texture);
 
     out.ctx = nk.init(&alloc, &out.atlas.default_font.*.handle);
     sg.pushDebugGroup("sokol-nuklear");
@@ -102,6 +112,10 @@ pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
     } };
     out.pip = sg.makePipeline(pipeline_desc);
 
+    out.nk_cmds = nk.Buffer.init(&alloc, std.mem.page_size);
+    out.nk_ebuf = nk.Buffer.init(&alloc, std.mem.page_size);
+    out.nk_vbuf = nk.Buffer.init(&alloc, std.mem.page_size);
+
     return out;
 }
 // fn newFrame(self: *Snk) nk.Context {
@@ -114,7 +128,20 @@ pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
 // if (_snuklear.mouse_did_scroll) {
 //     nk_input_scroll(&_snuklear.ctx, nk_vec2(_snuklear.mouse_scroll[0], _snuklear.mouse_scroll[1]));
 //     _snuklear.mouse_did_scroll = false;
-// }
+// }    // struct nk_convert_config cfg = {
+//     .shape_AA = NK_ANTI_ALIASING_ON,
+//     .line_AA = NK_ANTI_ALIASING_ON,
+//     .vertex_layout = vertex_layout,
+//     .vertex_size = sizeof(_snk_vertex_t),
+//     .vertex_alignment = 4,
+//     .circle_segment_count = 22,
+//     .curve_segment_count = 22,
+//     .arc_segment_count = 22,
+//     .global_alpha = 1.0f
+// };
+
+// _snuklear.vs_params.disp_size[0] = (float)width;
+// _snuklear.vs_params.disp_size[1] = (float)height;
 // for (int i = 0; i < NK_BUTTON_MAX; i++) {
 //     if (_snuklear.btn_down[i]) {
 //         _snuklear.btn_down[i] = false;
@@ -122,12 +149,38 @@ pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
 //     }
 //     else if (_snuklear.btn_up[i]) {
 //         _snuklear.btn_up[i] = false;
-//         nk_input_button(&_snuklear.ctx, (enum nk_buttons)i, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1], 0);
+//         nk_input_button(&_snuklear.ctx, (enum nk_buttons)i, _s    // struct nk_convert_config cfg = {
+//     .shape_AA = NK_ANTI_ALIASING_ON,
+//     .line_AA = NK_ANTI_ALIASING_ON,
+//     .vertex_layout = vertex_layout,
+//     .vertex_size = sizeof(_snk_vertex_t),
+//     .vertex_alignment = 4,
+//     .circle_segment_count = 22,
+//     .curve_segment_count = 22,
+//     .arc_segment_count = 22,
+//     .global_alpha = 1.0f
+// };
+
+// _snuklear.vs_params.disp_size[0] = (float)width;
+// _snuklear.vs_params.disp_size[1] = (float)height;nuklear.mouse_pos[0], _snuklear.mouse_pos[1], 0);
 //     }
 // }
 // const size_t char_buffer_len = strlen(_snuklear.char_buffer);
 // if (char_buffer_len > 0) {
-//     for (size_t i = 0; i < char_buffer_len; i++) {
+//     for (size_t i = 0; i < char_buffer_len; i++) {    // struct nk_convert_config cfg = {
+//     .shape_AA = NK_ANTI_ALIASING_ON,
+//     .line_AA = NK_ANTI_ALIASING_ON,
+//     .vertex_layout = vertex_layout,
+//     .vertex_size = sizeof(_snk_vertex_t),
+//     .vertex_alignment = 4,
+//     .circle_segment_count = 22,
+//     .curve_segment_count = 22,
+//     .arc_segment_count = 22,
+//     .global_alpha = 1.0f
+// };
+
+// _snuklear.vs_params.disp_size[0] = (float)width;
+// _snuklear.vs_params.disp_size[1] = (float)height;
 //         nk_input_char(&_snuklear.ctx, _snuklear.char_buffer[i]);
 //     }
 //     memset(_snuklear.char_buffer, 0, NK_INPUT_MAX);
@@ -143,23 +196,6 @@ pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
 //     }
 // }
 // nk_input_end(&_snuklear.ctx);
-// #endif
-
-// nk_clear(&_snuklear.ctx);
-// return &_snuklear.ctx;
-// }
-pub fn render(self: *Snk, width: i32, height: i32) void {
-    _ = self;
-    _ = width;
-    _ = height;
-}
-
-// static const struct nk_draw_vertex_layout_element vertex_layout[] = {
-//     {NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(struct _snk_vertex_t, pos)},
-//     {NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(struct _snk_vertex_t, uv)},
-//     {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8, NK_OFFSETOF(struct _snk_vertex_t, col)},
-//     {NK_VERTEX_LAYOUT_END}
-// };
 // struct nk_convert_config cfg = {
 //     .shape_AA = NK_ANTI_ALIASING_ON,
 //     .line_AA = NK_ANTI_ALIASING_ON,
@@ -174,6 +210,54 @@ pub fn render(self: *Snk, width: i32, height: i32) void {
 
 // _snuklear.vs_params.disp_size[0] = (float)width;
 // _snuklear.vs_params.disp_size[1] = (float)height;
+// #endif
+
+// nk_clear(&_snuklear.ctx);    // struct nk_convert_config cfg = {
+//     .shape_AA = NK_ANTI_ALIASING_ON,
+//     .line_AA = NK_ANTI_ALIASING_ON,
+//     .vertex_layout = vertex_layout,
+//     .vertex_size = sizeof(_snk_vertex_t),
+//     .vertex_alignment = 4,
+//     .circle_segment_count = 22,
+//     .curve_segment_count = 22,
+//     .arc_segment_count = 22,
+//     .global_alpha = 1.0f
+// };
+
+// _snuklear.vs_params.disp_size[0] = (float)width;
+// _snuklear.vs_params.disp_size[1] = (float)height;kkkj
+// return &_snuklear.ctx;
+// }
+
+pub fn render(self: *Snk, width: i32, height: i32) void {
+    const nk_vertex_layout = [_]nk.DrawVertexLayoutElement{
+        .{ .attribute = nk.c.NK_VERTEX_POSITION, .format = nk.c.NK_FORMAT_FLOAT, .offset = @offsetOf(NkVertex, "position") },
+        .{ .attribute = nk.c.NK_VERTEX_TEXCOORD, .format = nk.c.NK_FORMAT_FLOAT, .offset = @offsetOf(NkVertex, "uv") },
+        .{ .attribute = nk.c.NK_VERTEX_COLOR, .format = nk.c.NK_FORMAT_R8G8B8A8, .offset = @offsetOf(NkVertex, "color") },
+        .{ .attribute = nk.c.NK_VERTEX_ATTRIBUTE_COUNT, .format = nk.c.NK_FORMAT_COUNT, .offset = 0 },
+    };
+
+    var cfg = nk.ConvertConfig{
+        .shape_AA = nk.c.NK_ANTI_ALIASING_ON,
+        .line_AA = nk.c.NK_ANTI_ALIASING_ON,
+        .vertex_layout = &nk_vertex_layout,
+        .vertex_size = @sizeOf(NkVertex),
+        .vertex_alignment = @alignOf(NkVertex),
+        .null_ = self.null_texture,
+        .circle_segment_count = 22,
+        .curve_segment_count = 22,
+        .arc_segment_count = 22,
+        .global_alpha = 1.0,
+    };
+    self.nk_cmds.clear();
+    self.nk_ebuf.clear();
+    self.nk_vbuf.clear();
+
+    _ = cfg;
+    _ = self;
+    _ = width;
+    _ = height;
+}
 
 // /* Setup vert/index buffers and convert */
 // struct nk_buffer cmds, verts, idx;
@@ -370,6 +454,9 @@ pub fn render(self: *Snk, width: i32, height: i32) void {
 pub fn shutdown(self: *Snk) void {
     nk.free(&self.ctx);
     nk.atlas.cleanup(&self.atlas);
+    self.nk_cmds.free();
+    self.nk_ebuf.free();
+    self.nk_vbuf.free();
 
     // /* NOTE: it's valid to call the destroy funcs with SG_INVALID_ID */
     // sg_push_debug_group("sokol-nuklear");

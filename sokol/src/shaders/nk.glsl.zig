@@ -31,7 +31,7 @@ pub const ATTR_vs_color0 = 2;
 pub const SLOT_tex = 0;
 pub const SLOT_vs_params = 0;
 pub const VsParams = extern struct {
-    disp_size: [2]f32 align(16),
+    disp_size: @import("../math.zig").Vec2 align(16),
     _pad_8: [8]u8 = undefined,
 };
 //
