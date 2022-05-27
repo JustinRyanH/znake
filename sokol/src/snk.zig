@@ -127,12 +127,29 @@ pub fn newFrame(self: *Snk) void {
         nk.input.motion(&self.ctx, self.mouse_pos[0], self.mouse_pos[1]);
         self.mouse_did_move = false;
     }
+    if (self.mouse_did_scroll) {
+        var new_scroll = self.ctx.input.mouse.scroll_delta;
+        new_scroll.y = self.mouse_scroll[0];
+        new_scroll.x = self.mouse_scroll[1];
+        nk.input.scroll(&self.ctx, new_scroll);
+        self.mouse_did_scroll = false;
+    }
+    const mouse_x = self.mouse_pos[0];
+    const mouse_y = self.mouse_pos[1];
+    {
+        var i: u32 = 0;
+        while (i < nk.c.NK_BUTTON_MAX) : (i += 1) {
+            if (self.btn_down[i]) {
+                self.btn_down[i] = false;
+                nk.input.button(&self.ctx, @intToEnum(nk.input.Buttons, i), mouse_x, mouse_y, true);
+            }
+            if (self.btn_up[i]) {
+                self.btn_up[i] = false;
+                nk.input.button(&self.ctx, @intToEnum(nk.input.Buttons, i), mouse_x, mouse_y, false);
+            }
+        }
+    }
     //     #if !defined(SOKOL_NUKLEAR_NO_SOKOL_APP)
-    // nk_input_begin(&_snuklear.ctx);
-    // if (_snuklear.mouse_did_move) {
-    //     nk_input_motion(&_snuklear.ctx, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1]);
-    //     _snuklear.mouse_did_move = false;
-    // }
     // if (_snuklear.mouse_did_scroll) {
     //     nk_input_scroll(&_snuklear.ctx, nk_vec2(_snuklear.mouse_scroll[0], _snuklear.mouse_scroll[1]));
     //     _snuklear.mouse_did_scroll = false;
@@ -256,14 +273,23 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
     var dpi_scale = self.desc.dpi_scale;
 
     switch (event.type) {
-        .MOUSE_DOWN, .MOUSE_UP => {
+        .MOUSE_DOWN => {
             self.mouse_pos[0] = @floatToInt(i32, event.mouse_x / dpi_scale);
             self.mouse_pos[1] = @floatToInt(i32, event.mouse_y / dpi_scale);
-            const is_mouse_down = event.type == .MOUSE_DOWN;
             switch (event.mouse_button) {
-                .LEFT => self.btn_down[nk.c.NK_BUTTON_LEFT] = is_mouse_down,
-                .RIGHT => self.btn_down[nk.c.NK_BUTTON_RIGHT] = is_mouse_down,
-                .MIDDLE => self.btn_down[nk.c.NK_BUTTON_MIDDLE] = is_mouse_down,
+                .LEFT => self.btn_down[nk.c.NK_BUTTON_LEFT] = true,
+                .RIGHT => self.btn_down[nk.c.NK_BUTTON_RIGHT] = true,
+                .MIDDLE => self.btn_down[nk.c.NK_BUTTON_MIDDLE] = true,
+                else => {},
+            }
+        },
+        .MOUSE_UP => {
+            self.mouse_pos[0] = @floatToInt(i32, event.mouse_x / dpi_scale);
+            self.mouse_pos[1] = @floatToInt(i32, event.mouse_y / dpi_scale);
+            switch (event.mouse_button) {
+                .LEFT => self.btn_up[nk.c.NK_BUTTON_LEFT] = true,
+                .RIGHT => self.btn_up[nk.c.NK_BUTTON_RIGHT] = true,
+                .MIDDLE => self.btn_up[nk.c.NK_BUTTON_MIDDLE] = true,
                 else => {},
             }
         },
@@ -271,6 +297,11 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
             self.mouse_pos[0] = @floatToInt(i32, event.mouse_x / dpi_scale);
             self.mouse_pos[1] = @floatToInt(i32, event.mouse_y / dpi_scale);
             self.mouse_did_move = true;
+        },
+        .MOUSE_SCROLL => {
+            self.mouse_scroll[0] = event.scroll_x;
+            self.mouse_scroll[1] = event.scroll_y;
+            self.mouse_did_scroll = true;
         },
         else => {},
     }
