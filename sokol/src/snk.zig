@@ -253,6 +253,8 @@ pub fn render(self: *Snk, width: i32, height: i32) void {
     self.nk_ebuf.clear();
     self.nk_vbuf.clear();
 
+    _ = nk.vertex.convert(&self.ctx, &self.nk_cmds, &self.nk_vbuf, &self.nk_ebuf, cfg);
+
     _ = cfg;
     _ = self;
     _ = width;
