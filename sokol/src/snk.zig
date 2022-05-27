@@ -43,6 +43,7 @@ mouse_did_move: bool = false,
 mouse_did_scroll: bool = false,
 btn_down: [nk.c.NK_BUTTON_MAX]bool = std.mem.zeroes([nk.c.NK_BUTTON_MAX]bool),
 btn_up: [nk.c.NK_BUTTON_MAX]bool = std.mem.zeroes([nk.c.NK_BUTTON_MAX]bool),
+char_buffer_end: usize = 0,
 char_buffer: [nk.c.NK_INPUT_MAX]u8 = std.mem.zeroes([nk.c.NK_INPUT_MAX]u8),
 keys_down: [nk.c.NK_KEY_MAX]bool = std.mem.zeroes([nk.c.NK_KEY_MAX]bool),
 keys_up: [nk.c.NK_KEY_MAX]bool = std.mem.zeroes([nk.c.NK_KEY_MAX]bool),
@@ -128,10 +129,7 @@ pub fn newFrame(self: *Snk) void {
         self.mouse_did_move = false;
     }
     if (self.mouse_did_scroll) {
-        var new_scroll = self.ctx.input.mouse.scroll_delta;
-        new_scroll.y = self.mouse_scroll[0];
-        new_scroll.x = self.mouse_scroll[1];
-        nk.input.scroll(&self.ctx, new_scroll);
+        nk.input.scroll(&self.ctx, nk.c.nk_vec2(self.mouse_scroll[0], self.mouse_scroll[1]));
         self.mouse_did_scroll = false;
     }
     const mouse_x = self.mouse_pos[0];
@@ -149,21 +147,14 @@ pub fn newFrame(self: *Snk) void {
             }
         }
     }
-    //     #if !defined(SOKOL_NUKLEAR_NO_SOKOL_APP)
-    // if (_snuklear.mouse_did_scroll) {
-    //     nk_input_scroll(&_snuklear.ctx, nk_vec2(_snuklear.mouse_scroll[0], _snuklear.mouse_scroll[1]));
-    //     _snuklear.mouse_did_scroll = false;
-    // }
-    // for (int i = 0; i < NK_BUTTON_MAX; i++) {
-    //     if (_snuklear.btn_down[i]) {
-    //         _snuklear.btn_down[i] = false;
-    //         nk_input_button(&_snuklear.ctx, (enum nk_buttons)i, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1], 1);
-    //     }
-    //     else if (_snuklear.btn_up[i]) {
-    //         _snuklear.btn_up[i] = false;
-    //         nk_input_button(&_snuklear.ctx, (enum nk_buttons)i, _snuklear.mouse_pos[0], _snuklear.mouse_pos[1], 0);
-    //     }
-    // }
+    if (self.char_buffer_end > 0) {
+        var i: usize = 0;
+        while (i < self.char_buffer_end) : (i += 1) {
+            nk.input.char(&self.ctx, self.char_buffer[i]);
+        }
+        self.char_buffer_end = 0;
+        self.char_buffer = std.mem.zeroes([nk.c.NK_INPUT_MAX]u8);
+    }
     // const size_t char_buffer_len = strlen(_snuklear.char_buffer);
     // if (char_buffer_len > 0) {
     //     for (size_t i = 0; i < char_buffer_len; i++) {
@@ -302,6 +293,19 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
             self.mouse_scroll[0] = event.scroll_x;
             self.mouse_scroll[1] = event.scroll_y;
             self.mouse_did_scroll = true;
+        },
+        .CHAR => {
+            switch (event.char_code) {
+                32...127 => {
+                    if (0 == (event.modifiers & (sapp.modifier_alt | sapp.modifier_ctrl | sapp.modifier_super))) {
+                        if (self.char_buffer_end < self.char_buffer.len) {
+                            self.char_buffer[self.char_buffer_end] = @intCast(u8, event.char_code);
+                            self.char_buffer_end += 1;
+                        }
+                    }
+                },
+                else => {},
+            }
         },
         else => {},
     }
