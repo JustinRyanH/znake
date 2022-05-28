@@ -285,6 +285,13 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
             self.mouse_scroll[1] = event.scroll_y;
             self.mouse_did_scroll = true;
         },
+        .MOUSE_ENTER, .MOUSE_LEAVE => {
+            var i: usize = 0;
+            while (i < nk.c.NK_BUTTON_MAX) : (i += 1) {
+                self.btn_down[i] = false;
+                self.btn_up[i] = false;
+            }
+        },
         .CHAR => {
             switch (event.char_code) {
                 32...127 => {
@@ -323,18 +330,6 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
 }
 // const float dpi_scale = _snuklear.desc.dpi_scale;
 // switch (ev->type) {
-//     case SAPP_EVENTTYPE_MOUSE_ENTER:
-//     case SAPP_EVENTTYPE_MOUSE_LEAVE:
-//         for (int i = 0; i < NK_BUTTON_MAX; i++) {
-//             _snuklear.btn_down[i] = false;
-//             _snuklear.btn_up[i] = false;
-//         }
-//         break;
-//     case SAPP_EVENTTYPE_MOUSE_SCROLL:
-//         _snuklear.mouse_scroll[0] = ev->scroll_x;
-//         _snuklear.mouse_scroll[1] = ev->scroll_y;
-//         _snuklear.mouse_did_scroll = true;
-//         break;
 //     case SAPP_EVENTTYPE_TOUCHES_BEGAN:
 //         _snuklear.btn_down[NK_BUTTON_LEFT] = true;
 //         _snuklear.mouse_pos[0] = (int) (ev->touches[0].pos_x / dpi_scale);
