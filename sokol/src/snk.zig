@@ -299,13 +299,13 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
             }
         },
         .KEY_DOWN => {
-            const nk_key = snk_event_to_nuklear_key(event);
+            const nk_key = snkEventToNuklearKey(self, event);
             if (nk_key != nk.c.NK_KEY_NONE) {
                 self.keys_down[nk_key] = true;
             }
         },
         .KEY_UP => {
-            const nk_key = snk_event_to_nuklear_key(event);
+            const nk_key = snkEventToNuklearKey(self, event);
             if (nk_key != nk.c.NK_KEY_NONE) {
                 self.keys_up[nk_key] = true;
             }
@@ -420,8 +420,46 @@ pub fn shutdown(self: *Snk) void {
     }
 }
 
-fn snk_event_to_nuklear_key(event: *const sapp.Event) nk.Keys {
+fn snkEventToNuklearKey(self: *const Snk, event: *const sapp.Event) nk.Keys {
+    const shift_modifier = event.modifiers & sapp.modifier_shift > 0;
+    switch (event.key_code) {
+        .X, .C, .A, .Z => {
+            if (!snkIsCtrl(self, event.modifiers)) {
+                return nk.c.NK_KEY_NONE;
+            }
+        },
+        else => {},
+    }
+    if (event.key_code == .Z) {
+        if (shift_modifier) {
+            return nk.c.NK_KEY_TEXT_REDO;
+        } else {
+            return nk.c.NK_KEY_TEXT_UNDO;
+        }
+    }
     return switch (event.key_code) {
+        .X => nk.c.NK_KEY_CUT,
+        .C => nk.c.NK_KEY_COPY,
+        .A => nk.c.NK_KEY_TEXT_SELECT_ALL,
+        .DELETE => nk.c.NK_KEY_DEL,
+        .ENTER => nk.c.NK_KEY_ENTER,
+        .TAB => nk.c.NK_KEY_TAB,
+        .BACKSPACE => nk.c.NK_KEY_BACKSPACE,
+        .UP => nk.c.NK_KEY_UP,
+        .DOWN => nk.c.NK_KEY_DOWN,
+        .LEFT => nk.c.NK_KEY_LEFT,
+        .RIGHT => nk.c.NK_KEY_RIGHT,
+        .LEFT_SHIFT => nk.c.NK_KEY_SHIFT,
+        .RIGHT_SHIFT => nk.c.NK_KEY_SHIFT,
+        .LEFT_CONTROL => nk.c.NK_KEY_CTRL,
+        .RIGHT_CONTROL => nk.c.NK_KEY_CTRL,
         else => nk.c.NK_KEY_NONE,
     };
+}
+
+fn snkIsCtrl(self: *const Snk, modifiers: u32) bool {
+    if (self.is_osx) {
+        return 0 != (modifiers & sapp.modifier_super);
+    }
+    return 0 != (modifiers & sapp.modifier_ctrl);
 }
