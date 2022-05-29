@@ -299,6 +299,14 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
             }
         },
         .KEY_DOWN => {
+            const is_ctrl = self.snkIsCtrl(event.modifiers);
+            if (is_ctrl and event.key_code == .V) return;
+            if (is_ctrl and event.key_code == .X) {
+                sapp.consumeEvent();
+            }
+            if (is_ctrl and event.key_code == .C) {
+                sapp.consumeEvent();
+            }
             const nk_key = snkEventToNuklearKey(self, event);
             if (nk_key != nk.c.NK_KEY_NONE) {
                 self.keys_down[nk_key] = true;
