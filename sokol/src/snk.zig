@@ -155,28 +155,19 @@ pub fn newFrame(self: *Snk) void {
         self.char_buffer_end = 0;
         self.char_buffer = std.mem.zeroes([nk.c.NK_INPUT_MAX]u8);
     }
-    // const size_t char_buffer_len = strlen(_snuklear.char_buffer);
-    // if (char_buffer_len > 0) {
-    //     for (size_t i = 0; i < char_buffer_len; i++) {
-    //         nk_input_char(&_snuklear.ctx, _snuklear.char_buffer[i]);
-    //     }
-    //     memset(_snuklear.char_buffer, 0, NK_INPUT_MAX);
-    // }
-    // for (int i = 0; i < NK_KEY_MAX; i++) {
-    //     if (_snuklear.keys_down[i]) {
-    //         nk_input_key(&_snuklear.ctx, (enum nk_keys)i, true);
-    //         _snuklear.keys_down[i] = 0;
-    //     }
-    //     if (_snuklear.keys_up[i]) {
-    //         nk_input_key(&_snuklear.ctx, (enum nk_keys)i, false);
-    //         _snuklear.keys_up[i] = 0;
-    //     }
-    // }
-    // nk_input_end(&_snuklear.ctx);
-    // #endif
-
-    // nk_clear(&_snuklear.ctx);
-    // return &_snuklear.ctx;
+    {
+        var i: u32 = 0;
+        while (i < nk.c.NK_KEY_MAX) : (i += 1) {
+            if (self.keys_down[i]) {
+                self.keys_down[i] = false;
+                nk.input.key(&self.ctx, @intToEnum(nk.input.Keys, i), true);
+            }
+            if (self.keys_up[i]) {
+                self.keys_up[i] = false;
+                nk.input.key(&self.ctx, @intToEnum(nk.input.Keys, i), false);
+            }
+        }
+    }
 }
 
 pub fn render(self: *Snk, width: i32, height: i32) void {
@@ -307,6 +298,18 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
                 else => {},
             }
         },
+        .KEY_DOWN => {
+            const nk_key = snk_event_to_nuklear_key(event);
+            if (nk_key != nk.c.NK_KEY_NONE) {
+                self.keys_down[nk_key] = true;
+            }
+        },
+        .KEY_UP => {
+            const nk_key = snk_event_to_nuklear_key(event);
+            if (nk_key != nk.c.NK_KEY_NONE) {
+                self.keys_up[nk_key] = true;
+            }
+        },
         else => {},
     }
 }
@@ -415,4 +418,10 @@ pub fn shutdown(self: *Snk) void {
         sg.destroyBuffer(self.vbuf);
         sg.destroyBuffer(self.ibuf);
     }
+}
+
+fn snk_event_to_nuklear_key(event: *const sapp.Event) nk.Keys {
+    return switch (event.key_code) {
+        else => nk.c.NK_KEY_NONE,
+    };
 }
