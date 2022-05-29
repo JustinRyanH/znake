@@ -356,42 +356,6 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
 //         _snuklear.btn_up[NK_BUTTON_LEFT] = false;
 //         _snuklear.btn_down[NK_BUTTON_LEFT] = false;
 //         break;
-//     case SAPP_EVENTTYPE_KEY_DOWN:
-//         /* intercept Ctrl-V, this is handled via EVENTTYPE_CLIPBOARD_PASTED */
-//         if (_snk_is_ctrl(ev->modifiers) && (ev->key_code == SAPP_KEYCODE_V)) {
-//             break;
-//         }
-//         /* on web platform, don't forward Ctrl-X, Ctrl-V to the browser */
-//         if (_snk_is_ctrl(ev->modifiers) && (ev->key_code == SAPP_KEYCODE_X)) {
-//             sapp_consume_event();
-//         }
-//         if (_snk_is_ctrl(ev->modifiers) && (ev->key_code == SAPP_KEYCODE_C)) {
-//             sapp_consume_event();
-//         }
-//         _snuklear.keys_down[_snk_event_to_nuklearkey(ev)] = true;
-//         break;
-//     case SAPP_EVENTTYPE_KEY_UP:
-//         /* intercept Ctrl-V, this is handled via EVENTTYPE_CLIPBOARD_PASTED */
-//         if (_snk_is_ctrl(ev->modifiers) && (ev->key_code == SAPP_KEYCODE_V)) {
-//             break;
-//         }
-//         /* on web platform, don't forward Ctrl-X, Ctrl-V to the browser */
-//         if (_snk_is_ctrl(ev->modifiers) && (ev->key_code == SAPP_KEYCODE_X)) {
-//             sapp_consume_event();
-//         }
-//         if (_snk_is_ctrl(ev->modifiers) && (ev->key_code == SAPP_KEYCODE_C)) {
-//             sapp_consume_event();
-//         }
-//         _snuklear.keys_up[_snk_event_to_nuklearkey(ev)] = true;
-//         break;
-//     case SAPP_EVENTTYPE_CHAR:
-//         if ((ev->char_code >= 32) &&
-//             (ev->char_code != 127) &&
-//             (0 == (ev->modifiers & (SAPP_MODIFIER_ALT|SAPP_MODIFIER_CTRL|SAPP_MODIFIER_SUPER))))
-//         {
-//             _snk_append_char(ev->char_code);
-//         }
-//         break;
 //     case SAPP_EVENTTYPE_CLIPBOARD_PASTED:
 //         _snuklear.keys_down[NK_KEY_PASTE] = _snuklear.keys_up[NK_KEY_PASTE] = true;
 //         break;
