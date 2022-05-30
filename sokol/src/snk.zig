@@ -275,11 +275,28 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
                 else => {},
             }
         },
-        .MOUSE_MOVE => {
+        .MOUSE_MOVE, .TOUCHES_MOVED => {
             self.mouse_pos[0] = @floatToInt(i32, event.mouse_x / dpi_scale);
             self.mouse_pos[1] = @floatToInt(i32, event.mouse_y / dpi_scale);
             self.mouse_did_move = true;
         },
+        .TOUCHES_BEGAN => {
+            self.mouse_pos[0] = @floatToInt(i32, event.mouse_x / dpi_scale);
+            self.mouse_pos[1] = @floatToInt(i32, event.mouse_y / dpi_scale);
+            self.mouse_did_move = true;
+            self.btn_down[nk.c.NK_BUTTON_LEFT] = true;
+        },
+        .TOUCHES_ENDED => {
+            self.mouse_pos[0] = @floatToInt(i32, event.mouse_x / dpi_scale);
+            self.mouse_pos[1] = @floatToInt(i32, event.mouse_y / dpi_scale);
+            self.mouse_did_move = true;
+            self.btn_up[nk.c.NK_BUTTON_LEFT] = true;
+        },
+        .TOUCHES_CANCELLED => {
+            self.btn_up[nk.c.NK_BUTTON_LEFT] = false;
+            self.btn_down[nk.c.NK_BUTTON_LEFT] = false;
+        },
+        .CLIPBOARD_PASTED => {},
         .MOUSE_SCROLL => {
             self.mouse_scroll[0] = event.scroll_x;
             self.mouse_scroll[1] = event.scroll_y;
@@ -328,36 +345,6 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
         else => {},
     }
 }
-// const float dpi_scale = _snuklear.desc.dpi_scale;
-// switch (ev->type) {
-//     case SAPP_EVENTTYPE_TOUCHES_BEGAN:
-//         _snuklear.btn_down[NK_BUTTON_LEFT] = true;
-//         _snuklear.mouse_pos[0] = (int) (ev->touches[0].pos_x / dpi_scale);
-//         _snuklear.mouse_pos[1] = (int) (ev->touches[0].pos_y / dpi_scale);
-//         _snuklear.mouse_did_move = true;
-//         break;
-//     case SAPP_EVENTTYPE_TOUCHES_MOVED:
-//         _snuklear.mouse_pos[0] = (int) (ev->touches[0].pos_x / dpi_scale);
-//         _snuklear.mouse_pos[1] = (int) (ev->touches[0].pos_y / dpi_scale);
-//         _snuklear.mouse_did_move = true;
-//         break;
-//     case SAPP_EVENTTYPE_TOUCHES_ENDED:
-//         _snuklear.btn_up[NK_BUTTON_LEFT] = true;
-//         _snuklear.mouse_pos[0] = (int) (ev->touches[0].pos_x / dpi_scale);
-//         _snuklear.mouse_pos[1] = (int) (ev->touches[0].pos_y / dpi_scale);
-//         _snuklear.mouse_did_move = true;
-//         break;
-//     case SAPP_EVENTTYPE_TOUCHES_CANCELLED:
-//         _snuklear.btn_up[NK_BUTTON_LEFT] = false;
-//         _snuklear.btn_down[NK_BUTTON_LEFT] = false;
-//         break;
-//     case SAPP_EVENTTYPE_CLIPBOARD_PASTED:
-//         _snuklear.keys_down[NK_KEY_PASTE] = _snuklear.keys_up[NK_KEY_PASTE] = true;
-//         break;
-//     default:
-//         break;
-// }
-// }
 // fn editString(self: *Snk, ctx: *nk.Context, flags: nk.Flags, memory: []u8, max: i32, filter: nk.Filter) void {
 // nk_flags event = nk_edit_string(ctx, flags, memory, len, max, filter);
 // if ((event & NK_EDIT_ACTIVATED) && !sapp_keyboard_shown()) {
