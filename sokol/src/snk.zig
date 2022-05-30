@@ -53,14 +53,14 @@ nk_vbuf: nk.Buffer = undefined,
 nk_ebuf: nk.Buffer = undefined,
 
 pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
-    var out: Snk = .{
+    var snk: Snk = .{
         .desc = desc,
         .is_osx = builtin.target.isDarwin(),
     };
 
-    out.atlas = nk.atlas.init(&alloc);
-    nk.atlas.begin(&out.atlas);
-    const baked = try nk.atlas.bake(&out.atlas, .rgba32);
+    snk.atlas = nk.atlas.init(&alloc);
+    nk.atlas.begin(&snk.atlas);
+    const baked = try nk.atlas.bake(&snk.atlas, .rgba32);
     var imageDesc: sg.ImageDesc = .{
         .width = @intCast(c_int, baked.w),
         .height = @intCast(c_int, baked.h),
@@ -72,52 +72,52 @@ pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
         .label = "sokol-nuklear-font",
     };
     imageDesc.data.subimage[0][0] = sg.asRange(baked.data[0..(baked.w * baked.h * 4)]);
-    out.img = sg.makeImage(imageDesc);
-    nk.atlas.end(&out.atlas, nk.rest.nkHandleId(@intCast(c_int, out.img.id)), &out.null_texture);
+    snk.img = sg.makeImage(imageDesc);
+    nk.atlas.end(&snk.atlas, nk.rest.nkHandleId(@intCast(c_int, snk.img.id)), &snk.null_texture);
 
-    out.ctx = nk.init(&alloc, &out.atlas.default_font.*.handle);
+    snk.ctx = nk.init(&alloc, &snk.atlas.default_font.*.handle);
     sg.pushDebugGroup("sokol-nuklear");
     defer sg.popDebugGroup();
 
-    out.vertex_buffer_size = out.desc.max_vertices * @sizeOf(shd.VsParams);
-    out.vbuf = sg.makeBuffer(.{
+    snk.vertex_buffer_size = snk.desc.max_vertices * @sizeOf(shd.VsParams);
+    snk.vbuf = sg.makeBuffer(.{
         .type = sg.BufferType.VERTEXBUFFER,
         .usage = sg.Usage.STREAM,
-        .size = out.vertex_buffer_size,
+        .size = snk.vertex_buffer_size,
         .label = "sokol-nuklear-vertices",
     });
 
-    out.index_buffer_size = out.desc.max_vertices * 3 * @sizeOf(u16);
-    out.ibuf = sg.makeBuffer(.{
+    snk.index_buffer_size = snk.desc.max_vertices * 3 * @sizeOf(u16);
+    snk.ibuf = sg.makeBuffer(.{
         .type = sg.BufferType.INDEXBUFFER,
         .usage = sg.Usage.STREAM,
-        .size = out.index_buffer_size,
+        .size = snk.index_buffer_size,
         .label = "sokol-nuklear-indices",
     });
 
-    out.shd = sg.makeShader(shd.snukShaderDesc(sg.queryBackend()));
+    snk.shd = sg.makeShader(shd.snukShaderDesc(sg.queryBackend()));
     var pipeline_desc: sg.PipelineDesc = .{
         .index_type = sg.IndexType.UINT16,
-        .shader = out.shd,
-        .sample_count = out.desc.sample_count,
+        .shader = snk.shd,
+        .sample_count = snk.desc.sample_count,
         .label = "sokol-nuklear-pipeline",
     };
     pipeline_desc.layout.attrs[shd.ATTR_vs_position].format = sg.VertexFormat.FLOAT2;
     pipeline_desc.layout.attrs[shd.ATTR_vs_texcoord0].format = sg.VertexFormat.FLOAT2;
     pipeline_desc.layout.attrs[shd.ATTR_vs_color0].format = sg.VertexFormat.UBYTE4N;
-    pipeline_desc.depth.pixel_format = out.desc.depth_format;
-    pipeline_desc.colors[0] = .{ .pixel_format = out.desc.color_format, .write_mask = sg.ColorMask.RGB, .blend = .{
+    pipeline_desc.depth.pixel_format = snk.desc.depth_format;
+    pipeline_desc.colors[0] = .{ .pixel_format = snk.desc.color_format, .write_mask = sg.ColorMask.RGB, .blend = .{
         .enabled = true,
         .src_factor_rgb = sg.BlendFactor.SRC_ALPHA,
         .dst_factor_rgb = sg.BlendFactor.ONE_MINUS_SRC_ALPHA,
     } };
-    out.pip = sg.makePipeline(pipeline_desc);
+    snk.pip = sg.makePipeline(pipeline_desc);
 
-    out.nk_cmds = nk.Buffer.init(&alloc, std.mem.page_size);
-    out.nk_ebuf = nk.Buffer.init(&alloc, std.mem.page_size);
-    out.nk_vbuf = nk.Buffer.init(&alloc, std.mem.page_size);
+    snk.nk_cmds = nk.Buffer.init(&alloc, std.mem.page_size);
+    snk.nk_ebuf = nk.Buffer.init(&alloc, std.mem.page_size);
+    snk.nk_vbuf = nk.Buffer.init(&alloc, std.mem.page_size);
 
-    return out;
+    return snk;
 }
 
 pub fn newFrame(self: *Snk) void {
