@@ -189,6 +189,7 @@ pub fn main() void {
         .icon = .{
             .sokol_default = true,
         },
+        .enable_clipboard = true,
         .window_title = "Znake",
     });
 }

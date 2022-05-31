@@ -116,6 +116,9 @@ pub fn setup(alloc: std.mem.Allocator, desc: Snk.Desc) !Snk {
     snk.nk_cmds = nk.Buffer.init(&alloc, std.mem.page_size);
     snk.nk_ebuf = nk.Buffer.init(&alloc, std.mem.page_size);
     snk.nk_vbuf = nk.Buffer.init(&alloc, std.mem.page_size);
+    snk.ctx.clip.paste = snkClipboardPaste;
+    snk.ctx.clip.copy = snkClipboardCopy;
+    snk.ctx.clip.userdata = undefined;
 
     return snk;
 }
@@ -296,7 +299,6 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
             self.btn_up[nk.c.NK_BUTTON_LEFT] = false;
             self.btn_down[nk.c.NK_BUTTON_LEFT] = false;
         },
-        .CLIPBOARD_PASTED => {},
         .MOUSE_SCROLL => {
             self.mouse_scroll[0] = event.scroll_x;
             self.mouse_scroll[1] = event.scroll_y;
@@ -308,6 +310,9 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
                 self.btn_down[i] = false;
                 self.btn_up[i] = false;
             }
+        },
+        .CLIPBOARD_PASTED => {
+            self.keys_down[nk.c.NK_KEY_PASTE] = true;
         },
         .CHAR => {
             switch (event.char_code) {
@@ -358,9 +363,6 @@ pub fn handleEvent(self: *Snk, event: *const sapp.Event) void {
 
 pub fn shutdown(self: *Snk) void {
     nk.free(&self.ctx);
-    nk.atlas.cleanup(&self.atlas);
-    self.nk_cmds.free();
-    self.nk_ebuf.free();
     self.nk_vbuf.free();
 
     {
@@ -416,4 +418,20 @@ fn snkIsCtrl(self: *const Snk, modifiers: u32) bool {
         return 0 != (modifiers & sapp.modifier_super);
     }
     return 0 != (modifiers & sapp.modifier_ctrl);
+}
+
+fn snkClipboardPaste(usr: nk.Handle, edit: [*c]nk.c.nk_text_edit) callconv(.C) void {
+    _ = usr;
+    var text = std.mem.sliceTo(sapp.getClipboardString(), 0);
+    if (text.len > 0) {
+        _ = nk.c.nk_textedit_paste(edit, nk.slice(text));
+    }
+}
+
+fn snkClipboardCopy(usr: nk.Handle, slice: nk.Slice) callconv(.C) void {
+    _ = usr;
+    if (slice.len == 0) return;
+
+    var str = std.mem.span(slice.ptr);
+    sapp.setClipboardString(str);
 }
